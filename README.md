@@ -1,6 +1,2 @@
 # mysite
-testing 
-testing 
-testing 
-testing 
-
+testing local commit
