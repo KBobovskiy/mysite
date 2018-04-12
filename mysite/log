@@ -1,0 +1,2932 @@
+EoF
+{ Cookie: 'sessionid=pl1bnyejs06diyz6s7g0qson3latfnfq; csrftoken=GQLCa3VmrA8xEtXqCAz85x2NIiUusWEHA7Da1x2R1wOCSgLhmfpbJKy88U0QTyRW',
+  referer: 'https://the-tale.org/',
+  'content-type': 'application/x-www-form-urlencoded',
+  'content-length': 84 }
+{ server: 'nginx/1.10.3 (Ubuntu)',
+  date: 'Tue, 10 Apr 2018 05:26:57 GMT',
+  'content-type': 'text/html; charset=utf-8',
+  'transfer-encoding': 'chunked',
+  connection: 'close',
+  vary: 'Cookie',
+  'x-frame-options': 'DENY',
+  'set-cookie': 
+   [ 'csrftoken=GQLCa3VmrA8xEtXqCAz85x2NIiUusWEHA7Da1x2R1wOCSgLhmfpbJKy88U0QTyRW; expires=Tue, 09-Apr-2019 05:26:57 GMT; HttpOnly; Max-Age=31449600; Path=/; Secure',
+     'sessionid=pl1bnyejs06diyz6s7g0qson3latfnfq; expires=Tue, 24-Apr-2018 05:26:57 GMT; HttpOnly; Max-Age=1209600; Path=/; Secure' ] }
+200
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="ZPG, ZRPG, Zero Player Game, самоиграйка, изменяемый мир, 0-player, тамагочи, браузерная игра, многопользовательская игра, инди игра, песочница">
+    <meta name="description" content="История рыночных операций в ZPG «Сказка»"></meta>
+    <meta name="author" content="Tiendil">
+    <link href="/news/feed" type="application/atom+xml" rel="alternate" title="Новости" />
+    <link href="/forum/feed" type="application/atom+xml" rel="alternate" title="Форум" />
+    <link rel="shortcut icon" href="//static.the-tale.org/static/244/favicon.ico" />
+    <title>История рынка | Сказка</title>
+
+    <link rel="stylesheet" type="text/css" href="//static.the-tale.org/static/244/css/main.css" />
+
+    <script src="//static.the-tale.org/static/244/plugins/jquery/jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script src="//static.the-tale.org/static/244/plugins/jquery/jquery-ui-1.8.9/js/jquery-ui-1.8.9.custom.min.js" type="text/javascript" charset="utf-8"></script>
+
+    <script src="//static.the-tale.org/static/244/plugins/spin/spin.min.js" type="text/javascript"></script>
+    <script src="//static.the-tale.org/static/244/plugins/jquery/jquery.spin.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" type="text/css" href="//static.the-tale.org/static/244/bootstrap/css/bootstrap.min.css" />
+    <script src="//static.the-tale.org/static/244/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+
+    <script src="//static.the-tale.org/static/244/common/base.js" type="text/javascript"></script>
+    <script src="//static.the-tale.org/static/244/common/dialog.js" type="text/javascript"></script>
+    <script src="//static.the-tale.org/static/244/common/forms.js" type="text/javascript"></script>
+
+    
+    <script type="text/javascript">
+
+pgf.base.settings.init("account_55764");
+
+API_CLIENT = "the_tale-v0.3.26.7";
+
+jQuery(document).ready(function() {
+
+    pgf.base.AutoFormatTime();
+
+    jQuery.ajaxSetup({
+        cache: false,
+        beforeSend: function(xhr, settings) {
+
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", "qfNgWAKrIByv5evo2ggleOhdTGxN1KOLkwFON4RWixeAj1jfMV6oS1NyjiD9sm10" );
+            }
+        }
+    });
+
+    jQuery('.pgf-fast-registration').click(function(e){
+        e.preventDefault();
+        pgf.forms.Post({ OnSuccess: function(data)
+                         {
+                             location.href = "/game/";
+                         },
+                         action: jQuery(e.currentTarget).attr('href')
+                       });
+    });
+
+    jQuery('[rel="tooltip"]').tooltip(pgf.base.tooltipsArgs)
+    jQuery('[rel="popover"]').popover(pgf.base.popoverArgs)
+
+    var StopScroll = function(e) {
+        var innerScrollable = jQuery(e.target).parents('.pgf-scrollable');
+        if (innerScrollable.length == 0) {
+            innerScrollable = jQuery(e.target);
+        }
+        innerScrollable = innerScrollable.eq(0);
+
+        var scrollTop = innerScrollable.scrollTop();
+        if (e.originalEvent.wheelDelta > 0 && innerScrollable.scrollTop() == 0) {
+            e.preventDefault();
+        }
+        var inner = innerScrollable.get(0).scrollHeight - innerScrollable.innerHeight();
+        var outer = innerScrollable.get(0).scrollHeight - innerScrollable.outerHeight();
+        if (e.originalEvent.wheelDelta < 0 && outer <= scrollTop && scrollTop <= inner) {
+            e.preventDefault();
+        }
+    };
+
+    // jQuery('.pgf-scrollable').live('mousewheel', function(e) {
+    jQuery('.modal-backdrop').live('mousewheel', StopScroll);
+    jQuery('.modal').live('mousewheel', StopScroll);
+
+            (function NewMessagesWorker() {
+        jQuery.get("/accounts/messages/api/new-messages-number?api_client=the_tale-v0.3.26.7&amp;api_version=0.1", function(data) {
+            if (data && data.data && data.data.number) {
+                jQuery(".pgf-new-messages-signalization").toggleClass("pgf-hidden", data.data.number == 0);
+                jQuery(".pgf-new-messages-number").text(data.data.number);
+            }
+            setTimeout(NewMessagesWorker, 60*1000)
+        })})();
+        
+    ///////////////////////////
+    // BBField processing
+    function InitializeBBFileds(container) {
+
+        jQuery('.pgf-bbfield', container).each(function(i, e){
+            var id = jQuery(e).attr('id');
+            pgf.base.AddPreview('#'+id, 'textarea', "/preview");
+            pgf.base.InitBBFields('#'+id);
+        });
+    }
+
+    InitializeBBFileds(document);
+
+    jQuery(document).bind(pgf.ui.dialog.DIALOG_OPENED, function(e, dialog) {
+        InitializeBBFileds(dialog);
+    });
+    /////////////////////////
+});
+    </script>
+
+
+
+    
+
+<script id="xsolla-paystation-lightbox" type="text/javascript" src="https://secure.xsolla.com/partners/embed/lightbox.js"></script>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function(e){
+
+    jQuery('.pgf-subscription-info').click(function(e){
+        pgf.ui.dialog.Create({fromSelector: jQuery('.pgf-subscription-info-dialog')});
+    });
+});
+
+</script>
+
+  </head>
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+
+          <a class="brand" href="/"><img src="//static.the-tale.org/static/244/images/logo.png"></img></a>
+
+          <ul class="nav">
+            <li class=" ">
+        <a href="/forum/" >
+      Форум     </a>
+    
+      </li>
+            <li class=" dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+      Путеводитель <b class="caret"></b>    </a>
+    
+          <ul class="dropdown-menu">
+        
+                      <li class=" ">
+        <a href="/guide/world" >
+      О мире     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/game" >
+      Описание игры     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/keepers" >
+      Хранители     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/hero-abilities" >
+      Способности героев     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/hero-habits" >
+      Черты героев     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/hero-preferences" >
+      Предпочтения героев     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/cards/" >
+      Карты Судьбы     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/quests" >
+      Задания     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/persons" >
+      Мастера     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/cities" >
+      Города     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/politics" >
+      Книга Судеб     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/clans" >
+      Гильдии     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/map" >
+      Карта     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/pvp" >
+      PvP     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/mobs/" >
+      Бестиарий     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/artifacts/" >
+      Артефакты     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/companions/" >
+      Спутники     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/guide/account-types" >
+      Общее     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/forum/threads/126" >
+      FAQ     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://docs.the-tale.org" >
+      Документация по API и игре     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/forum/subcategories/43" >
+      Проекты игроков     </a>
+    
+      </li>
+                        </ul>
+      </li>
+            <li class=" dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+      Сообщество <b class="caret"></b>    </a>
+    
+          <ul class="dropdown-menu">
+        
+                      <li class=" ">
+        <a href="/accounts/" >
+      Игроки     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/accounts/clans/" >
+      Гильдии     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/game/ratings/" >
+      Рейтинги     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/accounts/achievements/" >
+      Достижения     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/collections/collections/" >
+      Коллекции     </a>
+    
+      </li>
+                  
+                      <li class="divider"></li>
+                  
+                      <li class=" ">
+        <a href="https://github.com/the-tale" >
+      GitHub     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://vk.com/zpgtale" >
+      ВКонтакте     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://www.facebook.com/groups/zpgtale/" >
+      Facebook     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://twitter.com/zpg_tale" >
+      Twitter     </a>
+    
+      </li>
+                  
+                      <li class="divider"></li>
+                  
+                      <li style='padding-left: 15px;'>Проекты игроков</li>
+                  
+                      <li class=" ">
+        <a href="http://ru.the-tale.wikia.com/wiki/Сказка_вики" >
+      Wiki     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://the-tale.org/forum/threads/1407" >
+      Тёмная тема     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://play.google.com/store/apps/details?id=com.wrewolf.thetaleclient" >
+      Android клиент     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://t.me/talepp" >
+      Пандорийская газета: телеграм     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="http://talepp.tggram.com/" >
+      Пандорийская газета: лента     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="https://chrome.google.com/webstore/detail/the-tale-extended/hafakbhcckdligdjpghlofaplaajpaje" >
+      Расширение для Chrome     </a>
+    
+      </li>
+                        </ul>
+      </li>
+
+            <li class=" dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+      Мир <b class="caret"></b>    </a>
+    
+          <ul class="dropdown-menu">
+        
+                      <li class=" ">
+        <a href="/game/bills/" >
+      Книга Судеб     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/linguistics/" >
+      Лингвистика     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/folklore/posts/" >
+      Фольклор     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/game/chronicle/" >
+      Летопись     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/game/pvp/calls" >
+      Арена     </a>
+    
+      </li>
+                        </ul>
+      </li>
+
+                        <li class=" ">
+        <a href="/game/" >
+      <span class='game-link'>Игра</span>     </a>
+    
+      </li>
+                        <li class="active ">
+        <a href="/shop/" >
+      Рынок     </a>
+    
+      </li>
+
+          </ul>
+
+          <ul class="nav pull-right">
+                        <li class="visible-desktop">
+              <p id="time-block" class="navbar-text" rel="tooltip" title="13 юного квинта сухого месяца 210 года">
+                <span class="pgf-game-date">13 юного квинта сухого месяца 210 года</span>
+              </p>
+            </li>
+            <li class="hidden-desktop">
+              <p id="time-block" class="navbar-text" rel="tooltip" title="13 юного квинта сухого месяца 210 года">
+                <i class="icon-time icon-white" style="opacity: 0.5;"></i>
+              </p>
+            </li>
+            <li class="divider-vertical"></li>
+
+            
+            <li rel="tooltip"  title="У вас есть новые сообщения" class="pgf-new-messages-signalization pgf-hidden">
+              <a href="/accounts/messages/">
+                <i class="icon-white icon-envelope" style="vertical-align: middle;"></i>
+                (<span class="pgf-new-messages-number">0</span>)
+              </a>
+            </li>
+
+            <li class=" dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+      Бадж <b class="caret"></b>    </a>
+    
+          <ul class="dropdown-menu">
+        
+                      <li class=" ">
+        <a href="/accounts/profile/" >
+      Профиль     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/accounts/friends/" >
+      Друзья     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/accounts/messages/" >
+      Сообщения     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/accounts/third-party/tokens/" >
+      Приложения     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/forum/subscriptions/" >
+      Подписки     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/accounts/55764" >
+      Моя страница     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+        <a href="/game/heroes/my-hero" >
+      Мой герой     </a>
+    
+      </li>
+                  
+                      <li class=" ">
+          <a href="#" class="disabled">Моя гильдия</a>
+    
+      </li>
+                  
+                      <li class="divider"></li>
+                  
+                      <li class=" ">
+        <a href="/accounts/auth/api/logout?api_client=the_tale-v0.3.26.7&api_version=1.0" >
+      Выход     </a>
+    
+      </li>
+                        </ul>
+      </li>
+
+                      </ul>
+
+        </div>
+      </div>
+    </div>
+
+    
+    
+    <div id="main-container">
+      <div id="content" class="container">
+
+        
+                
+        
+<div class="row">
+  <div class="span12">
+    <div class="easy-block">
+
+      
+<div class="pgf-hidden pgf-subscription-info-dialog">
+  <div class="modal hide">
+
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">×</button>
+      <h3 class="pgf-dialog-title dialog-title">О подписке</h3>
+    </div>
+
+    <div class="modal-body">
+
+      <p>
+        Подписка открывает доступ к самым интересным механикам игры, влияющим на окружающий мир. Эти механики закрыты для обычных игроков, чтобы предотвратить злоупотребление ими с помощью ботоводства.
+      </p>
+
+      <p>
+        В благодарность за помощь игре подписчики получают бонусы, облегчающие жизнь подопечных героев.
+      </p>
+
+      <h3>Преимущества</h3>
+
+      
+<ul>
+  <li><strong>герой оказывает влияние на мир;</strong></li>
+  <li><strong>карты судьбы получаются в 1.5 раза быстрее;</strong></li>
+  <li><strong>получаемые карты судьбы можно продавать на рынке;</strong></li>
+  <li><strong>становятся доступны карты судьбы, влияющие на мир;</strong></li>
+  <li>можно голосовать за записи в Книге Судеб;</li>
+  <li>на 50% увеличивается получаемый героем опыт;</li>
+  <li>на 50% увеличивается скорость изменения черт;</li>
+  <li>размер дневника героя увеличен до 50 сообщений;</li>
+  <li>жизнь героя не замедляется при длительном отсутствии игрока в игре;</li>
+  <li>спутник героя не покидает его, когда здоровье спутника опускается до нуля;</li>
+  <li>игрок может одновременно создать до 4 записей в Книге Судеб.</li>
+</ul>
+    </div>
+  </div>
+</div>
+
+
+<h2>
+  Магазин
+  <small>
+    <div style="vertical-align: top; display: inline-block;">
+              <a href="/guide/account-types" class="label label-success">
+                        подписка до <span class="updated-at pgf-format-datetime" data-timestamp="1528188153.0"></span>
+                   </a>
+          </div>
+
+    <span style="color: black;">у Вас есть</span> <span class="pgf-account-balance">1176</span>
+    <img src="//static.the-tale.org/static/244/images/cookies.png" style="vertical-align: middle;" rel="title" title="печеньки"></img>
+
+        <a style="vertical-align: middle; font-size: 25pt; line-height: 18px; color: green; font-weight: bold; text-decoration: none;"
+             href="#"
+             id="paystation-link"
+             rel="tooltip"
+             title="Приобрести ещё!"
+             onclick="XPSLightBox.open('https://secure.xsolla.com/paystation2/?sign=166a5de50b4a3bf66f01f97343b693db&marketplace=paydesk&pid=26&description=покупка печенек&theme=101&email=kbobovskiy@yandex.ru&project=10519&v1=kbobovskiy@yandex.ru&local=ru', 900, 800); return false;"
+             class="pgf-xsolla-dialog-link">+</a>
+    
+  </small>
+</h2>
+
+<div><table width="100%">
+  <tbody>
+    <tr>
+      <td width="20%" style="text-align: center;">
+
+        <div class="quest-icon question" style="float: none; margin: auto;"></div>
+        <h4>Подписка</h4>
+        <a class="btn btn-info pgf-subscription-info"
+           rel="tooltip"
+           style="display: inline-block;"
+           title="О преимуществах подписки"
+           href="#">
+          Подробнее
+        </a>
+      </td>
+
+                        <td width="20%" style="text-align: center;">
+
+                                        <div class="quest-icon no-quest" style="float: none; margin: auto;"></div>
+        <h4>15 дней</h4>
+        <a class="btn pgf-forms-post-simple btn-success"
+           data-confirmation="Вы уверены, что хотите купить <strong>«15 дней подписки»</strong>, потратив 180 печенек?"
+           data-success-message="Поздравляем с покупкой! <strong>(«15 дней подписки»)</strong>"
+           rel="tooltip"
+           style="display: inline-block;"
+                        title="Купить подписку"
+             href="/shop/buy?purchase=subscription-15"
+           >
+          <span style="font-size: 14pt; vertical-align: middle;">180</span>
+          <img src="//static.the-tale.org/static/244/images/cookies.png" style="vertical-align: middle; display: inline-block;"></img>
+        </a>
+      </td>
+                  <td width="20%" style="text-align: center;">
+
+                                        <div class="quest-icon help_friend" style="float: none; margin: auto;"></div>
+        <h4>30 дней</h4>
+        <a class="btn pgf-forms-post-simple btn-success"
+           data-confirmation="Вы уверены, что хотите купить <strong>«30 дней подписки»</strong>, потратив 300 печенек?"
+           data-success-message="Поздравляем с покупкой! <strong>(«30 дней подписки»)</strong>"
+           rel="tooltip"
+           style="display: inline-block;"
+                        title="Купить подписку"
+             href="/shop/buy?purchase=subscription-30"
+           >
+          <span style="font-size: 14pt; vertical-align: middle;">300</span>
+          <img src="//static.the-tale.org/static/244/images/cookies.png" style="vertical-align: middle; display: inline-block;"></img>
+        </a>
+      </td>
+                  <td width="20%" style="text-align: center;">
+
+                                        <div class="quest-icon help" style="float: none; margin: auto;"></div>
+        <h4>90 дней</h4>
+        <a class="btn pgf-forms-post-simple btn-success"
+           data-confirmation="Вы уверены, что хотите купить <strong>«90 дней подписки»</strong>, потратив 750 печенек?"
+           data-success-message="Поздравляем с покупкой! <strong>(«90 дней подписки»)</strong>"
+           rel="tooltip"
+           style="display: inline-block;"
+                        title="Купить подписку"
+             href="/shop/buy?purchase=subscription-90"
+           >
+          <span style="font-size: 14pt; vertical-align: middle;">750</span>
+          <img src="//static.the-tale.org/static/244/images/cookies.png" style="vertical-align: middle; display: inline-block;"></img>
+        </a>
+      </td>
+                  <td width="20%" style="text-align: center;">
+
+                                        <div class="quest-icon spying" style="float: none; margin: auto;"></div>
+        <h4>Вечная подписка</h4>
+        <a class="btn pgf-forms-post-simple disabled pgf-disabled"
+           data-confirmation="Вы уверены, что хотите купить <strong>«Вечная подписка»</strong>, потратив 6000 печенек?"
+           data-success-message="Поздравляем с покупкой! <strong>(«Вечная подписка»)</strong>"
+           rel="tooltip"
+           style="display: inline-block;"
+                        title="Не хватает печенек"
+             href="#"
+           >
+          <span style="font-size: 14pt; vertical-align: middle;">6000</span>
+          <img src="//static.the-tale.org/static/244/images/cookies.png" style="vertical-align: middle; display: inline-block;"></img>
+        </a>
+      </td>
+                </tr>
+  </tbody>
+</table>
+
+</div>
+
+<br/>
+
+
+<h2>
+  Рынок
+  <small>
+    за месяц
+    выставлено 21566,
+    куплено 516,
+    оборот 30556 <img src="//static.the-tale.org/static/231/images/cookies.png" style="vertical-align: middle;">
+  </small>
+</h2>
+
+<ul class="nav nav-pills">
+  <li ><a href="/shop/">Товары</a></li>
+  <li class="active"><a href="/shop/market-history">История рынка</a></li>
+  <li ><a href="/shop/history">История ваших операций</a></li>
+</ul>
+
+
+
+<h3></h3>
+
+<p>
+  История сделок за всё время.
+</p>
+
+  
+    
+<div class="pagination pagination-right">
+  <ul>
+                  <li class="active"><a href="">1</a></li>
+                        <li><a href="/shop/market-history?page=2">2</a></li>
+                        <li><a href="/shop/market-history?page=3">3</a></li>
+                        <li class="active"><a href="#">…</a></li>
+                        <li><a href="/shop/market-history?page=28">28</a></li>
+                        <li><a href="/shop/market-history?page=29">29</a></li>
+                        <li><a href="/shop/market-history?page=30">30</a></li>
+              </ul>
+</div>
+
+
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>название</th>
+          <th width="100px">цена</th>
+          <th width="150px">закрыт</a>
+        </tr>
+      </thead>
+      <tbody>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: отношение со спутником
+              </span>
+            </td>
+            <td>2</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523295150.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает спутника, указанного в названии карты. Если у героя уже есть спутник, он покинет героя.">
+                эпический спутник: ворожея
+              </span>
+            </td>
+            <td>50</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523292300.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает 150000 монет.">
+                фарт
+              </span>
+            </td>
+            <td>100</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523282942.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276500.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276496.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276492.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276487.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>24</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276483.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>20</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276479.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>20</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276475.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276470.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276466.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276462.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276446.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276442.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276437.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276433.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276429.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276425.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276421.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276406.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276401.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает 150000 монет.">
+                фарт
+              </span>
+            </td>
+            <td>100</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523276384.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="uncommon-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Даёт карты обычной редкости (4 шт.). Возможность продавать карты определяется возможностью продать текущую. Получить карты можно будет на странице игры.">
+                удачный поворот
+              </span>
+            </td>
+            <td>29</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523270164.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262327.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262324.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262320.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262316.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262311.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262307.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>18</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523262301.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: архетип
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523261829.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>87</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523176567.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>86</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523176564.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>86</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523176561.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>86</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523176558.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>86</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523176554.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>86</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523176551.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 600 единиц.">
+                неожиданные осложнения
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523168381.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="uncommon-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 175 единиц.">
+                чистый разум
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523168339.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Моментально изменяет влияние Мастера на 100 единиц в указанную в названии сторону. Влияние засчитывается так, как если бы герой имел Мастера в предпочтении.">
+                случай: -100
+              </span>
+            </td>
+            <td>3</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523079239.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="uncommon-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Создаёт в указанном городе 70 «даров Хранителей». Город будет постепенно переводить их в продукцию, пока дары не кончатся.">
+                волшебный горшочек
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523079187.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Создаёт в указанном городе 20 «даров Хранителей». Город будет постепенно переводить их в продукцию, пока дары не кончатся.">
+                неразменная монета
+              </span>
+            </td>
+            <td>4</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523079150.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: любимая вещь
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523040532.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: любимая вещь
+              </span>
+            </td>
+            <td>16</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523033398.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>75</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523023133.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: соратник
+              </span>
+            </td>
+            <td>15</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523012756.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>18</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523010915.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает спутника, указанного в названии карты. Если у героя уже есть спутник, он покинет героя.">
+                легендарный спутник: чёрный аргамак
+              </span>
+            </td>
+            <td>175</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1523006018.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает влияние, которое окажет герой после выполнения текущего задания, на 2400 единиц.">
+                слово Дабнглана
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522997163.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает влияние, которое окажет герой после выполнения текущего задания, на 8400 единиц.">
+                благословение Дабнглана
+              </span>
+            </td>
+            <td>50</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522991147.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает спутника, указанного в названии карты. Если у героя уже есть спутник, он покинет героя.">
+                обычный спутник: пегас
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522986185.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Меняет текущую цель трат героя на указанную в названии">
+                новая цель: покупка артефакта
+              </span>
+            </td>
+            <td>19</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522966613.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 7500 единиц.">
+                благословение Гзанзара
+              </span>
+            </td>
+            <td>166</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522918710.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 7500 единиц.">
+                благословение Гзанзара
+              </span>
+            </td>
+            <td>166</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522918705.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 7500 единиц.">
+                благословение Гзанзара
+              </span>
+            </td>
+            <td>166</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522918700.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>9</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913766.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 2100 единиц.">
+                слово Гзанзара
+              </span>
+            </td>
+            <td>66</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913461.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>8</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913321.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>8</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913316.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>8</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913313.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>8</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913309.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Вы получаете 1500 единиц энергии.">
+                шквал Силы
+              </span>
+            </td>
+            <td>139</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913137.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Улучшает все артефакты из экипировки героя.">
+                суть вещей
+              </span>
+            </td>
+            <td>48</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522913076.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает влияние, которое окажет герой после выполнения текущего задания, на 30000 единиц.">
+                туз в рукаве
+              </span>
+            </td>
+            <td>100</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522912149.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт спутника на 1500 единиц.">
+                синхронизация
+              </span>
+            </td>
+            <td>100</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522912133.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт спутника на 10 единиц.">
+                наставление
+              </span>
+            </td>
+            <td>5</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522911676.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="uncommon-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт спутника на 35 единиц.">
+                совместная тренировка
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522911194.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает спутника, указанного в названии карты. Если у героя уже есть спутник, он покинет героя.">
+                легендарный спутник: Смерть
+              </span>
+            </td>
+            <td>109</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522911095.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: соратник
+              </span>
+            </td>
+            <td>15</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522907248.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 7500 единиц.">
+                благословение Гзанзара
+              </span>
+            </td>
+            <td>166</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522904473.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="uncommon-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Вы получаете 35 единиц энергии.">
+                чаша Силы
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522902659.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Сбрасывает все способности героя.">
+                новый путь
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522901528.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="uncommon-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет список предлагаемых герою способностей (при выборе новой способности).">
+                альтернатива
+              </span>
+            </td>
+            <td>10</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522898437.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Сбрасывает все способности героя.">
+                новый путь
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522898366.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 2100 единиц.">
+                слово Гзанзара
+              </span>
+            </td>
+            <td>50</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522891602.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает новый уровень. Накопленный опыт не сбрасывается.">
+                озарение
+              </span>
+            </td>
+            <td>249</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522891513.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: противник
+              </span>
+            </td>
+            <td>9</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522891410.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 7500 единиц.">
+                благословение Гзанзара
+              </span>
+            </td>
+            <td>166</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522877469.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет черту героя на 120 единиц в указанную в названии сторону.">
+                откровение: честь +120
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522868852.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Сбрасывает все способности героя.">
+                новый путь
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522837514.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет черту героя на 1500 единиц в указанную в названии сторону.">
+                экзистенциальный кризис: честь +1500
+              </span>
+            </td>
+            <td>100</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522837328.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет черту героя на 1500 единиц в указанную в названии сторону.">
+                экзистенциальный кризис: миролюбие +1500
+              </span>
+            </td>
+            <td>100</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522837319.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает спутника, указанного в названии карты. Если у героя уже есть спутник, он покинет героя.">
+                легендарный спутник: бардесса
+              </span>
+            </td>
+            <td>450</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522837309.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет черту героя на 420 единиц в указанную в названии сторону.">
+                когнитивный диссонанс: честь +420
+              </span>
+            </td>
+            <td>50</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522835578.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>9</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522834750.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>9</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522834745.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>8</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522834740.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>8</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522834735.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>5</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522834730.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 7500 единиц.">
+                благословение Гзанзара
+              </span>
+            </td>
+            <td>150</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522833154.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет черту героя на 120 единиц в указанную в названии сторону.">
+                откровение: честь +120
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522831667.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="rare-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Изменяет черту героя на 120 единиц в указанную в названии сторону.">
+                откровение: честь +120
+              </span>
+            </td>
+            <td>25</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522830153.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает случайный эпический артефакт лучше экипированного, близкий архетипу героя.">
+                дар Хранителя
+              </span>
+            </td>
+            <td>85</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522827722.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="legendary-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Герой получает новый уровень. Накопленный опыт не сбрасывается.">
+                озарение
+              </span>
+            </td>
+            <td>250</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522827434.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Позволяет изменить указанное в названии предпочтение героя.">
+                свежий взгляд: противник
+              </span>
+            </td>
+            <td>9</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522824703.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>5</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522821346.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>5</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522820984.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="common-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Телепортирует героя до ближайшего города либо до ближайшей ключевой точки задания. Работает только во время движения по дорогам.">
+                телепорт
+              </span>
+            </td>
+            <td>5</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522820981.0"></span></td>
+          </tr>
+                                  <tr>
+            <td>
+              <span class="epic-card-label"
+                    style="cursor: pointer;"
+                    rel="tooltip"
+                    title="Увеличивает опыт, который герой получит за выполнение текущего задания, на 2100 единиц.">
+                слово Гзанзара
+              </span>
+            </td>
+            <td>50</td>
+            <td><span class="pgf-format-datetime" data-timestamp="1522820886.0"></span></td>
+          </tr>
+              </tbody>
+    </table>
+
+    
+<div class="pagination pagination-right">
+  <ul>
+                  <li class="active"><a href="">1</a></li>
+                        <li><a href="/shop/market-history?page=2">2</a></li>
+                        <li><a href="/shop/market-history?page=3">3</a></li>
+                        <li class="active"><a href="#">…</a></li>
+                        <li><a href="/shop/market-history?page=28">28</a></li>
+                        <li><a href="/shop/market-history?page=29">29</a></li>
+                        <li><a href="/shop/market-history?page=30">30</a></li>
+              </ul>
+</div>
+
+
+
+  
+
+
+    </div>
+  </div>
+</div>
+
+      </div>
+    </div>
+
+    <footer role="contentinfo" class="container">
+      <div class="row">
+        <div class="span12">
+          <ul class="unstyled">
+            <li><a href="/search">поиск по сайту</a></li>
+            <li><a href="/guide/user-agreement">пользовательское соглашение</a></li>
+            <li><a href="/guide/press-kit">для прессы</a></li>
+            <li>поддержка: <a href="mailto:«Сказка» &lt;support@the-tale.org&gt;">support@the-tale.org</a></li>
+            <li>использована часть иконок из набора <a href="https://glyphicons.com" target="_blank">Glyphicons</a></li>
+            <li>© 2011-2018 ИП Дедкова Елена Вячеславовна, ОГРНИП 315312300015343 от 11.09.2015, индекс 308018, Белгородская обл., г. Белгород,  ул. Павлика Морозова, дом 14</li>
+            <li>версия v0.3.26.7</li>
+            <li><a href="/statistics/">статистика игры</a></li>
+            <li><a href="https://github.com/the-tale">исходный код на GitHub</a></li>
+            <li><a href="https://docs.the-tale.org">документация по API и игре</a></li>
+          </ul>
+        </div>
+      </div>
+
+    </footer>
+
+    
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-10915391-4', 'the-tale.org');
+  ga('require', 'displayfeatures');
+  ga('send', 'pageview');
+
+</script>
+
+        <script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-505d67570062215a"></script>
+      </body>
+</html>
+path = /shop/market-history?page=1
+rows.childNodes = 201 first date: 2018-04-09T20:32:30
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 1,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '',
+  protocol41: true,
+  changedRows: 0 }

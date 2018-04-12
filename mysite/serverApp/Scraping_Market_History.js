@@ -35,10 +35,11 @@ function requestShop(err, res) {
   if(err){
       console.log("requestShop: it did not work: " + err)
   } else {
-    //printRequestStatus(res);
+    //console.log(res.request.headers);
     //console.log(res.headers);
+    //login_info.printRequestStatus(res);
     if (err == null) {
-      console.log(res.req.path);
+      console.log('path = ' + res.req.path);
 
       var con = mysql.createConnection({ host: mysql_Host, user: mysql_User, password: mysql_Password });
       con.connect(function(err) {
@@ -49,37 +50,39 @@ function requestShop(err, res) {
       var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
       var root = HTMLParser.parse(res.body);
       var table = root.querySelector('.table');
-      var rows = table.childNodes[3];
+      if (table) {
+        var rows = table.childNodes[3];
 
-      for (var trIndx = 0; trIndx<rows.childNodes.length; trIndx++) {
-        var row = rows.childNodes[trIndx];
-        if (row.tagName) {
-          var cardName = row.childNodes[1].childNodes[1].childNodes[0].rawText.trim();
-          var cardPrice = row.childNodes[3].childNodes[0].rawText.trim();
-          var card_description = row.childNodes[1].childNodes[1].rawAttrs.split('title')[1].split('"')[1];
-          var card_class = row.childNodes[1].childNodes[1].classNames[0];
-          var cardDealDate = row.childNodes[5].childNodes[0].rawAttrs.trim();
-          cardDealDate = cardDealDate.split('data-timestamp=');
-          cardDealDate = cardDealDate[1];
-          while (cardDealDate.includes('"')) {
-            cardDealDate = cardDealDate.replace('"','');
-          }
-          cardDealDate = parseInt(cardDealDate); //data-timestamp
-          cardDealDate = new Date(cardDealDate*1000 - tzoffset);
-          cardDealDate = cardDealDate.toISOString().slice(0, 19);
+        for (var trIndx = 0; trIndx<rows.childNodes.length; trIndx++) {
+          var row = rows.childNodes[trIndx];
+          if (row.tagName) {
+            var cardName = row.childNodes[1].childNodes[1].childNodes[0].rawText.trim();
+            var cardPrice = row.childNodes[3].childNodes[0].rawText.trim();
+            var card_description = row.childNodes[1].childNodes[1].rawAttrs.split('title')[1].split('"')[1];
+            var card_class = row.childNodes[1].childNodes[1].classNames[0];
+            var cardDealDate = row.childNodes[5].childNodes[0].rawAttrs.trim();
+            cardDealDate = cardDealDate.split('data-timestamp=');
+            cardDealDate = cardDealDate[1];
+            while (cardDealDate.includes('"')) {
+              cardDealDate = cardDealDate.replace('"','');
+            }
+            cardDealDate = parseInt(cardDealDate); //data-timestamp
+            cardDealDate = new Date(cardDealDate*1000 - tzoffset);
+            cardDealDate = cardDealDate.toISOString().slice(0, 19);
 
-          if (trIndx == 1) {
-              console.log('rows.childNodes = '+rows.childNodes.length + ' first date: ' + cardDealDate);
-          }
+            if (trIndx == 1) {
+                console.log('rows.childNodes = '+rows.childNodes.length + ' first date: ' + cardDealDate);
+            }
 
-          var queryString = "INSERT INTO thetale.market_history VALUES ("
-            +"'"+cardDealDate+"','"+cardName+"',"+cardPrice+",1,'"+card_description+"','"+card_class+"')";
-          debugPrint(queryString,1);
-          try {
-            con.query(queryString, function (err, result, fields) { /*if (err) throw err; console.log(result);*/ });
-          }
-          catch (err) {
-            //console.log(err);
+            let queryString = "INSERT INTO thetale.market_history VALUES ("
+              +"'"+cardDealDate+"','"+cardName+"',"+cardPrice+",1,'"+card_description+"','"+card_class+"')";
+            debugPrint(queryString,1);
+            try {
+              con.query(queryString, function (err, result, fields) { /*if (err) throw err; console.info(result);*/ });
+            }
+            catch (err) {
+              console.info(err);
+            }
           }
         }
       }
@@ -93,13 +96,15 @@ function getMarketHistoryFromPage(pageNumber) {
   var csrfmiddlewaretoken = csrftoken;
   var cookieString = 'sessionid='+sessionid+'; csrftoken='+csrfmiddlewaretoken;
   debugPrint(cookieString);
-  console.log(cookieString);
   var apiURL = 'https://the-tale.org/shop/market-history?page='+pageNumber;
   request({
     method: "GET",
-    headers: { 'Cookie': cookieString},
-    url: apiURL,
-    form: {'csrfmiddlewaretoken':csrfmiddlewaretoken}
+    headers: {
+      'Cookie': cookieString,
+      referer: 'https://the-tale.org/'
+      },
+    url: apiURL
+    ,form: {'csrfmiddlewaretoken':csrfmiddlewaretoken}
   },requestShop);
   if (pageNumber<3) {setTimeout(function() {getMarketHistoryFromPage(pageNumber+1);},2000);}
 }
