@@ -20,7 +20,7 @@ function loadCookieSync(accountIndex){
     result.csrftoken = '';
     result.sessionid = '';
 
-    let connection = new SyncMySql({ host: mysql_Host, user: mysql_User, password: mysql_Password });
+    let connection = new SyncMySql({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
 
     let queryString = "SELECT sessionid, csrftoken FROM thetale.accounts WHERE id=" + id + " and account_id=" + account_id;
     debug.debugPrint(queryString, 1);
@@ -28,8 +28,8 @@ function loadCookieSync(accountIndex){
     if (queryResult.length == 1) {
         result.csrftoken = queryResult[0].csrftoken;
         result.sessionid = queryResult[0].sessionid;
-        login_info.accounts[accountIndex].sessionid = sessionid;
-        login_info.accounts[accountIndex].csrftoken = csrftoken;
+        login_info.accounts[accountIndex].sessionid = result.sessionid;
+        login_info.accounts[accountIndex].csrftoken = result.csrftoken;
     }
     connection = undefined;
     return result;
