@@ -1,16 +1,20 @@
 /**
 * Use to Scraping market history from https://the-tale.org/shop/market-history
 * @module Scraping_Market_History
+*   see @module login_info
+*   see @module debug
 */
 const request = require('request');
 const mysql = require('mysql');
 const HTMLParser = require('fast-html-parser');
 const login_info = require("./login_info");
+const login = require('./login');
+const debug = require("./debug");
 
 /*
 *   const block
 */
-const debugOn = login_info.debugOn;
+const debugOn = debug.debugOn;
 const mysql_Host = login_info.mysql_Host;
 const mysql_User = login_info.mysql_User;
 const mysql_Password = login_info.mysql_Password;
@@ -18,33 +22,27 @@ const mysql_Password = login_info.mysql_Password;
 const apiClient = login_info.apiClient;
 const apiClientValue = login_info.apiClientValue;
 
-let cookies = login_info.getCookieFromString('');
+var accontIndex = 0;
+
+let cookies = login.loadCookieSync(accontIndex);
 
 var csrftoken = cookies.csrftoken;
 var sessionid = cookies.sessionid;
 
-// вывод отладочной информации
-function debugPrint(message, dontPrint) {
-  if (debugOn === true && !dontPrint) {
-    console.log(message);
-  }
-}
-
-
 function requestShop(err, res) {
   if(err){
-      console.log("requestShop: it did not work: " + err)
+    debug.debugPrint("requestShop: it did not work: " + err)
   } else {
-    //console.log(res.request.headers);
-    //console.log(res.headers);
-    //login_info.printRequestStatus(res);
+    //debug.debugPrint(res.request.headers);
+    //debug.debugPrint(res.headers);
+    //debug.printRequestStatus(res);
     if (err == null) {
-      console.log('path = ' + res.req.path);
+      debug.debugPrint('path = ' + res.req.path);
 
       var con = mysql.createConnection({ host: mysql_Host, user: mysql_User, password: mysql_Password });
       con.connect(function(err) {
         if (err) {throw err};
-        //console.log("Connected!");
+        //debug.debugPrint("Connected!");
       });
 
       var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
@@ -71,17 +69,17 @@ function requestShop(err, res) {
             cardDealDate = cardDealDate.toISOString().slice(0, 19);
 
             if (trIndx == 1) {
-                console.log('rows.childNodes = '+rows.childNodes.length + ' first date: ' + cardDealDate);
+              debug.debugPrint('rows.childNodes = '+rows.childNodes.length + ' first date: ' + cardDealDate);
             }
 
             let queryString = "INSERT INTO thetale.market_history VALUES ("
               +"'"+cardDealDate+"','"+cardName+"',"+cardPrice+",1,'"+card_description+"','"+card_class+"')";
-            debugPrint(queryString,1);
+            debug.debugPrint(queryString,1);
             try {
-              con.query(queryString, function (err, result, fields) { /*if (err) throw err; console.info(result);*/ });
+              con.query(queryString, function (err, result, fields) { /*if (err) throw err; debug.debugPrint(result);*/ });
             }
             catch (err) {
-              console.info(err);
+              debug.debugPrint(err);
             }
           }
         }
@@ -95,7 +93,7 @@ function requestShop(err, res) {
 function getMarketHistoryFromPage(pageNumber) {
   var csrfmiddlewaretoken = csrftoken;
   var cookieString = 'sessionid='+sessionid+'; csrftoken='+csrfmiddlewaretoken;
-  debugPrint(cookieString);
+  debug.debugPrint(cookieString);
   var apiURL = 'https://the-tale.org/shop/market-history?page='+pageNumber;
   request({
     method: "GET",
@@ -111,4 +109,4 @@ function getMarketHistoryFromPage(pageNumber) {
 
 setTimeout(function() {getMarketHistoryFromPage(1);},2000);
 
-console.log('EoF');
+debug.debugPrint('EoF');
