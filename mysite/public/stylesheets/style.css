@@ -1,16 +1,3 @@
-#image-block {
-
-}
-#image {
-	padding: 10px;
-	margin: 5px;
-	width: 50%;
-	border: 1px solid grey;
-}
-canvas {
-	display: block;
-}
-#cardList {
-	margin: 5px;
-	width: 30%;
+body {
+	padding: 20px;
 }

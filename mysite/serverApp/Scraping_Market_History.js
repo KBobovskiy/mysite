@@ -107,7 +107,9 @@ function getMarketHistoryFromPage(pageNumber) {
     , form: { 'csrfmiddlewaretoken': csrftoken }
   }, requestShop);
 
-  setTimeout(function () { getMarketHistoryFromPage(1); }, 300000);
+  if (pageNumber === 1) {
+    setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 300000);
+  }
 }
 
 
@@ -126,7 +128,11 @@ request({
   } else {
     //debug.printRequestStatus(res);
     if (res.body[0] == '{') { // we are login in the game, lets scraping market history
-      getMarketHistoryFromPage(1);
+      let i = 1;
+      while (i>0){
+        getMarketHistoryFromPage(i);
+        i--;
+      }
     } else { // something wrong, we need to login
       login.login(accontIndex);
     }
