@@ -8,7 +8,7 @@ router.get('/*', function(req, res, next){
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express - badj' });
+  res.render('index', { title: 'Сказка. The-tale.org'});
 });
 
 /* GET market history page. */
@@ -29,13 +29,13 @@ router.get('/getCardHistory?*', function(req, res, next) {
   });
 
   var queryString = "SELECT date_time date, price FROM thetale.market_history where card_name='"+getURL+"'  order by date desc";
-  console.info(queryString);
+  //console.info(queryString);
   try {
     con.query(queryString, (err, result, fields) => {
       if (err) throw err;
       //console.info(result);
       let answerData = JSON.stringify(result);
-      console.info(answerData);
+      //console.info(answerData);
       res.send(answerData);
     });
     con.end();

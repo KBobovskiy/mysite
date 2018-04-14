@@ -2,13 +2,18 @@ doctype html
 html
 head
 meta(charset='UTF-8')/
-title= titlen
+title История рынка
 script(src='https://code.jquery.com/jquery-3.3.1.min.js')
 script(src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js')
 script(src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js')
 script(src='/javascripts/market_history.js')
+script(src='/javascripts/Yandex.Metrika.js')
+noscript
+  div
+    img(src='https://mc.yandex.ru/watch/48485858', style='position:absolute; left:-9999px;', alt='')
 link(rel='stylesheet', href='/stylesheets/market_history.css')
 body(onload='onLoadEvent();')
+a(href='/') На главную
 div#image-block
   h3 Выберите карту:
   select(name='cards' id = 'cardList' onchange='onChangeSelectList()') asd

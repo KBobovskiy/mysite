@@ -27,7 +27,7 @@ function onLoadEvent() {
 
 function onChangeSelectList() {
 	let cardName = $("#cardList").val();
-	let uriGet = "http://localhost:4000/getCardHistory?cardName="+cardName;
+	let uriGet = "/getCardHistory?cardName="+cardName;
 	uriGet = encodeURI(uriGet);
 	//alert(uriGet);	
 
@@ -41,7 +41,7 @@ function onChangeSelectList() {
 			for (let i=0; i<data.length; i++){
 				let dateStr = data[i].date;
 				dateStr=dateStr.replace("T"," ");
-				dateStr=dateStr.substring(1,dateStr.length-5);
+				dateStr=dateStr.substring(0,dateStr.length-5);
 				labels.push(dateStr);
 				prices.push(data[i].price);
 				if(i===0) {lastPrice = data[i].price;}
