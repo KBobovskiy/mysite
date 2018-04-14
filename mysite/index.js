@@ -377,7 +377,7 @@ if (false) {
     method: "POST",
     headers: { 'Cookie': cookieString},
     url: loginURL,
-    form: {'email':'kbobovskiy@yandex.ru', 'password':'1598753', 'csrfmiddlewaretoken':csrfmiddlewaretoken}
+    form: {'email':'kbobovskiy@yandex.ru', 'password':'password', 'csrfmiddlewaretoken':csrfmiddlewaretoken}
   },requestLogin);
 }
 
