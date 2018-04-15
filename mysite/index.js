@@ -1,6 +1,7 @@
 var request = require('request');
 var fs = require('fs');
 var HTMLParser = require('fast-html-parser');
+const debug = require("./debug");
 
 const debugOn = true;
 var mysql = require('mysql');
@@ -92,28 +93,12 @@ function saveCookieStringToFile()  {
   fs.writeFile('cookie.sav', cookieString, function (err) { if (err) throw err; console.log('Saved cookie string!'); });
 }
 
-function printRequestStatus(response) {
-  console.log(response.statusCode);
-  answerBody = response.body; //JSON object
-  //var answerBody = JSON.parse(response.body.data);
-  if (typeof(answerBody)=='string') {
-    console.log(answerBody);
-  } else {
-    console.log(answerBody.status);
-    if (answerBody.status == 'error') {
-      console.log(answerBody.error);
-    }
-      else {
-        //console.log(response.body.data.game_version);
-    }
-  }
-}
 
 function request_template(err, res, cookie) {
     if(err){
         console.log("it did not work: " + err)
     }
-        printRequestStatus(res);
+        debug.printRequestStatus(res);
         //console.log("heres the cookie: "+res.headers['set-cookie']) //returns cookie in correct format
         cookie = res.headers['set-cookie']
         //console.log(cookie);
@@ -139,7 +124,7 @@ function requestAuthorisation(err, res, cookie) {
     if(err){
         console.log("it did not work: " + err)
     }
-        printRequestStatus(res);
+        debug.printRequestStatus(res);
         cookie = res.headers['set-cookie'];
         console.log(res.headers); // one of the headers says user is not authorised
 
@@ -163,7 +148,7 @@ function requestAPIVersion(err, res, cookie) {
   if(err){
       console.log("it did not work: " + err)
   }
-    printRequestStatus(res);
+    debug.printRequestStatus(res);
     if (false) {
       // Reqest for authorisation Application to control access
       cookie = res.headers['set-cookie'];
@@ -192,7 +177,7 @@ function requestAuthorisationState(err, res) {
   if(err){
       console.log("AuthorisationState: it did not work: " + err)
   } else {
-    printRequestStatus(res);
+    debug.printRequestStatus(res);
     console.log(res.headers);
     var cookie = res.headers['set-cookie'];
     var csrfmiddlewaretoken = csrftoken;
@@ -205,7 +190,7 @@ function requestLogin(err, res) {
   if(err){
       console.log("requestLogin: it did not work: " + err)
   } else {
-    printRequestStatus(res);
+    debug.printRequestStatus(res);
     console.log(res.headers);
     var cookie = res.headers['set-cookie'];
     for (var i = 0; i<cookie.length; i++) {
@@ -237,7 +222,7 @@ function requestMarket(err, res) {
   if(err){
       console.log("requestMarket: it did not work: " + err)
   } else {
-    printRequestStatus(res);
+    debug.printRequestStatus(res);
     console.log(res.headers);
     saveBodyToFile(res.body);
   }
@@ -247,7 +232,7 @@ function requestGameInfo(err, res) {
   if(err){
       console.log("requestGameInfo: it did not work: " + err)
   } else {
-    printRequestStatus(res);
+    debug.printRequestStatus(res);
     console.log(res.headers);
     if (err == null) {
       saveGameInfoToFile(res.body);
@@ -259,7 +244,7 @@ function requestHelp(err, res) {
   if(err){
       console.log("requestHelp: it did not work: " + err)
   } else {
-    printRequestStatus(res);
+    debug.printRequestStatus(res);
     console.log(res.headers);
     if (err == null) {
       console.log(res.body);
@@ -271,7 +256,7 @@ function requestShop(err, res) {
   if(err){
       console.log("requestShop: it did not work: " + err)
   } else {
-    //printRequestStatus(res);
+    //debug.printRequestStatus(res);
     //console.log(res.headers);
     if (err == null) {
       console.log(res.req.path);
