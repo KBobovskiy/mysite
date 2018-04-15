@@ -22,7 +22,7 @@ router.get('/getCardHistory?*', function(req, res, next) {
   //console.info('req.url = '+getURL);
   let mysql = require('mysql');
   let login_info = require("../serverApp/login_info");
-  let con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
+  let con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password, timezone: 'UTC' });
   con.connect(function(err) {
     if (err) {throw err};
     //console.log("Connected!");
