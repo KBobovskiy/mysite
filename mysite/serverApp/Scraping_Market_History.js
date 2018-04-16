@@ -112,7 +112,25 @@ function getMarketHistoryFromPage(pageNumber) {
   }
 }
 
+/**
+ * Starting scraping history data 
+ */
+login.getLoginStatusAsync(accontIndex).then(function (loginStatus) {
+    if (loginStatus === true) {
+      let i = 1;
+      while (i > 0) {
+        getMarketHistoryFromPage(i);
+        i--;
+      }
+    } else { // something wrong, we need to login
+      DBCon.insertLogInfo('getLoginStatus', 'Account '+accontIndex+' is not login. Trying log in the game');
+      login.login(accontIndex);
+    }
+  }).catch(function (err) {
+    console.log("error!", err);
+  });
 
+/*
 let apiURL = 'https://the-tale.org/accounts/messages/api/new-messages-number?api_version=0.1&' + login_info.apiClient;
 request({
   method: "GET",
@@ -138,3 +156,4 @@ request({
     }
   }
 });
+*/

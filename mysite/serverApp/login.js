@@ -9,7 +9,8 @@ const login_info = require("./login_info");
 const SyncMySql = require('sync-mysql');
 const request = require('request');
 const debug = require("./debug");
-
+const Promise = require('bluebird');
+const requestPromise = Promise.promisifyAll(require('request'));
 /**
 * Load cookie to mySQL db (Sync)
 */
@@ -19,7 +20,12 @@ function loadCookieSync(accountIndex){
     let result = {};
     result.csrftoken = '';
     result.sessionid = '';
-
+    if (login_info.accounts[accountIndex].sessionid && login_info.accounts[accountIndex].csrftoken) {
+        result.sessionid = login_info.accounts[accountIndex].sessionid;
+        result.csrftoken = login_info.accounts[accountIndex].csrftoken;
+        return result;
+    }
+    
     let connection = new SyncMySql({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
 
     let queryString = "SELECT sessionid, csrftoken FROM thetale.accounts WHERE id=" + id + " and account_id=" + account_id;
@@ -118,6 +124,26 @@ function login(accountIndex) {
     );
 }
 
+
+async function getLoginStatusAsync(accountIndex) {
+    if (accountIndex === undefined) { debug.debugPrint("getLoginStatusAsync(accountIndex) - error accountIndex is not set!"); return false; }
+    let cookies = loadCookieSync(accountIndex);
+    var cookieString = 'sessionid=' + cookies.sessionid + '; csrftoken=' + cookies.csrftoken;
+    let apiURL = 'https://the-tale.org/accounts/messages/api/new-messages-number?api_version=0.1&' + login_info.apiClient;
+    let res = await requestPromise.getAsync({
+        method: "GET",
+        headers: {
+            'Cookie': cookieString,
+            referer: 'https://the-tale.org/'
+        },
+        url: apiURL
+        , form: { 'csrfmiddlewaretoken': cookies.csrftoken }
+    });
+
+    return res.body[0] == '{';
+}
+
 module.exports.loadCookieSync = loadCookieSync;
 module.exports.saveCookieSync = saveCookieSync;
 module.exports.login = login;
+module.exports.getLoginStatusAsync = getLoginStatusAsync;
