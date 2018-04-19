@@ -14,7 +14,6 @@ const debugOn = true;
  */
 function debugPrint(message, dontPrint) {
     if (debugOn === true && !dontPrint) {
-        //console.log(message);
         console.info(message);
     }
 }
@@ -36,6 +35,10 @@ function printRequestStatus(response) {
     }
 }
 
+function isNULL(isNull) {
+    return isNull === null;
+}
 
 module.exports.debugPrint = debugPrint;
 module.exports.printRequestStatus = printRequestStatus;
+module.exports.isNULL = isNULL;
