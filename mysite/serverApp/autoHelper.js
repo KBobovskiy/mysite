@@ -286,9 +286,12 @@ function autoHelp(accountIndex) {
 						if (gameInfo) {
 							if (gameInfo.hero.action.type === 0 || gameInfo.hero.action.type === 4 ) {
 								useHelp(accountIndex);
+							} if (gameInfo.hero.action.type === 3 && gameInfo.hero.health < 300  && gameInfo.hero.energy > 40) {
+								useHelp(accountIndex);
 							} else {
-								DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request api/GameInfo: do not need help");
-								debug.debugPrint("Account index: " + accountIndex + " Request api/GameInfo: do not need help " + new Date());
+								let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: do not need help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
+								DBCon.insertLogInfo(logAction, logInfoMsg);
+								debug.debugPrint(logInfoMsg+ " " + new Date());
 							}
 						}
 					}

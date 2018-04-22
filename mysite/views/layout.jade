@@ -2,10 +2,28 @@ doctype html
 html
   head
     title= title
+    meta(charset='UTF-8')/
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(src='/javascripts/Yandex.Metrika.js')
     noscript
       div
         img(src='https://mc.yandex.ru/watch/48485858', style='position:absolute; left:-9999px;', alt='')
-  body
-    block content
+    block head_content
+body
+  header
+    a(href='/') 
+      img(src='/images/logo_book.png', id="My-site-link", class="header-image")
+    ul(class="main-menu")
+        li
+          a(href="#") Информация о герое
+        li(id="stats")
+          a(href="#") Статистика
+          ul(class="sub-menu")
+              li
+                a(href="/markethistory") История рынка
+        li
+          a(href="mailto:badj@inbox.ru") e-mail
+    a(href='https://the-tale.org/game')
+      img(src='/images/quest1.png', id="The-tale-logo", class="header-image")
+  article
+      block content
