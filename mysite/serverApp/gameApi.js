@@ -3,6 +3,8 @@ const login_info = require("./login_info");
 const login = require('./login');
 const debug = require("./debug");
 const DBCon = require("./DBConnection");
+const Promise = require('bluebird');
+const requestPromise = Promise.promisifyAll(require('request'));
 
 /**
 *	Return Hero & Account & etc game info, state and status from JSON string (response from API: /game/api/info)
@@ -236,48 +238,41 @@ function getGameInfoFromJSONString(stringJSON) {
 /**
 *	Send POST request for use Godness help
 */
-function getGameInfo(accountIndex, logAction) {
-	login.getLoginStatusAsync(accountIndex).then( (LoginStatus) => {
+async function getGameInfoAsync(accountIndex, logAction) {
+	var result;
+	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
 		if (LoginStatus === true) {
 			let ApiURL = 'http://the-tale.org/game/api/info?api_version=1.9&'+login_info.apiClient;
 			let csrftoken = login_info.accounts[accountIndex].csrftoken;
 			let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
 
-			request({
+			let res = await requestPromise.getAsync({
 				method: "GET",
 				headers: { 'Cookie': cookieString},
 				url: ApiURL,
 				form: {'csrfmiddlewaretoken':csrftoken}
-			},(err, res) => {
-				if(err){
-					let errMsg = "Account index: " + accountIndex + " Request api/GameInfo: it did not work: " + err;
-					DBCon.insertLogInfo(logAction, errMsg);
-					debug.debugPrint(errMsg);
-					return {error: errMsg, status: 'error'};
-				} else {
-					if (err === null) {
-						let gameInfo = getGameInfoFromJSONString(res.body);
-						if (gameInfo) {
-								return gameInfo;
-							} else {
-								let errMsg = 'Can not get game info from JSON string in getGameInfoFromJSONString()';
-								DBCon.insertLogInfo(logAction, errMsg);
-								return {error: , status: 'error'};
-							}
-					}
-				}
-			})
+			});
+			let gameInfo = getGameInfoFromJSONString(res.body);
+			if (gameInfo) {
+				result = gameInfo;
+			} else {
+				let errMsg = 'Can not get game info from JSON string in getGameInfoFromJSONString()';
+				DBCon.insertLogInfo(logAction, errMsg);
+				result = {error: errMsg , status: 'error'};
+			}
 		} else {
 			let errMsg = "Account index: " + accountIndex + " is not login. Try log in The tale";
 			DBCon.insertLogInfo(logAction, errMsg);
-			return {error: errMsg, status: 'error'};
+			result = {error: errMsg, status: 'error'};
 		}
 	}).catch ((err) => {
 		let errMsg = logAction + "error! "+ err;
 		debug.debugPrint(errMsg);
 		DBCon.insertLogInfo(logAction, errMsg);
-		return {error: errMsg, status: 'error'};
+		result = {error: errMsg, status: 'error'};
 	});
+
+	return result;
 }
 
 /**
@@ -306,5 +301,5 @@ function useHelp(accountIndex, logAction) {
 }
 
 
-module.exports.getGameInfo = getGameInfo;
+module.exports.getGameInfoAsync = getGameInfoAsync;
 module.exports.useHelp = useHelp;
