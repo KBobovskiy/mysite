@@ -61,6 +61,9 @@ function onChangeSelectList() {
 					}]
 				},
 				options: {
+						legend: {
+							onClick: function(event, legendItem) {}
+						},
 						animation: {
 							duration: 0, // general animation time
 						},
