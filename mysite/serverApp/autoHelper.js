@@ -17,6 +17,13 @@ const logAction = "Auto help";
 let accontIndex = 0;
 
 /**
+ * save GameInfo into mySQL db
+ */
+function saveGameInfo(gameInfo) {
+	
+}
+
+/**
  * Service for checking hero status and use keeper help
  * @param {int} accountIndex 
  */
@@ -36,6 +43,11 @@ function autoHelp(accountIndex) {
 							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: do not need help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
 							DBCon.insertLogInfo(logAction, logInfoMsg);
 							debug.debugPrint(logInfoMsg+ " " + new Date());
+						}
+						try {
+							saveGameInfo(gameInfo);
+						} catch (error) {
+							debug.debugPrint("Can not save gameInfo in mySQL, error: " + error +" " + new Date());
 						}
 					} else {
 						let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: error. " + gameInfo.error;
