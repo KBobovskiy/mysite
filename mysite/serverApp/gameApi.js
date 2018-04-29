@@ -29,7 +29,7 @@ function getGameInfoFromJSONString(stringJSON) {
 	let account = data.account; //object+
 	let game_state = data.game_state;
 	let map_version = data.map_version;
-	let mode = data.mode;
+	hero.mode = data.mode;
 	let enemy = debug.isNULL(data.enemy,'');
 
 	if (debug.isNULL(account)) {
@@ -49,6 +49,7 @@ function getGameInfoFromJSONString(stringJSON) {
 	turn.number = data.turn.number;
 	turn.verbose_date = data.turn.verbose_date;
 	turn.verbose_time = data.turn.verbose_time;
+	hero.turnNumber = turn.number;
 
 	let account_hero_action = account_hero.action; //object+
 	let base = account_hero.base; //object+

@@ -20,7 +20,8 @@ let accontIndex = 0;
  * save GameInfo into mySQL db
  */
 function saveGameInfo(gameInfo) {
-	
+	DBCon.saveTurnInfo(gameInfo.turn);
+	DBCon.saveHeroInfo(gameInfo.hero);
 }
 
 /**
