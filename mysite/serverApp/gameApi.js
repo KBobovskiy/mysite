@@ -236,6 +236,10 @@ function getGameInfoFromJSONString(stringJSON) {
 	return gameInfoResult;
 }
 
+/**
+ * 	Return Hero cards list from JSON string (response from API: /game/cards/api/get-cards)
+ * @param {string} stringJSON 
+ */
 function getCardsListFromJSONString(stringJSON) {
 /* Description JSON String
 {
@@ -257,8 +261,8 @@ function getCardsListFromJSONString(stringJSON) {
 	
 	let cardsList = JSON.parse(stringJSON);
 	let cards = {'card name':[]};
-	
-	cardsList = cardsList.cards;
+	cardsList = cardsList.data;
+	if (cardsList) {cardsList = cardsList.cards};
 	if (cardsList) {
 		for (let i = 0; i < cardsList.length; i++) {
 			name = cardsList[i].name;
@@ -348,11 +352,11 @@ function useHelp(accountIndex, logAction) {
 	});
 }
 
-function getCardsListAsync(accountIndex, logAction) {
+async function getCardsListAsync(accountIndex, logAction) {
 	var result;
 	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
 		if (LoginStatus === true) {
-			let ApiURL = 'https://the-tale.org/game/cards/api/get-cards?api_version=1.9&'+login_info.apiClient;
+			let ApiURL = 'https://the-tale.org/game/cards/api/get-cards?api_version=2.0&'+login_info.apiClient;
 			let csrftoken = login_info.accounts[accountIndex].csrftoken;
 			let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
 
@@ -387,7 +391,7 @@ function getCardsListAsync(accountIndex, logAction) {
 }
 
 function useCard(accountIndex, logAction, card) {
-	let ApiURL = 'https://the-tale.org/game/cards/api/use?api_version=2.0&'+login_info.apiClient+'&card='+card.UID;
+	let ApiURL = 'https://the-tale.org/game/cards/api/use?api_version=2.0&'+login_info.apiClient+'&card='+card.uid;
 	let csrftoken = login_info.accounts[accountIndex].csrftoken;
 	let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
 	request({
@@ -397,26 +401,39 @@ function useCard(accountIndex, logAction, card) {
 		form: {'csrfmiddlewaretoken':csrftoken}
 	},(err, res) => {
 		if(err){
-			DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use: it did not work:"+card.Name+" " + err);
-			debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use: it did not work:"+card.Name+" " + err );
+			DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use: it did not work:"+card.name+" " + err);
+			debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use: it did not work:"+card.name+" " + err );
 		} else {
-			if (err === null) {
-				DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use - Success "+card.Name);
-				debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use - Success "+card.Name);
+			if (err === null  && res.body) {
+				let body = JSON.parse(res.body);
+				if (body.status == 'processing') {
+					DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use - processing - "+card.name);
+					debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use - processing - "+card.name);
+				} else {
+					DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use - Error: "+body.error);
+					debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use - Success "+body.error);
+				}
 			}
 		}
 	});
 }
 
 function useCardHandOfDeath(accountIndex, logAction) {
+	var cardHandOfDeath = 'длань Смерти';
 	// 1. request card list in hero hands
 	getCardsListAsync(accountIndex, logAction)
 	.then( (cardsList) => {
 		if (cardsList.status == 'ok') {
-			cards = cardsList.cards["Длань смерти"];
+			cards = cardsList.cards[cardHandOfDeath];
 			if (cards) {
-				let card = cards.pop();
-				useCard(accountIndex, logAction, card);
+				while (true) {
+					let card = cards.pop();
+					if (!card.in_storage) {
+						useCard(accountIndex, logAction, card);
+						break;
+					}
+					if (cards.length === 0) {break;}
+				}
 			}
 		}
 	}).catch ((err) => {
