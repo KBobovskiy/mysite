@@ -236,6 +236,53 @@ function getGameInfoFromJSONString(stringJSON) {
 	return gameInfoResult;
 }
 
+function getCardsListFromJSONString(stringJSON) {
+/* Description JSON String
+{
+  "cards": [
+      <card_info>, // описание полученной карты
+      ...]
+}
+
+<card_info> = {               // информация о карте в колоде игрока
+    "name": "строка",         // название
+    "type": <целое число>,    // тип
+    "full_type": "строка",    // полный тип карты (с учётом эффектов)
+    "rarity": <целое число>,  // редкость карты
+    "uid": "строка",          // уникальный идентификатор в колоде игрока
+    "auction": true|false,    // может быть продана на рынке
+    "in_storage": true|false  // находится ли карты в хранилище или в руке
+}
+*/	
+	
+	let cardsList = JSON.parse(stringJSON);
+	let cards = {'card name':[]};
+	
+	cardsList = cardsList.cards;
+	if (cardsList) {
+		for (let i = 0; i < cardsList.length; i++) {
+			name = cardsList[i].name;
+			//while (name.includes(' ')) {
+			//	name = name.replace(' ', '');
+			//}			
+			if (!cards[name]) {
+				cards[name] = [];
+			}
+			let card = {};
+			card.name = cardsList[i].name;
+			card.type = cardsList[i].type;
+			card.full_type = cardsList[i].full_type;
+			card.rarity = cardsList[i].rarity;
+			card.uid = cardsList[i].uid;
+			card.auction = cardsList[i].auction;
+			card.in_storage = cardsList[i].in_storage;
+			cards[name].push(card);
+		}
+	}
+	
+	return cards;
+}
+
 /**
 *	Send POST request for use Godness help
 */
@@ -243,7 +290,7 @@ async function getGameInfoAsync(accountIndex, logAction) {
 	var result;
 	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
 		if (LoginStatus === true) {
-			let ApiURL = 'http://the-tale.org/game/api/info?api_version=1.9&'+login_info.apiClient;
+			let ApiURL = 'https://the-tale.org/game/api/info?api_version=1.9&'+login_info.apiClient;
 			let csrftoken = login_info.accounts[accountIndex].csrftoken;
 			let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
 
@@ -301,6 +348,85 @@ function useHelp(accountIndex, logAction) {
 	});
 }
 
+function getCardsListAsync(accountIndex, logAction) {
+	var result;
+	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
+		if (LoginStatus === true) {
+			let ApiURL = 'https://the-tale.org/game/cards/api/get-cards?api_version=1.9&'+login_info.apiClient;
+			let csrftoken = login_info.accounts[accountIndex].csrftoken;
+			let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
+
+			let res = await requestPromise.getAsync({
+				method: "GET",
+				headers: { 'Cookie': cookieString},
+				url: ApiURL,
+				form: {'csrfmiddlewaretoken':csrftoken}
+			});
+			let cardsList = getCardsListFromJSONString(res.body);
+			if (cardsList) {
+				result = {cards: cardsList, status: 'ok'};
+			} else {
+				let errMsg = 'Can not get cards list from JSON string in getCardsListFromJSONString()';
+				DBCon.insertLogInfo(logAction, errMsg);
+				result = {error: errMsg , status: 'error'};
+			}
+		} else {
+			let errMsg = "Account index: " + accountIndex + " is not login. Try log in The tale";
+			DBCon.insertLogInfo(logAction, errMsg);
+			result = {error: errMsg, status: 'error'};
+		}
+	}).catch ((err) => {
+		let errMsg = logAction + "error! "+ err;
+		debug.debugPrint(errMsg);
+		DBCon.insertLogInfo(logAction, errMsg);
+		result = {error: errMsg, status: 'error'};
+	});
+
+	return result;
+	
+}
+
+function useCard(accountIndex, logAction, card) {
+	let ApiURL = 'https://the-tale.org/game/cards/api/use?api_version=2.0&'+login_info.apiClient+'&card='+card.UID;
+	let csrftoken = login_info.accounts[accountIndex].csrftoken;
+	let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
+	request({
+		method: "POST",
+		headers: {'Cookie': cookieString, 'referer': 'https://the-tale.org/'},
+		url: ApiURL,
+		form: {'csrfmiddlewaretoken':csrftoken}
+	},(err, res) => {
+		if(err){
+			DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use: it did not work:"+card.Name+" " + err);
+			debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use: it did not work:"+card.Name+" " + err );
+		} else {
+			if (err === null) {
+				DBCon.insertLogInfo(logAction, "Account index: " + accountIndex + " Request /game/cards/api/use - Success "+card.Name);
+				debug.debugPrint("Account index: " + accountIndex + " Request /game/cards/api/use - Success "+card.Name);
+			}
+		}
+	});
+}
+
+function useCardHandOfDeath(accountIndex, logAction) {
+	// 1. request card list in hero hands
+	getCardsListAsync(accountIndex, logAction)
+	.then( (cardsList) => {
+		if (cardsList.status == 'ok') {
+			cards = cardsList.cards["Длань смерти"];
+			if (cards) {
+				let card = cards.pop();
+				useCard(accountIndex, logAction, card);
+			}
+		}
+	}).catch ((err) => {
+			debug.debugPrint(logAction + "error! "+ err);
+			DBCon.insertLogInfo(logAction, "useCardHandOfDeath: "+logAction + "error! "+ err);
+		});	
+	
+	// 2. If he have card Hand of death, then he use cars.
+}
 
 module.exports.getGameInfoAsync = getGameInfoAsync;
 module.exports.useHelp = useHelp;
+module.exports.useCardHandOfDeath = useCardHandOfDeath;

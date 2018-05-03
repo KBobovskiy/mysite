@@ -41,11 +41,17 @@ function autoHelp(accountIndex) {
 							DBCon.insertLogInfo(logAction, logInfoMsg);
 							debug.debugPrint(logInfoMsg+ " " + new Date());
 							gameApi.useHelp(accountIndex, logAction);
-						} if (gameInfo.hero.action.type === 3 && gameInfo.hero.health < 600  && gameInfo.hero.energy > 40) {
+						/*}  if (gameInfo.hero.action.type === 3 && gameInfo.hero.health < 600  && gameInfo.hero.energy > 40) {
 							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: Use help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
 							DBCon.insertLogInfo(logAction, logInfoMsg);
 							debug.debugPrint(logInfoMsg+ " " + new Date());
 							gameApi.useHelp(accountIndex, logAction);
+						*/
+						}  if (gameInfo.hero.action.type === 3 && gameInfo.hero.health < 200 ) { // hero use card to kill enemy. 
+							let logInfoMsg = "Account index: " + accountIndex + " Use Hand of Death {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
+							DBCon.insertLogInfo(logAction, logInfoMsg);
+							debug.debugPrint(logInfoMsg+ " " + new Date());
+							gameApi.useCardHandOfDeath(accountIndex, logAction);
 						} else {
 							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: do not need help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
 							DBCon.insertLogInfo(logAction, logInfoMsg);
