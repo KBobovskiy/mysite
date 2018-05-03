@@ -19,7 +19,20 @@ function onLoadEvent() {
 					],
 					borderWidth: 1
 				}]
-			}
+			},
+			options: {
+					legend: {
+						onClick: function(event, legendItem) {}
+					},
+					animation: {
+						duration: 0, // general animation time
+					},
+					hover: {
+						animationDuration: 0, // duration of animations when hovering an item
+					},
+					events: [],
+					responsiveAnimationDuration: 0 // animation duration after a resize
+				}
 		});
 		firstLoad = false;
 	}

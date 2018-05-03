@@ -9,3 +9,7 @@ canvas {
 	margin: 5px;
 	width: 30%;
 }
+
+select {
+	border-radius: 3px;
+}

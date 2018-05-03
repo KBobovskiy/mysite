@@ -37,8 +37,14 @@ function autoHelp(accountIndex) {
 				if (gameInfo) {
 					if (gameInfo.status == 'ok') {
 						if (gameInfo.hero.action.type === 0 || gameInfo.hero.action.type === 4 ) {
+							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: Use help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
+							DBCon.insertLogInfo(logAction, logInfoMsg);
+							debug.debugPrint(logInfoMsg+ " " + new Date());
 							gameApi.useHelp(accountIndex, logAction);
-						} if (gameInfo.hero.action.type === 3 && gameInfo.hero.health < 300  && gameInfo.hero.energy > 40) {
+						} if (gameInfo.hero.action.type === 3 && gameInfo.hero.health < 600  && gameInfo.hero.energy > 40) {
+							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: Use help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
+							DBCon.insertLogInfo(logAction, logInfoMsg);
+							debug.debugPrint(logInfoMsg+ " " + new Date());
 							gameApi.useHelp(accountIndex, logAction);
 						} else {
 							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: do not need help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
