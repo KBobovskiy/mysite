@@ -36,6 +36,9 @@ function autoHelp(accountIndex) {
 			.then( (gameInfo) => {
 				if (gameInfo) {
 					if (gameInfo.status == 'ok') {
+						
+						DBCon.saveHeroPosition(gameInfo.hero.position);
+
 						if (gameInfo.hero.action.type === 0 || gameInfo.hero.action.type === 4 ) {
 							let logInfoMsg = "Account index: " + accountIndex + " Request api/GameInfo: Use help {action.type:"+gameInfo.hero.action.type+"/health:"+gameInfo.hero.health+"/energy:"+gameInfo.hero.energy+"}";
 							DBCon.insertLogInfo(logAction, logInfoMsg);

@@ -10,28 +10,46 @@ const mysql = require('mysql');
 const debug = require("./debug");
 
 /**
+ * Send insert into DB
+ * 
+ * @param {string} queryString 
+ * @param {string} logAction 
+ */
+function insertQuery(queryString, logAction) {
+    if (!queryString) {
+        return;
+    }
+    var con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
+    con.connect(function (err) {
+        if (err) { throw err };
+    });
+    debug.debugPrint(queryString, 0);
+    try {
+        con.query(queryString, function (err, result, fields) {
+            if (result.affectedRows !== 1 && result.serverStatus !== 2) {
+                debug.debugPrint(queryString, 0);
+                debug.debugPrint(result, 0);
+            }
+            con.end();
+            con = null;
+        });
+    } 
+    catch (err) {
+        debug.debugPrint(logAction+' error: ' + err);
+        con.end();
+        con = null;
+    }
+}
+
+
+/**
  * Insert into thetale.logs log info
  * @param {string} logAction 
  * @param {string} logInfo 
  */
 function insertLogInfo(logAction, logInfo) {
-    var con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
-    con.connect(function (err) {
-        if (err) { throw err };
-    });
     let queryString = "INSERT INTO thetale.logs (`action`, `info`) VALUES ('"+logAction+"','"+logInfo+"')";
-    debug.debugPrint(queryString, 1);
-    try {
-        con.query(queryString, function (err, result, fields) {
-            con.end();
-            con = null;
-        });
-    }
-    catch (err) {
-        debug.debugPrint(err);
-        con.end();
-        con = null;
-    }
+    insertQuery(queryString, 'insertLogInfo()');
 }
 
 /**
@@ -81,33 +99,34 @@ function saveHeroInfo(heroInfo) {
  * * @param {object} turnInfo
  */
 function saveTurnInfo(turnInfo){
-
+    let logAction = 'saveTurnInfo()';
     if (turnInfo.number) {
-        var con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
-        con.connect(function (err) {
-            if (err) { throw err };
-        });
         let queryString = "INSERT INTO `thetale`.`turns` (`number`, `verbose_date`, `verbose_time`) VALUES ('"+turnInfo.number+"', '"+turnInfo.verbose_date+"', '"+turnInfo.verbose_time+"');";
-        debug.debugPrint(queryString, 1);
-        try {
-            con.query(queryString, function (err, result, fields) {
-                if (result.affectedRows !== 1 && result.serverStatus !== 2) {
-                    debug.debugPrint(queryString, 0);
-                    debug.debugPrint(result, 0);
-                }
-                con.end();
-                con = null;
-            });
-        }
-        catch (err) {
-            debug.debugPrint('saveTurnInfo() error: ' + err);
-            con.end();
-            con = null;
-        }
-    } else {debug.debugPrint('saveTurnInfo() there are nothing to insert into DB!', 0);}
+        insertQuery(queryString, logAction);
+    } else {
+        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+    }
+}
+
+
+
+/**
+ * 	Insert hero position on the map to DB
+ * 
+ * @param {object.account_id, object.turnNumber, object.x, object.y, object.dx, object.dy} position
+ */
+function saveHeroPosition(position) {
+    let logAction = 'saveHeroPosition()';
+    if (position) {
+        let queryString = "INSERT INTO `thetale`.`positions` (`account_id`, `turn_number`, `x`, `y`, `dx`, `dy`) VALUES ('"+position.account_id+"','"+position.turnNumber+"','"+position.x+"', '"+position.y+"', '"+position.dx+"', '"+position.dy+"');";
+        insertQuery(queryString, logAction);
+    } else {
+        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+    }
 }
 
 
 module.exports.insertLogInfo = insertLogInfo;
 module.exports.saveTurnInfo = saveTurnInfo;
 module.exports.saveHeroInfo = saveHeroInfo;
+module.exports.saveHeroPosition = saveHeroPosition;

@@ -15,5 +15,15 @@
                 "stopOnEntry": false
             }            
         }
+        ,{
+            "type": "node",
+            "request": "launch",
+            "name": "Запустить autoHelper",
+            "program": "${workspaceFolder}\\serverApp\\autoHelper",
+            "stopOnEntry": false,
+            "osx": {
+                "stopOnEntry": false
+            }            
+        }
     ]
 }

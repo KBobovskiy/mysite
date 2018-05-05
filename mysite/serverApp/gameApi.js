@@ -167,13 +167,15 @@ function getGameInfoFromJSONString(stringJSON) {
 	let can_repair_building = permissions.can_repair_building;
   
 	//object position
-	hero.dx = Math.round(position.dx,3);
-	hero.dy = Math.round(position.dy,3);
-	hero.x = Math.round(position.x,3);
-	hero.y = Math.round(position.y,3);
+	hero.position = {};
+	hero.position.account_id = hero.id;
+	hero.position.turnNumber = turn.number;
+	hero.position.dx = Math.round(position.dx*1000)/1000;
+	hero.position.dy = Math.round(position.dy*1000)/1000;
+	hero.position.x = Math.round(position.x*1000)/1000;
+	hero.position.y = Math.round(position.y*1000)/1000;
   
 	/*
-
 	//object quests
 	let arr_quests = quests.quests; //object array+
   
@@ -241,23 +243,23 @@ function getGameInfoFromJSONString(stringJSON) {
  * @param {string} stringJSON 
  */
 function getCardsListFromJSONString(stringJSON) {
-/* Description JSON String
-{
-  "cards": [
-      <card_info>, // описание полученной карты
-      ...]
-}
+	/* Description JSON String
+	{
+	"cards": [
+		<card_info>, // описание полученной карты
+		...]
+	}
 
-<card_info> = {               // информация о карте в колоде игрока
-    "name": "строка",         // название
-    "type": <целое число>,    // тип
-    "full_type": "строка",    // полный тип карты (с учётом эффектов)
-    "rarity": <целое число>,  // редкость карты
-    "uid": "строка",          // уникальный идентификатор в колоде игрока
-    "auction": true|false,    // может быть продана на рынке
-    "in_storage": true|false  // находится ли карты в хранилище или в руке
-}
-*/	
+	<card_info> = {               // информация о карте в колоде игрока
+		"name": "строка",         // название
+		"type": <целое число>,    // тип
+		"full_type": "строка",    // полный тип карты (с учётом эффектов)
+		"rarity": <целое число>,  // редкость карты
+		"uid": "строка",          // уникальный идентификатор в колоде игрока
+		"auction": true|false,    // может быть продана на рынке
+		"in_storage": true|false  // находится ли карты в хранилище или в руке
+	}
+	*/	
 	
 	let cardsList = JSON.parse(stringJSON);
 	let cards = {'card name':[]};
@@ -352,6 +354,17 @@ function useHelp(accountIndex, logAction) {
 	});
 }
 
+/**
+ * 	Return object with card list
+ *  {
+ * 		cards: cardsList
+ * 		status: 'ok' or 'error'
+ * 		error: errMsg
+ * 	}
+ * 
+ * @param {int} accountIndex 
+ * @param {string} logAction 
+ */
 async function getCardsListAsync(accountIndex, logAction) {
 	var result;
 	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
@@ -390,6 +403,13 @@ async function getCardsListAsync(accountIndex, logAction) {
 	
 }
 
+/**
+ * 	Hero is trying to use card, only send POST api.
+ * 
+ * @param {int} accountIndex 
+ * @param {string} logAction 
+ * @param {object} card
+ */
 function useCard(accountIndex, logAction, card) {
 	let ApiURL = 'https://the-tale.org/game/cards/api/use?api_version=2.0&'+login_info.apiClient+'&card='+card.uid;
 	let csrftoken = login_info.accounts[accountIndex].csrftoken;
@@ -418,6 +438,12 @@ function useCard(accountIndex, logAction, card) {
 	});
 }
 
+/**
+ * Hero use card длань Смерти. Search card in hero's hand and if he got it using first found card in useCard()
+ * 
+ * @param {int} accountIndex 
+ * @param {string} logAction 
+ */
 function useCardHandOfDeath(accountIndex, logAction) {
 	var cardHandOfDeath = 'длань Смерти';
 	// 1. request card list in hero hands
