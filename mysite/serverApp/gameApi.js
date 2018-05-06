@@ -289,6 +289,48 @@ function getCardsListFromJSONString(stringJSON) {
 	return cards;
 }
 
+
+/**
+ * Return Places (Towns) from JSON string (response from API: /game/places/api/list)
+ * 
+ * @param {string} stringJSON 
+ */
+function getPlacesListFromJSONString(stringJSON) {
+	/*
+	{
+		"places": {                 // перечень всех городов
+		  "<целое число>": {        // идентификатор города: информация о нём
+			"id": <целое число>,    // идентификатор города
+			"name": "строка",       // название города
+			"frontier": true|false, // находится ли город на фронтире
+			"position": { "x": <целое число>,   // координаты города на карте
+						  "y": <целое число> }, // (могут меняться при изменении размера карты!)
+			"size": <целое число>,              // размер города
+			"specialization": <целое число>     // идентификатор специализации
+		  }
+		}
+	  }
+	*/
+	let placesList = JSON.parse(stringJSON);
+	placesList = placesList.data.places;
+	let places = [];
+	
+	for (let key in placesList) {
+		let place = placesList[key];
+		let town = {};
+		town.id = place.id;
+		town.size = place.size;
+		town.specialization = place.specialization;
+		town.frontier = place.frontier;
+		town.x = place.position.x;
+		town.y = place.position.y;
+		town.name = place.name;
+		places.push(town);
+	  }
+	return places;
+}
+
+
 /**
 *	Send POST request for use Godness help
 */
@@ -470,6 +512,48 @@ function useCardHandOfDeath(accountIndex, logAction) {
 	// 2. If he have card Hand of death, then he use cars.
 }
 
+
+async function getPlacesListAsync(accountIndex, logAction) {
+	
+	var result;
+	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
+		if (LoginStatus === true) {
+			let ApiURL = 'https://the-tale.org/game/places/api/list?api_version=1.1&'+login_info.apiClient;
+			let csrftoken = login_info.accounts[accountIndex].csrftoken;
+			let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
+
+			let res = await requestPromise.getAsync({
+				method: "GET",
+				headers: { 'Cookie': cookieString},
+				url: ApiURL,
+				form: {'csrfmiddlewaretoken':csrftoken}
+			});
+			let placesList = getPlacesListFromJSONString(res.body);
+			if (placesList) {
+				result = {places: placesList, status: 'ok'};
+			} else {
+				let errMsg = 'Can not get cards list from JSON string in getCardsListFromJSONString()';
+				DBCon.insertLogInfo(logAction, errMsg);
+				result = {error: errMsg , status: 'error'};
+			}
+		} else {
+			let errMsg = "Account index: " + accountIndex + " is not login. Try log in The tale";
+			DBCon.insertLogInfo(logAction, errMsg);
+			result = {error: errMsg, status: 'error'};
+		}
+	}).catch ((err) => {
+		let errMsg = logAction + "error! "+ err;
+		debug.debugPrint(errMsg);
+		DBCon.insertLogInfo(logAction, errMsg);
+		result = {error: errMsg, status: 'error'};
+	});
+
+	return result;
+		
+}
+
+
 module.exports.getGameInfoAsync = getGameInfoAsync;
 module.exports.useHelp = useHelp;
 module.exports.useCardHandOfDeath = useCardHandOfDeath;
+module.exports.getPlacesListAsync = getPlacesListAsync;
