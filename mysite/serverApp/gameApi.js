@@ -243,23 +243,22 @@ function getGameInfoFromJSONString(stringJSON) {
  * @param {string} stringJSON 
  */
 function getCardsListFromJSONString(stringJSON) {
-	/* Description JSON String
-	{
-	"cards": [
-		<card_info>, // описание полученной карты
-		...]
-	}
-
-	<card_info> = {               // информация о карте в колоде игрока
-		"name": "строка",         // название
-		"type": <целое число>,    // тип
-		"full_type": "строка",    // полный тип карты (с учётом эффектов)
-		"rarity": <целое число>,  // редкость карты
-		"uid": "строка",          // уникальный идентификатор в колоде игрока
-		"auction": true|false,    // может быть продана на рынке
-		"in_storage": true|false  // находится ли карты в хранилище или в руке
-	}
-	*/	
+	// Description JSON String
+	//{
+	//"cards": [
+	//	<card_info>, // описание полученной карты
+	//	...]
+	//}
+	//
+	//<card_info> = {               // информация о карте в колоде игрока
+	//	"name": "строка",         // название
+	//	"type": <целое число>,    // тип
+	//	"full_type": "строка",    // полный тип карты (с учётом эффектов)
+	//	"rarity": <целое число>,  // редкость карты
+	//	"uid": "строка",          // уникальный идентификатор в колоде игрока
+	//	"auction": true|false,    // может быть продана на рынке
+	//	"in_storage": true|false  // находится ли карты в хранилище или в руке
+	//}
 	
 	let cardsList = JSON.parse(stringJSON);
 	let cards = {'card name':[]};
@@ -285,7 +284,6 @@ function getCardsListFromJSONString(stringJSON) {
 			cards[name].push(card);
 		}
 	}
-	
 	return cards;
 }
 
@@ -296,21 +294,19 @@ function getCardsListFromJSONString(stringJSON) {
  * @param {string} stringJSON 
  */
 function getPlacesListFromJSONString(stringJSON) {
-	/*
-	{
-		"places": {                 // перечень всех городов
-		  "<целое число>": {        // идентификатор города: информация о нём
-			"id": <целое число>,    // идентификатор города
-			"name": "строка",       // название города
-			"frontier": true|false, // находится ли город на фронтире
-			"position": { "x": <целое число>,   // координаты города на карте
-						  "y": <целое число> }, // (могут меняться при изменении размера карты!)
-			"size": <целое число>,              // размер города
-			"specialization": <целое число>     // идентификатор специализации
-		  }
-		}
-	  }
-	*/
+	//{
+	//	"places": {                 // перечень всех городов
+	//	  "<целое число>": {        // идентификатор города: информация о нём
+	//		"id": <целое число>,    // идентификатор города
+	//		"name": "строка",       // название города
+	//		"frontier": true|false, // находится ли город на фронтире
+	//		"position": { "x": <целое число>,   // координаты города на карте
+	//					  "y": <целое число> }, // (могут меняться при изменении размера карты!)
+	//		"size": <целое число>,              // размер города
+	//		"specialization": <целое число>     // идентификатор специализации
+	//	  }
+	//	}
+	//}
 	let placesList = JSON.parse(stringJSON);
 	placesList = placesList.data.places;
 	let places = [];
@@ -330,6 +326,35 @@ function getPlacesListFromJSONString(stringJSON) {
 	return places;
 }
 
+
+/**
+ * Return Place (Town) info from JSON string (response from API: /game/places/<place>/api/show)
+ * 
+ * @param {string} stringJSON 
+ */
+function getPlaceInfoFromJSONString(stringJSON) {
+	let townInfo = JSON.parse(stringJSON);
+	let placeInfo = {};
+	if (townInfo.status == 'ok') {
+		// primary info 
+		placeInfo.new_for = townInfo.new_for;
+		placeInfo.frontier = townInfo.frontier;
+		placeInfo.x = townInfo.position.x;
+		placeInfo.y = townInfo.position.y;
+		placeInfo.updated_at = townInfo.updated_at;
+		placeInfo.id = townInfo.id;
+		placeInfo.name = townInfo.name;
+		// complex objects
+		placeInfo.bills = townInfo.bills;
+		placeInfo.clans = townInfo.clans;
+		placeInfo.politic_power = townInfo.politic_power;
+		placeInfo.demographics = townInfo.demographics;
+		placeInfo.accounts = townInfo.accounts;
+		placeInfo.persons = townInfo.persons;
+		placeInfo.job = townInfo.job;
+	}
+	return placeInfo;
+}
 
 /**
 *	Send POST request for use Godness help
@@ -532,7 +557,7 @@ async function getPlacesListAsync(accountIndex, logAction) {
 			if (placesList) {
 				result = {places: placesList, status: 'ok'};
 			} else {
-				let errMsg = 'Can not get cards list from JSON string in getCardsListFromJSONString()';
+				let errMsg = 'Can not get places list from JSON string in getCardsListFromJSONString()';
 				DBCon.insertLogInfo(logAction, errMsg);
 				result = {error: errMsg , status: 'error'};
 			}
@@ -547,13 +572,48 @@ async function getPlacesListAsync(accountIndex, logAction) {
 		DBCon.insertLogInfo(logAction, errMsg);
 		result = {error: errMsg, status: 'error'};
 	});
-
 	return result;
-		
 }
 
+async function getPlaceInfoAsync(accountIndex, logAction, placeId) {
+	
+	var result;
+	await login.getLoginStatusAsync(accountIndex).then( async (LoginStatus) => {
+		if (LoginStatus === true && isFinite(placeId)) {
+			let ApiURL = 'https://the-tale.org/game/places/'+placeId+'/api/show?api_version=2&'+login_info.apiClient;
+			let csrftoken = login_info.accounts[accountIndex].csrftoken;
+			let cookieString = "sessionid="+login_info.accounts[accountIndex].sessionid+"; csrftoken="+csrftoken;
+
+			let res = await requestPromise.getAsync({
+				method: "GET",
+				headers: { 'Cookie': cookieString},
+				url: ApiURL,
+				form: {'csrfmiddlewaretoken':csrftoken}
+			});
+			let placeInfo = getPlaceInfoFromJSONString(res.body);
+			if (placeInfo) {
+				result = {place: placeInfo, status: 'ok'};
+			} else {
+				let errMsg = 'Can not get place info from JSON string in getCardsListFromJSONString()';
+				DBCon.insertLogInfo(logAction, errMsg);
+				result = {error: errMsg , status: 'error'};
+			}
+		} else {
+			let errMsg = "Account index: " + accountIndex + " is not login. Try log in The tale";
+			DBCon.insertLogInfo(logAction, errMsg);
+			result = {error: errMsg, status: 'error'};
+		}
+	}).catch ((err) => {
+		let errMsg = logAction + "error! "+ err;
+		debug.debugPrint(errMsg);
+		DBCon.insertLogInfo(logAction, errMsg);
+		result = {error: errMsg, status: 'error'};
+	});
+	return result;
+}
 
 module.exports.getGameInfoAsync = getGameInfoAsync;
 module.exports.useHelp = useHelp;
 module.exports.useCardHandOfDeath = useCardHandOfDeath;
 module.exports.getPlacesListAsync = getPlacesListAsync;
+module.exports.getPlaceInfoAsync = getPlaceInfoAsync;
