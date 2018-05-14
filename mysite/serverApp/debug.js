@@ -40,7 +40,8 @@ function isNULL(isNull) {
 }
 
 function round(val, roundToAfterDot) {
-    return Math.round(val*10*roundToAfterDot)/10*roundToAfterDot;
+    let pow10 = Math.pow(10,roundToAfterDot);
+    return Math.round(val*pow10)/pow10;
 }
 
 module.exports.debugPrint = debugPrint;

@@ -11,10 +11,26 @@ const login = require('./login');
 const debug = require("./debug");
 const DBCon = require("./DBConnection");
 const gameApi = require("./gameApi");
+const sleep = require('system-sleep');
 
 const logAction = "Statistic saver";
 
-let accountIndex = 0;
+var accountIndex = 0;
+
+function savePlaceInfo(accountIndex, logAction, places) {
+	let place = places.pop();
+	if (place) {
+		debug.debugPrint("places id = "+place.id+" name = " + place.name +" " + new Date());
+		DBCon.savePlace(place);
+		gameApi.getPlaceInfoAsync(accountIndex, logAction, place.id).then (function (placeInfo) {
+			if (placeInfo.status == "ok") {
+				DBCon.savePlaceInfoDemographics(placeInfo.place.id, placeInfo.place.updated_at, placeInfo.place.demographics);
+			}
+		});
+		sleep(2000);
+		savePlaceInfo(accountIndex, logAction, places);
+	}
+}
 
 function saveStatistics(accountIndex){
 	login.getLoginStatusAsync(accountIndex)
@@ -24,20 +40,9 @@ function saveStatistics(accountIndex){
 			.then( (placesList) => {
 				if (placesList) {
 					if (placesList.status == 'ok') {
+						
 						try {
-							for (let i=0; i<placesList.places.length;i++){
-								debug.debugPrint("placesList.places["+i+"] = " + placesList.places[i].name +" " + new Date());    
-								let place = placesList.places[i];
-								if (place) {
-									DBCon.savePlace(place);
-									gameApi.getPlaceInfoAsync(accountIndex, logAction, place.id).then (function (placeInfo) {
-										if (placeInfo.status == "ok") {
-											DBCon.savePlaceInfoDemographics(placeInfo.place.id, placeInfo.place.updated_at, placeInfo.place.demographics);
-										}
-									})
-
-								}
-                            }
+							savePlaceInfo(accountIndex, logAction, placesList.places);
 						} catch (error) {
 							debug.debugPrint("Can not save placesList in mySQL, error: " + error +" " + new Date());
 						}
@@ -59,7 +64,7 @@ function saveStatistics(accountIndex){
 		debug.debugPrint(logAction + "error! "+ err);
 		DBCon.insertLogInfo(logAction, "getLoginStatusAsync: "+logAction + "error! "+ err);
 	});
-    //setTimeout(saveStatistics(accountIndex), 600000);
+    setTimeout(function () {saveStatistics(accountIndex)}, 60*60*1000);
 }
 
 saveStatistics(accountIndex);

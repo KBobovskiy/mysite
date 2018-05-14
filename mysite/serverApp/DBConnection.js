@@ -29,7 +29,7 @@ function insertQuery(queryString, logAction) {
             if (result && result.affectedRows !== 1 && result.serverStatus !== 2) {
                 debug.debugPrint(queryString, 0);
                 debug.debugPrint(result, 0);
-            } else {
+            } else if (!debug.isNULL(err) ) {
                 debug.debugPrint(err, 0);
             }
             con.end();
@@ -154,11 +154,12 @@ function savePlaceInfoDemographics(placeId, updated_at, demographics) {
     let logAction = 'savePlaceInfoDemographics()';
     if (placeId && demographics) {
         var queryString = "";
+        var roundTo = 5;
         for (let i=0; i<demographics.length;i++){
             let demogr = demographics[i];
-            queryString = queryString + "\nINSERT INTO `thetale`.`demographics` (`place_id`, `updated_at`, `race`, `percents`, `persons`, `delta`) VALUES ('"+placeId+"', '"+updated_at+"', '"+demogr.race+"', '"+debug.round(demogr.percents,3)+"', '"+demogr.persons+"', '"+debug.round(demogr.delta,3)+"');"
+            queryString = "INSERT INTO `thetale`.`demographics` (`place_id`, `updated_at`, `race`, `percents`, `persons`, `delta`) VALUES ('"+placeId+"', '"+updated_at+"', '"+demogr.race+"', '"+debug.round(demogr.percents,roundTo)+"', '"+debug.round(demogr.persons,roundTo)+"', '"+debug.round(demogr.delta,roundTo)+"');"
+            insertQuery(queryString, logAction);
             }
-        insertQuery(queryString, logAction);
     } else {
         debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
     }
