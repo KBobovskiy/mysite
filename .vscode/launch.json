@@ -11,5 +11,11 @@
             "name": "Запустить программу test",
             "program": "${workspaceFolder}/mysite\\serverApp\\test.js"
         }
+        ,{
+            "type": "node",
+            "request": "launch",
+            "name": "Запустить программу statisicsSaver",
+            "program": "${workspaceFolder}/mysite\\serverApp\\statisticsSaver.js"
+        }
     ]
 }

@@ -39,6 +39,11 @@ function isNULL(isNull) {
     return isNull === null;
 }
 
+function round(val, roundToAfterDot) {
+    return Math.round(val*10*roundToAfterDot)/10*roundToAfterDot;
+}
+
 module.exports.debugPrint = debugPrint;
 module.exports.printRequestStatus = printRequestStatus;
 module.exports.isNULL = isNULL;
+module.exports.round = round;
