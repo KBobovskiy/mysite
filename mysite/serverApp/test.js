@@ -14,6 +14,12 @@ login.getLoginStatusAsync(0).then(function (loginStatus) {
         if (placesList.status = 'ok'){
             console.info('get info about ' + placesList.places.length+ ' towns');
             console.info('town 7 name is ' + placesList.places[7].name);
+            let placeId = placesList.places[7].id;
+            console.info('town 7 id is ' + placeId);
+            gameApi.getPlaceInfoAsync(0, 'Testing get place info', placeId).then (function (placeInfo) {
+                let a = 2;
+                a=a+9;
+            })
         }
     });}
 }).catch(function (err) {

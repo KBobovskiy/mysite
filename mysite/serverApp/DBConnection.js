@@ -26,9 +26,11 @@ function insertQuery(queryString, logAction) {
     debug.debugPrint(queryString, 0);
     try {
         con.query(queryString, function (err, result, fields) {
-            if (result.affectedRows !== 1 && result.serverStatus !== 2) {
+            if (result && result.affectedRows !== 1 && result.serverStatus !== 2) {
                 debug.debugPrint(queryString, 0);
                 debug.debugPrint(result, 0);
+            } else if (!debug.isNULL(err) ) {
+                debug.debugPrint(err, 0);
             }
             con.end();
             con = null;
@@ -126,7 +128,47 @@ function saveHeroPosition(position) {
 }
 
 
+/**
+ * 	Insert place short information to DB
+ * 
+ * @param {object.id, object.name, object.x, object.y, object.size, object.specialization, object.frontier} place
+ */
+function savePlace(place) {
+    let logAction = 'savePlace()';
+    if (place) {
+        let queryString = "INSERT INTO `thetale`.`places` (`id`, `name`, `size`, `specialization`, `frontier`, `x`, `y`) VALUES ('"+place.id+"', '"+place.name+"', '"+place.size+"', '"+place.specialization+"', '"+(0+place.frontier)+"', '"+place.x+"', '"+place.y+"');"
+        insertQuery(queryString, logAction);
+    } else {
+        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+    }
+}
+
+
+
+/**
+ * 	Insert place's demographics information to DB
+ * 
+ * @param {object.id, object.name, object.x, object.y, object.size, object.specialization, object.frontier} place
+ */
+function savePlaceInfoDemographics(placeId, updated_at, demographics) {
+    let logAction = 'savePlaceInfoDemographics()';
+    if (placeId && demographics) {
+        var queryString = "";
+        var roundTo = 5;
+        for (let i=0; i<demographics.length;i++){
+            let demogr = demographics[i];
+            queryString = "INSERT INTO `thetale`.`demographics` (`place_id`, `updated_at`, `race`, `percents`, `persons`, `delta`) VALUES ('"+placeId+"', '"+updated_at+"', '"+demogr.race+"', '"+debug.round(demogr.percents,roundTo)+"', '"+debug.round(demogr.persons,roundTo)+"', '"+debug.round(demogr.delta,roundTo)+"');"
+            insertQuery(queryString, logAction);
+            }
+    } else {
+        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+    }
+}
+
+
 module.exports.insertLogInfo = insertLogInfo;
 module.exports.saveTurnInfo = saveTurnInfo;
 module.exports.saveHeroInfo = saveHeroInfo;
 module.exports.saveHeroPosition = saveHeroPosition;
+module.exports.savePlace = savePlace;
+module.exports.savePlaceInfoDemographics = savePlaceInfoDemographics;

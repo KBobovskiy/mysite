@@ -336,6 +336,7 @@ function getPlaceInfoFromJSONString(stringJSON) {
 	let townInfo = JSON.parse(stringJSON);
 	let placeInfo = {};
 	if (townInfo.status == 'ok') {
+		townInfo = townInfo.data;
 		// primary info 
 		placeInfo.new_for = townInfo.new_for;
 		placeInfo.frontier = townInfo.frontier;
@@ -537,7 +538,17 @@ function useCardHandOfDeath(accountIndex, logAction) {
 	// 2. If he have card Hand of death, then he use cars.
 }
 
-
+/**
+ * 	Return object with places (towns) list
+ *  {
+ * 		places: array of towns
+ * 		status: 'ok' or 'error'
+ * 		error: errMsg
+ * 	}
+ * 
+ * @param {int} accountIndex 
+ * @param {string} logAction 
+ */
 async function getPlacesListAsync(accountIndex, logAction) {
 	
 	var result;
@@ -575,6 +586,18 @@ async function getPlacesListAsync(accountIndex, logAction) {
 	return result;
 }
 
+/**
+ * Return object with Place info
+ *  {
+ * 		place: object with town's info
+ * 		status: 'ok' or 'error'
+ * 		error: errMsg
+ * 	}
+ * 
+ * @param {int} accountIndex 
+ * @param {string} logAction 
+ * @param {int} placeId 
+ */
 async function getPlaceInfoAsync(accountIndex, logAction, placeId) {
 	
 	var result;
