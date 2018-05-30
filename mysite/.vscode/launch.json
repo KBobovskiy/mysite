@@ -8,7 +8,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Запустить программу",
+            "name": "Запустить test",
             "program": "${workspaceFolder}\\serverApp\\test",
             "stopOnEntry": false,
             "osx": {
@@ -20,6 +20,16 @@
             "request": "launch",
             "name": "Запустить autoHelper",
             "program": "${workspaceFolder}\\serverApp\\autoHelper",
+            "stopOnEntry": false,
+            "osx": {
+                "stopOnEntry": false
+            }            
+        }
+        ,{
+            "type": "node",
+            "request": "launch",
+            "name": "Запустить Scraping_Market_History",
+            "program": "${workspaceFolder}\\serverApp\\Scraping_Market_History",
             "stopOnEntry": false,
             "osx": {
                 "stopOnEntry": false
