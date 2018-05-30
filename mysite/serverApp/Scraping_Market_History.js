@@ -89,6 +89,9 @@ function requestShop(err, res) {
       }
       con.end();
       con = null;
+    } else {
+      debug.debugPrint("requestShop: Error: err !== null", 1);
+      DBCon.insertLogInfo(logAction, "requestShop: Error: err !== null, err = " + err);
     }
   }
 }
@@ -129,31 +132,3 @@ login.getLoginStatusAsync(accontIndex).then(function (loginStatus) {
   }).catch(function (err) {
     console.log("error!", err);
   });
-
-/*
-let apiURL = 'https://the-tale.org/accounts/messages/api/new-messages-number?api_version=0.1&' + login_info.apiClient;
-request({
-  method: "GET",
-  headers: {
-    'Cookie': cookieString,
-    referer: 'https://the-tale.org/'
-  },
-  url: apiURL
-  , form: { 'csrfmiddlewaretoken': csrftoken }
-}, (err, res) => {
-  if (err) {
-    debug.debugPrint("requestLogin: it did not work: " + err)
-  } else {
-    //debug.printRequestStatus(res);
-    if (res.body[0] == '{') { // we are login in the game, lets scraping market history
-      let i = 1;
-      while (i>0){
-        getMarketHistoryFromPage(i);
-        i--;
-      }
-    } else { // something wrong, we need to login
-      login.login(accontIndex);
-    }
-  }
-});
-*/
