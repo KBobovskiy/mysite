@@ -86,6 +86,9 @@ function requestShop(err, res) {
             }
           }
         }
+      } else {
+        debug.debugPrint("requestShop: root.querySelector('.table') == false", 1);
+        DBCon.insertLogInfo(logAction, "requestShop: root.querySelector('.table') == null, err = " + err);
       }
       con.end();
       con = null;
@@ -111,7 +114,18 @@ function getMarketHistoryFromPage(pageNumber) {
   }, requestShop);
 
   if (pageNumber === 1) {
-    setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 300000);
+
+    login.getLoginStatusAsync(accontIndex).then(function (loginStatus) {
+      if (loginStatus === true) {
+        //setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 300000);
+        setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 30000);
+      } else { // something wrong, we need to login
+        DBCon.insertLogInfo(logAction, 'Account '+accontIndex+' is not login. Trying log in the game');
+        login.login(accontIndex);
+      }
+    }).catch(function (err) {
+      DBCon.insertLogInfo(logAction, "error! "+ err);
+    });
   }
 }
 
@@ -130,5 +144,5 @@ login.getLoginStatusAsync(accontIndex).then(function (loginStatus) {
       login.login(accontIndex);
     }
   }).catch(function (err) {
-    console.log("error!", err);
+    console.log(logAction, "error! "+ err);
   });
