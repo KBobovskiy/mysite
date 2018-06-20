@@ -15,7 +15,36 @@ router.get('/', function(req, res, next) {
 router.get('/markethistory', function(req, res, next) {
     getCardListAndRenderPage(req, res, next);
   });
+
+/* GET logs page. */
+router.get('/logs', function(req, res, next) {
   
+  let mysql = require('mysql');
+  let login_info = require("../serverApp/login_info");
+  let logs = ["can't get logs"];
+  var queryString = "SELECT action, date_time FROM thetale.logs order by id desc LIMIT 100";
+  let con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
+  con.connect(function(err) {
+    if (err) {throw err};
+  });
+  try {
+    con.query(queryString, (err, result, fields) => {
+      if (err) throw err;
+      let logs = [];
+      result.forEach((item, index) => {
+        logs.push(''+item.date_time.toISOString().slice(0, 19)+': '+item.action);
+      });
+      res.render('logs', { titlen: 'Logs history', logs: logs});
+    });
+    con.end();
+    con = undefined;
+   }
+  catch (err) {
+    console.info(err);
+    res.render('logs', { titlen: 'Logs history', logs: logs});
+  }
+});
+
 router.get('/getCardHistory?*', function(req, res, next) {
   let getURL = decodeURI(req.url);
   getURL = getURL.split('=')[1];
