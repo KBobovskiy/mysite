@@ -117,8 +117,7 @@ function getMarketHistoryFromPage(pageNumber) {
 
     login.getLoginStatusAsync(accontIndex).then(function (loginStatus) {
       if (loginStatus === true) {
-        //setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 300000);
-        setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 30000);
+        setTimeout(function () { getMarketHistoryFromPage(pageNumber); }, 300000);
       } else { // something wrong, we need to login
         DBCon.insertLogInfo(logAction, 'Account '+accontIndex+' is not login. Trying log in the game');
         login.login(accontIndex);
