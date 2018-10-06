@@ -1,0 +1,15 @@
+#image {
+	width: 50%;
+	border: 1px solid grey;
+}
+canvas {
+	display: block;
+}
+#cardList {
+	margin: 5px;
+	width: 30%;
+}
+
+select {
+	border-radius: 3px;
+}

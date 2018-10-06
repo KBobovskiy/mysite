@@ -1,0 +1,20 @@
+extends layout
+title История рынка
+block head_content
+  script(src='/javascripts/jquery-3.3.1.min.js')
+  script(src='/javascripts/Chart.min.2.7.2.js')
+  script(src='/javascripts/Chart.bundle.2.7.2.js')
+  script(src='/javascripts/market_history.js')
+  link(rel='stylesheet', href='/stylesheets/market_history.css')
+
+block content
+  body(onload='onLoadEvent();')
+  div#image-block
+    h3 Выберите карту:
+    select(name='cards' id = 'cardList' onchange='onChangeSelectList()') asd
+      -each val in cards
+        option= val
+    p(id='last-price')= LastPrice  
+    center
+      div#image
+        canvas#myChart

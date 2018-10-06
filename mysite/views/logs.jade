@@ -1,0 +1,9 @@
+extends layout
+title Логи
+block head_content
+block content
+  body
+    h4(style='text-align:left; padding-left: 5%;') The latest information from the logs
+    ul(style='list-style-type:none; text-align:left')
+      -each val in logs
+        li= val
