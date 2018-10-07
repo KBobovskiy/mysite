@@ -167,6 +167,7 @@ function savePlaceInfoDemographics(placeId, updated_at, demographics) {
 
 
 module.exports.insertLogInfo = insertLogInfo;
+module.exports.insertQuery = insertQuery;
 module.exports.saveTurnInfo = saveTurnInfo;
 module.exports.saveHeroInfo = saveHeroInfo;
 module.exports.saveHeroPosition = saveHeroPosition;

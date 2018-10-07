@@ -3,7 +3,7 @@ const login_info = require("./login_info");
 const DBCon = require("../serverApp/DBConnection.js");
 const sleep = require('sleep-promise');
 const Promise = require('bluebird');
-const requestDBCon = Promise.promisifyAll(require("../serverApp/DBConnection.js"));
+
 
 puppeteer.defaultArgs({ headless: false });
 
@@ -11,7 +11,6 @@ async function start(loginInfo) {
 
   let errMsg = 'Starting';
   DBCon.insertLogInfo('Travian', errMsg);
-  //await requestDBCon.insertLogInfoAsync('Travian', errMsg);
 
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 10;
@@ -44,6 +43,20 @@ async function start(loginInfo) {
   var dorf1PageInfo = await ScrapDorf1Page(page);
 
   console.log(dorf1PageInfo);
+
+  /** Saving data into DB */
+  if (dorf1PageInfo.villageList) {
+
+    for (i = 0; i < dorf1PageInfo.villageList.length; i++) {
+      var currentVillage = dorf1PageInfo.villageList[i];
+      var pos = currentVillage.href.indexOf('newdid=');
+      var id = currentVillage.href.slice(pos + 7);
+      id = id.replace(/[^0-9]+/g, '');
+      DBCon.insertQuery(
+        "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
+      VALUES ('"+ id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', 'X','Y', '" + currentVillage.href + "'); ", 'Travian');
+    }
+  }
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -132,13 +145,13 @@ async function ScrapDorf1Page(page) {
     var allVillage = $(villagesListTemplateSelector);
 
     for (var i = 0; i < allVillage[0].children.length; i++) {
-      var villageName = allVillage[0].children[i].innerText.trim();
-      var villageLink = allVillage[0].children[i].children[0].href;
-      villageName = villageName.split('\n');
-      var coordinates = villageName[2];
+      var name = allVillage[0].children[i].innerText.trim();
+      var href = allVillage[0].children[i].children[0].href;
+      name = name.split('\n');
+      var coordinates = name[2];
       coordinates = coordinates.replace('(', '').replace(')', '');
       coordinates = coordinates.split('|')
-      villageList.push({ villageLink: villageLink, villageName: villageName[0], coordinats: coordinates[0] + '|' + coordinates[1] });
+      villageList.push({ href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1] });
     }
     return villageList;
   })
