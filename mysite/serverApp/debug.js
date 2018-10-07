@@ -3,8 +3,6 @@
  *  see @module login_info
  */
 
-const login_info = require("./login_info");
-
 const debugOn = true;
 
 /**
@@ -40,8 +38,8 @@ function isNULL(isNull) {
 }
 
 function round(val, roundToAfterDot) {
-    let pow10 = Math.pow(10,roundToAfterDot);
-    return Math.round(val*pow10)/pow10;
+    let pow10 = Math.pow(10, roundToAfterDot);
+    return Math.round(val * pow10) / pow10;
 }
 
 module.exports.debugPrint = debugPrint;

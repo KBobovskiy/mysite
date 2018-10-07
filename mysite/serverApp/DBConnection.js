@@ -29,15 +29,15 @@ function insertQuery(queryString, logAction) {
             if (result && result.affectedRows !== 1 && result.serverStatus !== 2) {
                 debug.debugPrint(queryString, 0);
                 debug.debugPrint(result, 0);
-            } else if (!debug.isNULL(err) ) {
+            } else if (!debug.isNULL(err)) {
                 debug.debugPrint(err, 0);
             }
             con.end();
             con = null;
         });
-    } 
+    }
     catch (err) {
-        debug.debugPrint(logAction+' error: ' + err);
+        debug.debugPrint(logAction + ' error: ' + err);
         con.end();
         con = null;
     }
@@ -50,7 +50,7 @@ function insertQuery(queryString, logAction) {
  * @param {string} logInfo 
  */
 function insertLogInfo(logAction, logInfo) {
-    let queryString = "INSERT INTO thetale.logs (`action`, `info`) VALUES ('"+logAction+"','"+logInfo+"')";
+    let queryString = "INSERT INTO thetale.logs (`action`, `info`) VALUES ('" + logAction + "','" + logInfo + "')";
     insertQuery(queryString, 'insertLogInfo()');
 }
 
@@ -66,11 +66,11 @@ function saveHeroInfo(heroInfo) {
             , `experience`, `experience_to_level`, `max_bag_size`, `power_physical`, `power_magic` \
             , `move_speed`, `loot_items_count`, `initiative`, `energy`\
             , `in_pvp_queue`, `mode`, `enemy`)\
-             VALUES ("+heroInfo.id+", "+heroInfo.turnNumber+", '"+heroInfo.name+"', '"+heroInfo.gender+"', '"+heroInfo.race+"'\
-             , "+heroInfo.health+", "+heroInfo.max_health+", "+heroInfo.level+", "+heroInfo.money+", "+heroInfo.alive+"\
-             , "+heroInfo.experience+", "+heroInfo.experience_to_level+", "+heroInfo.max_bag_size+", "+heroInfo.physical_power+", "+heroInfo.magic_power+"\
-             , "+heroInfo.move_speed+", "+heroInfo.loot_items_count+", "+heroInfo.initiative+", "+heroInfo.energy+"\
-             , "+heroInfo.in_pvp_queue+", '', '');";
+             VALUES ("+ heroInfo.id + ", " + heroInfo.turnNumber + ", '" + heroInfo.name + "', '" + heroInfo.gender + "', '" + heroInfo.race + "'\
+             , "+ heroInfo.health + ", " + heroInfo.max_health + ", " + heroInfo.level + ", " + heroInfo.money + ", " + heroInfo.alive + "\
+             , "+ heroInfo.experience + ", " + heroInfo.experience_to_level + ", " + heroInfo.max_bag_size + ", " + heroInfo.physical_power + ", " + heroInfo.magic_power + "\
+             , "+ heroInfo.move_speed + ", " + heroInfo.loot_items_count + ", " + heroInfo.initiative + ", " + heroInfo.energy + "\
+             , "+ heroInfo.in_pvp_queue + ", '', '');";
         debug.debugPrint(queryString, 1);
         var con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
         con.connect(function (err) {
@@ -100,13 +100,13 @@ function saveHeroInfo(heroInfo) {
  * insert Turn info in DB
  * * @param {object} turnInfo
  */
-function saveTurnInfo(turnInfo){
+function saveTurnInfo(turnInfo) {
     let logAction = 'saveTurnInfo()';
     if (turnInfo.number) {
-        let queryString = "INSERT INTO `thetale`.`turns` (`number`, `verbose_date`, `verbose_time`) VALUES ('"+turnInfo.number+"', '"+turnInfo.verbose_date+"', '"+turnInfo.verbose_time+"');";
+        let queryString = "INSERT INTO `thetale`.`turns` (`number`, `verbose_date`, `verbose_time`) VALUES ('" + turnInfo.number + "', '" + turnInfo.verbose_date + "', '" + turnInfo.verbose_time + "');";
         insertQuery(queryString, logAction);
     } else {
-        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+        debug.debugPrint(logAction + ' there are nothing to insert into DB!', 0);
     }
 }
 
@@ -120,10 +120,10 @@ function saveTurnInfo(turnInfo){
 function saveHeroPosition(position) {
     let logAction = 'saveHeroPosition()';
     if (position) {
-        let queryString = "INSERT INTO `thetale`.`positions` (`account_id`, `turn_number`, `x`, `y`, `dx`, `dy`) VALUES ('"+position.account_id+"','"+position.turnNumber+"','"+position.x+"', '"+position.y+"', '"+position.dx+"', '"+position.dy+"');";
+        let queryString = "INSERT INTO `thetale`.`positions` (`account_id`, `turn_number`, `x`, `y`, `dx`, `dy`) VALUES ('" + position.account_id + "','" + position.turnNumber + "','" + position.x + "', '" + position.y + "', '" + position.dx + "', '" + position.dy + "');";
         insertQuery(queryString, logAction);
     } else {
-        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+        debug.debugPrint(logAction + ' there are nothing to insert into DB!', 0);
     }
 }
 
@@ -136,10 +136,10 @@ function saveHeroPosition(position) {
 function savePlace(place) {
     let logAction = 'savePlace()';
     if (place) {
-        let queryString = "INSERT INTO `thetale`.`places` (`id`, `name`, `size`, `specialization`, `frontier`, `x`, `y`) VALUES ('"+place.id+"', '"+place.name+"', '"+place.size+"', '"+place.specialization+"', '"+(0+place.frontier)+"', '"+place.x+"', '"+place.y+"');"
+        let queryString = "INSERT INTO `thetale`.`places` (`id`, `name`, `size`, `specialization`, `frontier`, `x`, `y`) VALUES ('" + place.id + "', '" + place.name + "', '" + place.size + "', '" + place.specialization + "', '" + (0 + place.frontier) + "', '" + place.x + "', '" + place.y + "');"
         insertQuery(queryString, logAction);
     } else {
-        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+        debug.debugPrint(logAction + ' there are nothing to insert into DB!', 0);
     }
 }
 
@@ -155,13 +155,13 @@ function savePlaceInfoDemographics(placeId, updated_at, demographics) {
     if (placeId && demographics) {
         var queryString = "";
         var roundTo = 5;
-        for (let i=0; i<demographics.length;i++){
+        for (let i = 0; i < demographics.length; i++) {
             let demogr = demographics[i];
-            queryString = "INSERT INTO `thetale`.`demographics` (`place_id`, `updated_at`, `race`, `percents`, `persons`, `delta`) VALUES ('"+placeId+"', '"+updated_at+"', '"+demogr.race+"', '"+debug.round(demogr.percents,roundTo)+"', '"+debug.round(demogr.persons,roundTo)+"', '"+debug.round(demogr.delta,roundTo)+"');"
+            queryString = "INSERT INTO `thetale`.`demographics` (`place_id`, `updated_at`, `race`, `percents`, `persons`, `delta`) VALUES ('" + placeId + "', '" + updated_at + "', '" + demogr.race + "', '" + debug.round(demogr.percents, roundTo) + "', '" + debug.round(demogr.persons, roundTo) + "', '" + debug.round(demogr.delta, roundTo) + "');"
             insertQuery(queryString, logAction);
-            }
+        }
     } else {
-        debug.debugPrint(logAction+' there are nothing to insert into DB!', 0);
+        debug.debugPrint(logAction + ' there are nothing to insert into DB!', 0);
     }
 }
 

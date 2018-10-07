@@ -1,10 +1,18 @@
 const puppeteer = require('puppeteer');
 const login_info = require("./login_info");
-var sleep = require('sleep-promise');
+const DBCon = require("../serverApp/DBConnection.js");
+const sleep = require('sleep-promise');
+const Promise = require('bluebird');
+const requestDBCon = Promise.promisifyAll(require("../serverApp/DBConnection.js"));
 
 puppeteer.defaultArgs({ headless: false });
 
 async function start(loginInfo) {
+
+  let errMsg = 'Starting';
+  DBCon.insertLogInfo('Travian', errMsg);
+  //await requestDBCon.insertLogInfoAsync('Travian', errMsg);
+
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 10;
   const browser = await puppeteer.launch({ headless: false });
@@ -39,18 +47,21 @@ async function start(loginInfo) {
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
-
+  DBCon.insertLogInfo('Travian', 'Stop');
   //await browser.close();
 }
 
 /**Scraping storage capacity and current resourses in it */
 async function ScrapDorf1Page(page) {
+
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 10;
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
   await page.goto('https://tx3.travian.ru/dorf1.php');
 
+
   var storageInfo = await page.evaluate(() => {
+
     const warehouseSelector = '#stockBarWarehouse';
     const granarySelector = '#stockBarGranary';
     const Selector = '#stockBarFreeCrop';
@@ -82,6 +93,7 @@ async function ScrapDorf1Page(page) {
 
 
   var prodactionInfo = await page.evaluate(() => {
+
     const woodSelector = '#production > tbody > tr:nth-child(1) > td.num';
     const claySelector = '#production > tbody > tr:nth-child(2) > td.num';
     const ironSelector = '#production > tbody > tr:nth-child(3) > td.num';
@@ -106,24 +118,20 @@ async function ScrapDorf1Page(page) {
 
 
   var villageName = await page.evaluate(() => {
+
     const villageNameSelector = '#villageNameField';
     return document.querySelector(villageNameSelector).textContent.replace('.', '').trim();
   });
 
-  villageList = {};
-  villageFields = {};
-  buildingHouses = {};
-
 
   var villageList = await page.evaluate(() => {
-    var villageLinkTemplateSelector = '#sidebarBoxVillagelist > div.sidebarBoxInnerBox > div.innerBox.content > ul';
+
+    var villagesListTemplateSelector = '#sidebarBoxVillagelist > div.sidebarBoxInnerBox > div.innerBox.content > ul';
     var villageList = new Array;
 
-
-    var allVillage = $('#sidebarBoxVillagelist > div.sidebarBoxInnerBox > div.innerBox.content > ul');
+    var allVillage = $(villagesListTemplateSelector);
 
     for (var i = 0; i < allVillage[0].children.length; i++) {
-      console.log(i);
       var villageName = allVillage[0].children[i].innerText.trim();
       var villageLink = allVillage[0].children[i].children[0].href;
       villageName = villageName.split('\n');
@@ -135,56 +143,71 @@ async function ScrapDorf1Page(page) {
     return villageList;
   })
 
-  /*
+
   var villageFields = await page.evaluate(() => {
-    var villageFieldsTemplateSelector = '#rx > area:nth-child(fieldNumber)';
-    var i = 1;
+
     var fieldsList = new Array;
-    while (i <= 18) {
-      var fieldSelector = villageFieldsTemplateSelector.replace('villageNumber', i);
-      var villageLink = $(fieldSelector).attr('alt').trim();
-      var fieldLvl = villageLink.replace(/[^0-9]+/g, '');
-      var fieldName = villageLink.replace(/[0-9]+/g, '');
-   
-      fieldsList.push({
-        id: i,
-        level: fieldLvl,
-        name: fieldName
-      });
-   
-      console.log(fieldName);
-      console.log(fieldLvl);
-      console.log('********');
-      i++;
-    }
+    var villageFieldsTemplateSelector = '#rx';
+
+    var allFields = $(villageFieldsTemplateSelector);
+    for (var i = 0; i < allFields[0].children.length; i++) {
+
+      var fieldName = allFields[0].children[i].getAttribute('alt');
+      var fieldLvl = fieldName.replace(/[^0-9]+/g, '');
+      var fieldName = fieldName.replace(/[0-9]+/g, '');
+      var fieldName = fieldName.replace('Уровень', '');
+      fieldName = fieldName.trim();
+
+      var fieldLink = allFields[0].children[i].href;
+      var idPos = fieldLink.indexOf('id=');
+      if (idPos > 0) {
+        console.log(idPos);
+        var id = fieldLink.slice(idPos + 3);
+      }
+
+      if (fieldLink.indexOf('dorf2.php') > 0) {
+        console.log(fieldLink);
+        continue;
+      }
+      fieldsList.push({ name: fieldName, level: fieldLvl, id: id, link: fieldLink });
+    };
+
     return fieldsList;
   })
-   
+
+
   var buildingHouses = await page.evaluate(() => {
-    var buildingHouseNameTemplateSelector = '#content > div.boxes.buildingList > div.boxes-contents.cf > ul > li > div.name';
-    var buildingHouseLevelTemplateSelector = '#content > div.boxes.buildingList > div.boxes-contents.cf > ul > li > div.name > span.lvl';
-    var buildingHouseDurationTemplateSelector = '#content > div.boxes.buildingList > div.boxes-contents.cf > ul > li > div.buildDuration';
-   
+
+    var buildingHouseNameTemplateSelector = '#content > div.boxes.buildingList > div.boxes-contents.cf > ul > li:nth-child(buldingIndex) > div.name';
+    var buildingHouseLevelTemplateSelector = '#content > div.boxes.buildingList > div.boxes-contents.cf > ul > li:nth-child(buldingIndex) > div.name > span';
+    var buildingHouseDurationTemplateSelector = '#content > div.boxes.buildingList > div.boxes-contents.cf > ul > li:nth-child(buldingIndex) > div.buildDuration';
+
     var buildingHousesList = new Array;
-   
-    var name = $(buildingHouseNameTemplateSelector).textContent.trim();
-    var level = $(buildingHouseLevelTemplateSelector).textContent.trim();
-    var duration = $(buildingHouseDurationTemplateSelector).textContent.trim();
-   
-    console.log(name);
-    console.log(level);
-    console.log(duration);
-    console.log('********');
-   
-    buildingHousesList.push({ name: name, level: level, duration: duration });
+    for (var i = 1; i < 3; i++) {
+      var name = $(buildingHouseNameTemplateSelector.replace('buldingIndex', i));
+      var level = $(buildingHouseLevelTemplateSelector.replace('buldingIndex', i));
+      var duration = $(buildingHouseDurationTemplateSelector.replace('buldingIndex', i));
+
+      if (name.length > 0) {
+
+        nameText = name[0].innerText
+        nameText = nameText.replace(level[0].innerText, '');
+        //console.log(nameText);
+
+        levelText = level[0].innerText;
+        levelText = levelText.replace('Уровень', '').trim();
+        //console.log(levelText);
+
+        var endTimeConstruction = duration[0].innerText;
+        var pos = endTimeConstruction.indexOf('Готово в');
+        endTimeConstruction = endTimeConstruction.slice(pos + 8).trim();
+        //console.log(endTimeConstruction);
+
+        buildingHousesList.push({ name: nameText, level: levelText, endOfConstructionTime: endTimeConstruction });
+      }
+    }
     return buildingHousesList;
   })
-   
-  */
-
-  //console.log(storageInfo);
-  villageFields = {};
-  buildingHouses = {};
 
   return {
     storageInfo: storageInfo,
@@ -199,12 +222,6 @@ async function ScrapDorf1Page(page) {
 /** Returns random number in miliseconds for sleeping */
 function getRandomMS(min, max) {
   return Math.random() * 1000 * (max - min) + min;
-}
-
-function ToInt(str) {
-  let s = '' + str;
-  s.replace('.', '');
-  return parseInt(s);
 }
 
 start(login_info);
