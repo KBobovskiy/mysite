@@ -49,13 +49,23 @@ async function start(loginInfo) {
 
     for (i = 0; i < dorf1PageInfo.villageList.length; i++) {
       var currentVillage = dorf1PageInfo.villageList[i];
-      var pos = currentVillage.href.indexOf('newdid=');
-      var id = currentVillage.href.slice(pos + 7);
-      id = id.replace(/[^0-9]+/g, '');
       DBCon.insertQuery(
         "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
-      VALUES ('"+ id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', 'X','Y', '" + currentVillage.href + "'); ", 'Travian');
+        VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "'); ", 'Travian');
+
     }
+  }
+
+  if (dorf1PageInfo.storageInfo) {
+    var store = dorf1PageInfo.storageInfo;
+
+    DBCon.insertQuery(
+      "INSERT INTO`thetale`.`tr_VillageStore`\
+        (`VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`)\
+      VALUES\
+        ("+ store.villageId + ", " + store.warehouse + ", " + store.granary + ", " + store.freeCrop + ", "
+      + store.wood + ", " + store.clay + ", " + store.iron + ", " + store.crop + ")"
+    );
   }
 
   await page.screenshot({ path: 'tx3.travian.png' });
@@ -151,7 +161,14 @@ async function ScrapDorf1Page(page) {
       var coordinates = name[2];
       coordinates = coordinates.replace('(', '').replace(')', '');
       coordinates = coordinates.split('|')
-      villageList.push({ href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1] });
+
+      var id = null;
+      var pos = href.indexOf('newdid=');
+      if (pos > 0) {
+        id = href.slice(pos + 7);
+        id = id.replace(/[^0-9]+/g, '');
+      }
+      villageList.push({ id: id, href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1], coordinatX: coordinates[0], coordinatY: coordinates[1] });
     }
     return villageList;
   })
