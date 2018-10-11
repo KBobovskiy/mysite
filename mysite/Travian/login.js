@@ -51,21 +51,32 @@ async function start(loginInfo) {
       var currentVillage = dorf1PageInfo.villageList[i];
       DBCon.insertQuery(
         "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
-        VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "'); ", 'Travian');
+        VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "')\
+        ON DUPLICATE KEY UPDATE `Name` = '" + currentVillage.name + "'; ", 'Travian');
 
     }
   }
 
-  if (dorf1PageInfo.storageInfo) {
+  console.log("dorf1PageInfo.villageId = " + dorf1PageInfo.villageId + " store: " + dorf1PageInfo.storageInfo);
+  if (dorf1PageInfo.storageInfo && dorf1PageInfo.villageId) {
     var store = dorf1PageInfo.storageInfo;
 
     DBCon.insertQuery(
-      "INSERT INTO`thetale`.`tr_VillageStore`\
-        (`VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`)\
-      VALUES\
-        ("+ store.villageId + ", " + store.warehouse + ", " + store.granary + ", " + store.freeCrop + ", "
-      + store.wood + ", " + store.clay + ", " + store.iron + ", " + store.crop + ")"
-    );
+      "INSERT INTO`thetale`.`VillageStore`(`VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`) VALUES('" + dorf1PageInfo.villageId.trim() + "', '" + store.warehouse.trim() + "', '" + store.granary.trim() + "', '" + store.freeCrop.trim() + "', '" + store.wood.trim() + "', '" + store.clay.trim() + "', '" + store.iron.trim() + "', '" + store.crop.trim() + "');"
+      //       "INSERT INTO `thetale`.`tr_VillageStore`\
+      //         (\
+      //         `VillageId`,\
+      //         `Warehouse`,\
+      //         `Granary`,\
+      //         `FreeCorp`,\
+      //         `Wood`,\
+      //         `Clay`,\
+      //         `Iron`,\
+      //         `Crop`)\
+      // VALUES ('" + dorf1PageInfo.villageId + "','" + store.warehouse + "','" + store.granary + "','" + store.freeCrop + "','" + store.wood + "','" + store.clay + "','" + store.iron + "','" + store.crop + "');"
+      , "Travian");
+
+
   }
 
   await page.screenshot({ path: 'tx3.travian.png' });
@@ -81,6 +92,12 @@ async function ScrapDorf1Page(page) {
   var maxSleepTimeInSec = 10;
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
   await page.goto('https://tx3.travian.ru/dorf1.php');
+
+  var villageName = await page.evaluate(() => {
+
+    const villageNameSelector = '#villageNameField';
+    return document.querySelector(villageNameSelector).textContent.replace('.', '').trim();
+  });
 
 
   var storageInfo = await page.evaluate(() => {
@@ -140,12 +157,6 @@ async function ScrapDorf1Page(page) {
   }
 
 
-  var villageName = await page.evaluate(() => {
-
-    const villageNameSelector = '#villageNameField';
-    return document.querySelector(villageNameSelector).textContent.replace('.', '').trim();
-  });
-
 
   var villageList = await page.evaluate(() => {
 
@@ -172,6 +183,16 @@ async function ScrapDorf1Page(page) {
     }
     return villageList;
   })
+
+  console.log("villageName='" + villageName + "'");
+  var villageId = 0;
+  for (let i = 0; i < villageList.length; i++) {
+    console.log("villageList[i].name = '" + villageList[i].name + "'");
+    if (villageName == villageList[i].name) {
+      villageId = villageList[i].id;
+    }
+  }
+  console.log("villageId='" + villageId + "'");
 
 
   var villageFields = await page.evaluate(() => {
@@ -243,6 +264,7 @@ async function ScrapDorf1Page(page) {
     storageInfo: storageInfo,
     prodactionInfo: prodactionInfo,
     villageName: villageName,
+    villageId: villageId,
     villageList: villageList,
     villageFields: villageFields,
     buildingHouses: buildingHouses
