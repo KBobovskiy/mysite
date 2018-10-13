@@ -13,72 +13,25 @@ async function start(loginInfo) {
   let errMsg = 'Starting';
   DBCon.insertLogInfo('Travian', errMsg);
 
-  var minSleepTimeInSec = 3;
-  var maxSleepTimeInSec = 10;
+
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 })
-  await page.goto('https://tx3.travian.ru/');
-  let login = loginInfo.account.login;
-  let password = loginInfo.account.password;
-  await page.evaluate((login, password) => {
-    const loginInputSelector = '#content > div.outerLoginBox > div.innerLoginBox > form > table > tbody > tr.account > td:nth-child(2) > input';
-    const passwordInputSelector = '#content > div.outerLoginBox > div.innerLoginBox > form > table > tbody > tr.pass > td:nth-child(2) > input';
 
-    document.querySelector(loginInputSelector).value = login;
-    document.querySelector(passwordInputSelector).value = password;
-    //document.querySelector(lowResolutionCheckBoxSelector).value = 1;
-
-  }, login, password);
-  const lowResolutionCheckBoxSelector = '#lowRes';
-  let lowResolution = await page.evaluate(() => {
-    const lowResolutionCheckBoxSelector = '#lowRes';
-    return document.querySelector(lowResolutionCheckBoxSelector).value;
-  });
-  //if (!lowResolution) {
-  await page.click(lowResolutionCheckBoxSelector);
-  //}
-  await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-  await page.mouse.click(856, 378);
-
-  var dorf1PageInfo = await ScrapDorf1Page(page);
-
-  console.log(dorf1PageInfo);
-
-  /** Saving data into DB */
-  if (dorf1PageInfo.villageList) {
-
-    for (i = 0; i < dorf1PageInfo.villageList.length; i++) {
-      var currentVillage = dorf1PageInfo.villageList[i];
-      DBCon.insertQuery(
-        "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
-        VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "')\
-        ON DUPLICATE KEY UPDATE `Name` = '" + currentVillage.name + "'; ", 'Travian');
-
-    }
+  var ok = await LoginToTravian(page, loginInfo);
+  if (ok !== 1) {
+    return;
   }
 
-  console.log("dorf1PageInfo.villageId = " + dorf1PageInfo.villageId + " store: " + dorf1PageInfo.storageInfo);
-  if (dorf1PageInfo.storageInfo && dorf1PageInfo.villageId) {
-    var store = dorf1PageInfo.storageInfo;
+  // scraping information from current dorf1 page
+  var pageUrl = 'https://tx3.travian.ru/dorf1.php';
+  var dorf1PageInfo = await ScrapDorf1Page(page, pageUrl);
 
-    DBCon.insertQuery(
-      "INSERT INTO`thetale`.`VillageStore`(`VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`) VALUES('" + dorf1PageInfo.villageId.trim() + "', '" + store.warehouse.trim() + "', '" + store.granary.trim() + "', '" + store.freeCrop.trim() + "', '" + store.wood.trim() + "', '" + store.clay.trim() + "', '" + store.iron.trim() + "', '" + store.crop.trim() + "');"
-      //       "INSERT INTO `thetale`.`tr_VillageStore`\
-      //         (\
-      //         `VillageId`,\
-      //         `Warehouse`,\
-      //         `Granary`,\
-      //         `FreeCorp`,\
-      //         `Wood`,\
-      //         `Clay`,\
-      //         `Iron`,\
-      //         `Crop`)\
-      // VALUES ('" + dorf1PageInfo.villageId + "','" + store.warehouse + "','" + store.granary + "','" + store.freeCrop + "','" + store.wood + "','" + store.clay + "','" + store.iron + "','" + store.crop + "');"
-      , "Travian");
+  SaveVillageList(dorf1PageInfo.villageList);
 
+  //console.log("dorf1PageInfo.villageId = " + dorf1PageInfo.villageId + " store: " + dorf1PageInfo.storageInfo);
 
-  }
+  SaveVillageStorages(dorf1PageInfo.storageInfo, dorf1PageInfo.villageId);
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -86,13 +39,74 @@ async function start(loginInfo) {
   //await browser.close();
 }
 
+async function SaveVillageStorages(storageInfo, villageId) {
+  if (storageInfo && villageId) {
+    DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageStore`(`VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`) VALUES('" + villageId.trim() + "', '" + storageInfo.warehouse + "', '" + storageInfo.granary + "', '" + storageInfo.freeCrop + "', '" + storageInfo.wood + "', '" + storageInfo.clay + "', '" + storageInfo.iron + "', '" + storageInfo.crop + "');"
+      , "Travian");
+  }
+}
+
+
+/** Save village list into DB */
+async function SaveVillageList(villageList) {
+  if (villageList) {
+    for (i = 0; i < villageList.length; i++) {
+      var currentVillage = villageList[i];
+      DBCon.insertQuery(
+        "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
+        VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "')\
+        ON DUPLICATE KEY UPDATE `Name` = '" + currentVillage.name + "'; ", 'Travian');
+    }
+  }
+}
+
+
+
+/** Loging into the game, return 1 if we in the game */
+async function LoginToTravian(page, loginInfo) {
+  var minSleepTimeInSec = 3;
+  var maxSleepTimeInSec = 10;
+  await page.goto('https://tx3.travian.ru/');
+  let login = loginInfo.account.login;
+  let password = loginInfo.account.password;
+  await page.evaluate((login, password) => {
+    const loginInputSelector = '#content > div.outerLoginBox > div.innerLoginBox > form > table > tbody > tr.account > td:nth-child(2) > input';
+    const passwordInputSelector = '#content > div.outerLoginBox > div.innerLoginBox > form > table > tbody > tr.pass > td:nth-child(2) > input';
+    document.querySelector(loginInputSelector).value = login;
+    document.querySelector(passwordInputSelector).value = password;
+  }, login, password);
+  const lowResolutionCheckBoxSelector = '#lowRes';
+  /*
+  await page.evaluate(() => {
+    const lowResolutionCheckBoxSelector = '#lowRes';
+    return document.querySelector(lowResolutionCheckBoxSelector).value;
+  });
+  */
+  await page.click(lowResolutionCheckBoxSelector);
+
+  await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+  console.log(page.pageUrl);
+  await page.mouse.click(856, 378);
+  await sleep(getRandomMS(1, minSleepTimeInSec));
+  console.log(page.pageUrl);
+  // Let's testing, can we play or not
+  /*
+  var result = await page.evaluate(() => {
+    const warehouseSelector = '#stockBarWarehouse';
+    return (typeof document.querySelector(warehouseSelector) === 'undeined');
+  });
+  */
+  if (1) { return 1; }
+  return 0;
+}
+
 /**Scraping storage capacity and current resourses in it */
-async function ScrapDorf1Page(page) {
+async function ScrapDorf1Page(page, gotoUrl) {
 
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 10;
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-  await page.goto('https://tx3.travian.ru/dorf1.php');
+  await page.goto(gotoUrl);
 
   var villageName = await page.evaluate(() => {
 
