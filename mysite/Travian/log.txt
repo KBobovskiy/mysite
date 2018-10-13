@@ -1,0 +1,1 @@
+ INSERT INTO `thetale`.`tr_VillageStore` (`VillageId`,`Warehouse`,`Granary`,`FreeCorp`,`Wood`,`Clay`,`Iron`,`Crop`) VALUES (2012,‭80000‬,‭160000‬,‭15276‬,‭6174‬,‭2725‬,‭12778‬,‭129955‬);

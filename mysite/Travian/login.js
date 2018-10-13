@@ -3,6 +3,7 @@ const login_info = require("./login_info");
 const DBCon = require("../serverApp/DBConnection.js");
 const sleep = require('sleep-promise');
 const Promise = require('bluebird');
+var fs = require('fs')
 
 
 puppeteer.defaultArgs({ headless: false });
@@ -93,13 +94,13 @@ async function ScrapDorf1Page(page) {
     const ironSelector = '#l3';
     const cropSelector = '#l4';
     var result = {};
-    result.warehouse = document.querySelector(warehouseSelector).textContent.replace('.', '').trim();
-    result.granary = document.querySelector(granarySelector).textContent.replace('.', '').trim();
-    result.wood = document.querySelector(woodSelector).textContent.replace('.', '').trim();
-    result.clay = document.querySelector(claySelector).textContent.replace('.', '').trim();
-    result.iron = document.querySelector(ironSelector).textContent.replace('.', '').trim();
-    result.crop = document.querySelector(cropSelector).textContent.replace('.', '').trim();
-    result.freeCrop = document.querySelector(Selector).textContent.replace('.', '').trim();
+    result.warehouse = parseInt(document.querySelector(warehouseSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    result.granary = parseInt(document.querySelector(granarySelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    result.wood = parseInt(document.querySelector(woodSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    result.clay = parseInt(document.querySelector(claySelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    result.iron = parseInt(document.querySelector(ironSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    result.crop = parseInt(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    result.freeCrop = parseInt(document.querySelector(Selector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
     //console.log(result);
     return result;
   });
@@ -122,13 +123,15 @@ async function ScrapDorf1Page(page) {
     const ironSelector = '#production > tbody > tr:nth-child(3) > td.num';
     const cropSelector = '#production > tbody > tr:nth-child(4) > td.num';
     var result = {};
-    result.wood = document.querySelector(woodSelector).textContent.replace('.', '').trim();
+    result.wood = parseInt(document.querySelector(woodSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
     //console.log(document.querySelector(woodSelector).textContent);
     //console.log(document.querySelector(woodSelector));
-    result.clay = document.querySelector(claySelector).textContent.replace('.', '').trim();
-    result.iron = document.querySelector(ironSelector).textContent.replace('.', '').trim();
-    result.crop = document.querySelector(cropSelector).textContent.replace('.', '').trim();
-    //console.log(result);
+    result.clay = parseInt(document.querySelector(claySelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
+    result.iron = parseInt(document.querySelector(ironSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
+    result.crop = parseInt(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
+    console.log(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
+    console.log(parseInt(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, '')));
+    console.log(result);
     return result;
   });
   if (!prodactionInfo) {

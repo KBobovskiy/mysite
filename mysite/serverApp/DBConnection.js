@@ -43,7 +43,6 @@ function insertQuery(queryString, logAction) {
     }
 }
 
-
 /**
  * Insert into thetale.logs log info
  * @param {string} logAction 
