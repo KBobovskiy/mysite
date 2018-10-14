@@ -18,10 +18,19 @@ async function start(loginInfo) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 })
 
-  var ok = await LoginToTravian(page, loginInfo);
-  if (ok !== 1) {
-    return;
-  }
+  await LoginToTravian(page, loginInfo);
+
+  // Let's testing, can we play or not
+  var pageUrl = 'https://tx3.travian.ru/dorf1.php';
+  await sleep(getRandomMS(1, 2.5));
+  await page.goto(pageUrl);
+  var result = await page.evaluate(() => {
+    const warehouseSelector = '#stockBarWarehouse';
+    //console.log("typeof = " + typeof document.querySelector(warehouseSelector));
+    return !(typeof document.querySelector(warehouseSelector) === 'undeined');
+  });
+  console.log('result=' + result);
+  if (!result) { return; }
 
   // scraping information from current dorf1 page
   var pageUrl = 'https://tx3.travian.ru/dorf1.php';
@@ -29,9 +38,9 @@ async function start(loginInfo) {
 
   SaveVillageList(dorf1PageInfo.villageList);
 
-  //console.log("dorf1PageInfo.villageId = " + dorf1PageInfo.villageId + " store: " + dorf1PageInfo.storageInfo);
-
   SaveVillageStorages(dorf1PageInfo.storageInfo, dorf1PageInfo.villageId);
+
+  SaveVillageResourses(dorf1PageInfo.villageFields, dorf1PageInfo.villageId);
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -40,23 +49,39 @@ async function start(loginInfo) {
 }
 
 async function SaveVillageStorages(storageInfo, villageId) {
+  //console.log("dorf1PageInfo.villageId = " + dorf1PageInfo.villageId + " store: " + dorf1PageInfo.storageInfo);
   if (storageInfo && villageId) {
     DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageStore`(`VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`) VALUES('" + villageId.trim() + "', '" + storageInfo.warehouse + "', '" + storageInfo.granary + "', '" + storageInfo.freeCrop + "', '" + storageInfo.wood + "', '" + storageInfo.clay + "', '" + storageInfo.iron + "', '" + storageInfo.crop + "');"
       , "Travian");
   }
 }
 
+/** Save resourses fields into DB */
+async function SaveVillageResourses(villageFields, villageId) {
+  console.log("villageFields=" + villageFields);
+  if (!villageId) {
+    return;
+  }
+  for (let i = 0; i < villageFields.length; i++) {
+    var currentField = villageFields[i];
+    DBCon.insertQuery(
+      "INSERT INTO`thetale`.`tr_VillageResources` (`AccountId`, `VillageId`, `Name`, `Href`, `PositionId`, `Level`)\
+      VALUES ('1', '"+ villageId + "', '" + currentField.name + "', '" + currentField.href + "', '" + currentField.positionId + "','" + currentField.level + "')\
+      ON DUPLICATE KEY UPDATE `Name` = '" + currentField.name + "', `Level` = '" + currentField.level + "'; ", 'Travian');
+  }
+}
 
 /** Save village list into DB */
 async function SaveVillageList(villageList) {
-  if (villageList) {
-    for (i = 0; i < villageList.length; i++) {
-      var currentVillage = villageList[i];
-      DBCon.insertQuery(
-        "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
-        VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "')\
-        ON DUPLICATE KEY UPDATE `Name` = '" + currentVillage.name + "'; ", 'Travian');
-    }
+  if (!villageList) {
+    return;
+  }
+  for (let i = 0; i < villageList.length; i++) {
+    var currentVillage = villageList[i];
+    DBCon.insertQuery(
+      "INSERT INTO`thetale`.`tr_Villages` (`id`, `AccountId`, `Name`, `Coordinate`, `Coordinate_X`, `Coordinate_Y`,`Href`)\
+      VALUES ('"+ currentVillage.id + "', '1', '" + currentVillage.name + "', '" + currentVillage.coordinats + "', '" + currentVillage.coordinatX + "','" + currentVillage.coordinatY + "', '" + currentVillage.href + "')\
+      ON DUPLICATE KEY UPDATE `Name` = '" + currentVillage.name + "'; ", 'Travian');
   }
 }
 
@@ -83,21 +108,9 @@ async function LoginToTravian(page, loginInfo) {
   });
   */
   await page.click(lowResolutionCheckBoxSelector);
-
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-  console.log(page.pageUrl);
   await page.mouse.click(856, 378);
-  await sleep(getRandomMS(1, minSleepTimeInSec));
-  console.log(page.pageUrl);
-  // Let's testing, can we play or not
-  /*
-  var result = await page.evaluate(() => {
-    const warehouseSelector = '#stockBarWarehouse';
-    return (typeof document.querySelector(warehouseSelector) === 'undeined');
-  });
-  */
-  if (1) { return 1; }
-  return 0;
+  return 1;
 }
 
 /**Scraping storage capacity and current resourses in it */
@@ -225,6 +238,7 @@ async function ScrapDorf1Page(page, gotoUrl) {
       var fieldName = fieldName.replace(/[0-9]+/g, '');
       var fieldName = fieldName.replace('Уровень', '');
       fieldName = fieldName.trim();
+      fieldName = fieldName.replace(/[^a-z*A-Z*а-я*А-Я*0-9* ]+/g, '');
 
       var fieldLink = allFields[0].children[i].href;
       var idPos = fieldLink.indexOf('id=');
@@ -237,7 +251,7 @@ async function ScrapDorf1Page(page, gotoUrl) {
         console.log(fieldLink);
         continue;
       }
-      fieldsList.push({ name: fieldName, level: fieldLvl, id: id, link: fieldLink });
+      fieldsList.push({ name: fieldName, level: fieldLvl, positionId: id, href: fieldLink });
     };
 
     return fieldsList;
