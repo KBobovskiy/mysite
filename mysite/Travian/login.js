@@ -48,6 +48,45 @@ async function start(loginInfo) {
   //await browser.close();
 }
 
+function GetString(strValue) {
+  //console.log(strValue);
+  strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-]+/g, ' ');
+  //console.log(strValue);
+  strValue = strValue.replace(/ +/g, ' ');
+  //console.log(strValue);
+  strValue = strValue.trim();
+  //console.log(strValue);
+  return strValue;
+}
+
+function GetNumber(strValue, parseToInt) {
+  strValue = strValue.replace(/[^0-9-]/g, '');
+  strValue = strValue.trim();
+  console.log(strValue);
+  if (parseToInt) {
+    return parseInt(strValue);
+  }
+  return strValue;
+}
+
+function GetTime(strValue) {
+  //console.log(strValue);
+  strValue = strValue.match(/[0-9]+:[0-9]+:[0-9]+/);
+  if (strValue.length = 1) {
+    //console.log(strValue[0]);
+    return strValue[0];
+  }
+  return '';
+}
+
+function GetFullID(acc, vill, posId) {
+  var id = acc + '#' + vill + '#' + posId;
+  id = id.replace(/[^0-9#]/g, '');
+  return id;
+}
+
+
+
 async function SaveVillageStorages(storageInfo, villageId) {
   //console.log("dorf1PageInfo.villageId = " + dorf1PageInfo.villageId + " store: " + dorf1PageInfo.storageInfo);
   if (storageInfo && villageId) {
@@ -58,7 +97,7 @@ async function SaveVillageStorages(storageInfo, villageId) {
 
 /** Save resourses fields into DB */
 async function SaveVillageResourses(villageFields, villageId) {
-  console.log("villageFields=" + villageFields);
+
   if (!villageId) {
     return;
   }
@@ -85,12 +124,10 @@ async function SaveVillageList(villageList) {
   }
 }
 
-
-
 /** Loging into the game, return 1 if we in the game */
 async function LoginToTravian(page, loginInfo) {
   var minSleepTimeInSec = 3;
-  var maxSleepTimeInSec = 10;
+  var maxSleepTimeInSec = 7;
   await page.goto('https://tx3.travian.ru/');
   let login = loginInfo.account.login;
   let password = loginInfo.account.password;
@@ -101,16 +138,181 @@ async function LoginToTravian(page, loginInfo) {
     document.querySelector(passwordInputSelector).value = password;
   }, login, password);
   const lowResolutionCheckBoxSelector = '#lowRes';
-  /*
-  await page.evaluate(() => {
-    const lowResolutionCheckBoxSelector = '#lowRes';
-    return document.querySelector(lowResolutionCheckBoxSelector).value;
-  });
-  */
+
   await page.click(lowResolutionCheckBoxSelector);
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
   await page.mouse.click(856, 378);
+  await sleep(getRandomMS(minSleepTimeInSec / 2, maxSleepTimeInSec / 2));
   return 1;
+}
+
+async function ScrapingStoreInfo(page) {
+
+  var storageInfo = await page.evaluate(() => {
+
+    function GetNumber(strValue, parseToInt) {
+      strValue = strValue.replace(/[^0-9-]/g, '');
+      strValue = strValue.trim();
+      console.log(strValue);
+      if (parseToInt) {
+        return parseInt(strValue);
+      }
+      return strValue;
+    }
+
+    const warehouseSelector = '#stockBarWarehouse';
+    const granarySelector = '#stockBarGranary';
+    const Selector = '#stockBarFreeCrop';
+    const woodSelector = '#l1';
+    const claySelector = '#l2';
+    const ironSelector = '#l3';
+    const cropSelector = '#l4';
+    var result = {};
+    result.warehouse = GetNumber(document.querySelector(warehouseSelector).textContent, true);
+    result.granary = GetNumber(document.querySelector(granarySelector).textContent, true);
+    result.wood = GetNumber(document.querySelector(woodSelector).textContent, true);
+    result.clay = GetNumber(document.querySelector(claySelector).textContent, true);
+    result.iron = GetNumber(document.querySelector(ironSelector).textContent, true);
+    result.crop = GetNumber(document.querySelector(cropSelector).textContent, true);
+    result.freeCrop = GetNumber(document.querySelector(Selector).textContent, true);
+    return result;
+  });
+  if (!storageInfo) {
+    storageInfo = {
+      warehouse: 0, granary: 0, wood: 0, clay: 0, iron: 0, crop: 0, freeCrop: 0
+    }
+    return storageInfo;
+  }
+}
+
+async function ScrapingProdactionInfo(page) {
+
+  var prodactionInfo = await page.evaluate(() => {
+
+    function GetNumber(strValue, parseToInt) {
+      strValue = strValue.replace(/[^0-9-]/g, '');
+      strValue = strValue.trim();
+      console.log(strValue);
+      if (parseToInt) {
+        return parseInt(strValue);
+      }
+      return strValue;
+    }
+
+    const woodSelector = '#production > tbody > tr:nth-child(1) > td.num';
+    const claySelector = '#production > tbody > tr:nth-child(2) > td.num';
+    const ironSelector = '#production > tbody > tr:nth-child(3) > td.num';
+    const cropSelector = '#production > tbody > tr:nth-child(4) > td.num';
+    var result = {};
+    result.wood = GetNumber(document.querySelector(woodSelector).textContent, true);
+    result.clay = GetNumber(document.querySelector(claySelector).textContent, true);
+    result.iron = GetNumber(document.querySelector(ironSelector).textContent, true);
+    result.crop = GetNumber(document.querySelector(cropSelector).textContent, true);
+    return result;
+  });
+  if (!prodactionInfo) {
+    prodactionInfo = {
+      wood: 0, clay: 0, iron: 0, crop: 0
+    }
+  }
+  return prodactionInfo;
+}
+
+async function ScrapingVillageList(page) {
+
+  var villageList = await page.evaluate(() => {
+
+    function GetString(strValue) {
+      //console.log(strValue);
+      strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|]/g, ' ');
+      //console.log(strValue);
+      strValue = strValue.replace(/ +/g, ' ');
+      //console.log(strValue);
+      strValue = strValue.trim();
+      //console.log(strValue);
+      return strValue;
+    }
+    var villagesListTemplateSelector = '#sidebarBoxVillagelist > div.sidebarBoxInnerBox > div.innerBox.content > ul';
+    var villageList = new Array;
+
+    var allVillage = $(villagesListTemplateSelector);
+
+    for (var i = 0; i < allVillage[0].children.length; i++) {
+      var name = allVillage[0].children[i].innerText.trim();
+      var href = allVillage[0].children[i].children[0].href;
+      name = name.split('\n');
+      name[0] = GetString(name[0]);
+      var coordinates = name[2];
+      coordinates = coordinates.replace('(', '').replace(')', '');
+      coordinates = coordinates.split('|')
+
+      var id = null;
+      var pos = href.indexOf('newdid=');
+      if (pos > 0) {
+        id = href.slice(pos + 7);
+        id = id.replace(/[^0-9]+/g, '');
+      }
+      villageList.push({ id: id, href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1], coordinatX: coordinates[0].trim(), coordinatY: coordinates[1].trim() });
+    }
+    return villageList;
+  });
+  return villageList;
+}
+
+async function ScrapingFieldsInfo(page) {
+  var villageFields = await page.evaluate(() => {
+
+    function GetString(strValue) {
+      //console.log(strValue);
+      strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-]+/g, ' ');
+      //console.log(strValue);
+      strValue = strValue.replace(/ +/g, ' ');
+      //console.log(strValue);
+      strValue = strValue.trim();
+      //console.log(strValue);
+      return strValue;
+    }
+
+    function GetNumber(strValue, parseToInt) {
+      strValue = strValue.replace(/[^0-9-]/g, '');
+      strValue = strValue.trim();
+      console.log(strValue);
+      if (parseToInt) {
+        return parseInt(strValue);
+      }
+      return strValue;
+    }
+
+    var fieldsList = new Array;
+    var villageFieldsTemplateSelector = '#rx';
+
+    var allFields = $(villageFieldsTemplateSelector);
+    for (var i = 0; i < allFields[0].children.length; i++) {
+
+      var fieldName = GetString(allFields[0].children[i].getAttribute('alt'));
+      var fieldLvl = GetNumber(fieldName);
+      var fieldName = fieldName.replace(/[0-9]+/g, '');
+      var fieldName = fieldName.replace('Уровень', '');
+      fieldName = fieldName.trim();
+      fieldName = fieldName.replace(/[^a-z*A-Z*а-я*А-Я*0-9* ]+/g, '');
+
+      var fieldLink = allFields[0].children[i].href;
+      var idPos = fieldLink.indexOf('id=');
+      if (idPos > 0) {
+        //console.log(idPos);
+        var id = fieldLink.slice(idPos + 3);
+      }
+
+      if (fieldLink.indexOf('dorf2.php') > 0) {
+        //console.log(fieldLink);
+        continue;
+      }
+      fieldsList.push({ name: fieldName, level: fieldLvl, positionId: id, href: fieldLink });
+    };
+
+    return fieldsList;
+  })
+  return villageFields;
 }
 
 /**Scraping storage capacity and current resourses in it */
@@ -122,97 +324,17 @@ async function ScrapDorf1Page(page, gotoUrl) {
   await page.goto(gotoUrl);
 
   var villageName = await page.evaluate(() => {
-
     const villageNameSelector = '#villageNameField';
     return document.querySelector(villageNameSelector).textContent.replace('.', '').trim();
   });
 
+  var storageInfo = await ScrapingStoreInfo(page);
 
-  var storageInfo = await page.evaluate(() => {
+  var prodactionInfo = await ScrapingProdactionInfo(page);
 
-    const warehouseSelector = '#stockBarWarehouse';
-    const granarySelector = '#stockBarGranary';
-    const Selector = '#stockBarFreeCrop';
-    const woodSelector = '#l1';
-    const claySelector = '#l2';
-    const ironSelector = '#l3';
-    const cropSelector = '#l4';
-    var result = {};
-    result.warehouse = parseInt(document.querySelector(warehouseSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    result.granary = parseInt(document.querySelector(granarySelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    result.wood = parseInt(document.querySelector(woodSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    result.clay = parseInt(document.querySelector(claySelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    result.iron = parseInt(document.querySelector(ironSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    result.crop = parseInt(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    result.freeCrop = parseInt(document.querySelector(Selector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    //console.log(result);
-    return result;
-  });
-  if (!storageInfo) {
-    storageInfo = {};
-    storageInfo.warehouse = 0;
-    storageInfo.granary = 0;
-    storageInfo.wood = 0;
-    storageInfo.clay = 0;
-    storageInfo.iron = 0;
-    storageInfo.crop = 0;
-    storageInfo.freeCrop = 0;
-  }
+  var villageList = await ScrapingVillageList(page);
 
-
-  var prodactionInfo = await page.evaluate(() => {
-
-    const woodSelector = '#production > tbody > tr:nth-child(1) > td.num';
-    const claySelector = '#production > tbody > tr:nth-child(2) > td.num';
-    const ironSelector = '#production > tbody > tr:nth-child(3) > td.num';
-    const cropSelector = '#production > tbody > tr:nth-child(4) > td.num';
-    var result = {};
-    result.wood = parseInt(document.querySelector(woodSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
-    //console.log(document.querySelector(woodSelector).textContent);
-    //console.log(document.querySelector(woodSelector));
-    result.clay = parseInt(document.querySelector(claySelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
-    result.iron = parseInt(document.querySelector(ironSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
-    result.crop = parseInt(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''), 10);
-    console.log(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, ''));
-    console.log(parseInt(document.querySelector(cropSelector).textContent.replace('.', '').trim().replace(/[^-0-9]+/g, '')));
-    console.log(result);
-    return result;
-  });
-  if (!prodactionInfo) {
-    prodactionInfo = {};
-    prodactionInfo.wood = 0;
-    prodactionInfo.clay = 0;
-    prodactionInfo.iron = 0;
-    prodactionInfo.crop = 0;
-  }
-
-
-
-  var villageList = await page.evaluate(() => {
-
-    var villagesListTemplateSelector = '#sidebarBoxVillagelist > div.sidebarBoxInnerBox > div.innerBox.content > ul';
-    var villageList = new Array;
-
-    var allVillage = $(villagesListTemplateSelector);
-
-    for (var i = 0; i < allVillage[0].children.length; i++) {
-      var name = allVillage[0].children[i].innerText.trim();
-      var href = allVillage[0].children[i].children[0].href;
-      name = name.split('\n');
-      var coordinates = name[2];
-      coordinates = coordinates.replace('(', '').replace(')', '');
-      coordinates = coordinates.split('|')
-
-      var id = null;
-      var pos = href.indexOf('newdid=');
-      if (pos > 0) {
-        id = href.slice(pos + 7);
-        id = id.replace(/[^0-9]+/g, '');
-      }
-      villageList.push({ id: id, href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1], coordinatX: coordinates[0], coordinatY: coordinates[1] });
-    }
-    return villageList;
-  })
+  var villageFields = await ScrapingFieldsInfo(page);
 
   console.log("villageName='" + villageName + "'");
   var villageId = 0;
@@ -223,39 +345,6 @@ async function ScrapDorf1Page(page, gotoUrl) {
     }
   }
   console.log("villageId='" + villageId + "'");
-
-
-  var villageFields = await page.evaluate(() => {
-
-    var fieldsList = new Array;
-    var villageFieldsTemplateSelector = '#rx';
-
-    var allFields = $(villageFieldsTemplateSelector);
-    for (var i = 0; i < allFields[0].children.length; i++) {
-
-      var fieldName = allFields[0].children[i].getAttribute('alt');
-      var fieldLvl = fieldName.replace(/[^0-9]+/g, '');
-      var fieldName = fieldName.replace(/[0-9]+/g, '');
-      var fieldName = fieldName.replace('Уровень', '');
-      fieldName = fieldName.trim();
-      fieldName = fieldName.replace(/[^a-z*A-Z*а-я*А-Я*0-9* ]+/g, '');
-
-      var fieldLink = allFields[0].children[i].href;
-      var idPos = fieldLink.indexOf('id=');
-      if (idPos > 0) {
-        console.log(idPos);
-        var id = fieldLink.slice(idPos + 3);
-      }
-
-      if (fieldLink.indexOf('dorf2.php') > 0) {
-        console.log(fieldLink);
-        continue;
-      }
-      fieldsList.push({ name: fieldName, level: fieldLvl, positionId: id, href: fieldLink });
-    };
-
-    return fieldsList;
-  })
 
 
   var buildingHouses = await page.evaluate(() => {
