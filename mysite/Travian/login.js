@@ -12,7 +12,7 @@ async function start(loginInfo) {
 
   let errMsg = 'Starting';
   DBCon.insertLogInfo('Travian', errMsg);
-
+  var accountId = 1;
 
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
@@ -32,13 +32,10 @@ async function start(loginInfo) {
   //console.log('result=' + result);
   if (!result) { return; }
 
-  var villagesHrefs = await GetAllVillagesHref();
 
-  for (let i=0; i< villagesHrefs.length; i++){
-    // scraping information from current dorf1 page
-    var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
-    SaveDorf1Page(dorf1PageInfo);
-  }
+  //await ScrapingAllVillagesDorf1(page, accountId);
+
+  await StartBuilding(page, accountId);
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -83,9 +80,97 @@ function GetFullID(acc, vill, posId) {
   return id;
 }
 
-async function SaveDorf1Page(dorf1PageInfo) {
+/** Starting building in free village */
+async function StartBuilding(page, accountId) {
 
-  var accountId = 1;
+  var nowDateTime = "2018-10-22 23:45:00";
+
+  var rows = await DBCon.selectQuery(
+    "SELECT NeedToBuild.VillageId, NeedToBuild.Name, NeedToBuild.Href, NeedToBuild.Level, FreeVillages.VillageHref FROM thetale.tr_VillageResources NeedToBuild\
+  INNER JOIN( SELECT Villages.id VillageId\
+        , Villages.Name VillageName\
+        , Villages.Href VillageHref\
+        , Building.Name BuildingName\
+        , Building.EndOfBuilding \
+  FROM thetale.tr_Villages Villages \
+  LEFT JOIN(SELECT * FROM thetale.tr_VillageBuilding\
+    WHERE id in (SELECT max(id) id FROM thetale.tr_VillageBuilding Where AccountId = "+ accountId + " and EndOfBuilding >= '" + nowDateTime + "' group by VillageId)) Building\
+  ON Villages.AccountId = Building.AccountId\
+  and Villages.id = Building.VillageId\
+  WHERE Villages.AccountId = "+ accountId + "\
+  and IsNull(Building.Name) \
+  order by Building.EndOfBuilding\
+    ) FreeVillages on FreeVillages.VillageId = NeedToBuild.VillageId\
+  WHERE\
+  id in (SELECT max(id) id FROM thetale.tr_VillageResources group by AccountId, VillageId, PositionId) \
+  and AccountId = "+ accountId + "\
+  and level <= 5\
+  ORDER BY level; "
+    , "Travian");
+
+  var i = Math.round(Math.random() * Math.min(rows.length, 5));
+  var gotoUrl = rows[i].VillageHref;
+
+  if (gotoUrl) {
+    var minSleepTimeInSec = 0.3;
+    var maxSleepTimeInSec = 2;
+    await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+    await page.goto(gotoUrl);
+    gotoUrl = rows[i].Href;
+    if (gotoUrl) {
+      await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+      await page.goto(gotoUrl);
+
+      var buttonReady = await page.evaluate(() => {
+        const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
+        var selection = document.querySelector(buttonSelection);
+        if (selection.innerText) {
+          var innerText = selection.innerText.replace(/[^а-яА-Я]+/g, '');
+          console.log(innerText);
+          if (innerText.indexOf("Улучшитьдо") >= 0) {
+            console.log("Улучшить готово");
+            return true;
+          } else if (innerText.indexOf("Построитьсархитектором") >= 0) {
+            console.log("Архитектор");
+            return false;
+          }
+        }
+        return false;
+      });
+      console.log(buttonReady);
+      if (buttonReady) {
+        await page.mouse.click(814, 462);
+      } else {
+        console.log("Button for building is not ready!");
+      }
+    }
+  }
+}
+
+/** Returns array with villages hrefs */
+async function GetAllVillagesHref(accountId) {
+  var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = " + accountId, "Travian");
+  var hrefs = [];
+  while (rows.length > 0) {
+    let href = rows.pop();
+    hrefs.push(href.href);
+  }
+  console.log(hrefs);
+  return hrefs;
+}
+
+/** Scraping all information from Dorf1 for all villages and save it into DB */
+async function ScrapingAllVillagesDorf1(page, accountId) {
+  var villagesHrefs = await GetAllVillagesHref(accountId);
+  for (let i = 0; i < villagesHrefs.length; i++) {
+    // scraping information from current dorf1 page
+    var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
+    SaveDorf1Page(dorf1PageInfo, accountId);
+  }
+}
+
+/** Save all information from Dorf1 page */
+async function SaveDorf1Page(dorf1PageInfo, accountId) {
 
   SaveVillageList(dorf1PageInfo.villageList, accountId);
 
@@ -102,10 +187,10 @@ async function SaveDorf1Page(dorf1PageInfo) {
 /** Returns array with villages hrefs
  * 
  */
-async function GetAllVillagesHref(){
+async function GetAllVillagesHref() {
   var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = 1", "Travian");
   var hrefs = [];
-  while (rows.length > 0){
+  while (rows.length > 0) {
     let href = rows.pop();
     hrefs.push(href.href);
   }
@@ -205,6 +290,7 @@ async function LoginToTravian(page, loginInfo) {
   return 1;
 }
 
+/** Get informtion about store capacity and stocks */
 async function ScrapingStoreInfo(page) {
 
   var storageInfo = await page.evaluate(() => {
@@ -245,6 +331,7 @@ async function ScrapingStoreInfo(page) {
   return storageInfo;
 }
 
+/** Get information about prodaction per hour */
 async function ScrapingProdactionInfo(page) {
 
   var prodactionInfo = await page.evaluate(() => {
@@ -278,6 +365,7 @@ async function ScrapingProdactionInfo(page) {
   return prodactionInfo;
 }
 
+/** Get array with villages informaation */
 async function ScrapingVillageList(page) {
 
   var villageList = await page.evaluate(() => {
@@ -319,6 +407,8 @@ async function ScrapingVillageList(page) {
   return villageList;
 }
 
+
+/** Get array with resourses fields information */
 async function ScrapingFieldsInfo(page) {
   var villageFields = await page.evaluate(() => {
 
@@ -457,6 +547,3 @@ function getRandomMS(min, max) {
 }
 
 start(login_info);
-
-
-
