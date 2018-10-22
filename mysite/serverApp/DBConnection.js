@@ -8,6 +8,7 @@
 const login_info = require("./login_info");
 const mysql = require('mysql');
 const debug = require("./debug");
+const util = require('util');
 
 /**
  * Send insert into DB
@@ -32,19 +33,37 @@ function insertQuery(queryString, logAction) {
             } else if (!debug.isNULL(err)) {
                 debug.debugPrint(err, 0);
             }
-            con.end();
-            con = null;
         });
     }
     catch (err) {
         debug.debugPrint(logAction + ' error: ' + err);
+    }
+    finally {
         con.end();
         con = null;
     }
 }
 
-/**
- * Insert into thetale.logs log info
+/** Send SELECT to DB */
+async function selectQuery(queryString, logAction) {
+    if (!queryString) {
+        return;
+    }
+    var con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
+    const query = util.promisify(con.query).bind(con);
+    var row = await (async () => {
+        try {
+            const rows = await query(queryString);
+            return rows;
+        } finally {
+            con.end();
+            con = null;
+        }
+    })();
+    return row;
+}
+
+/** Insert into thetale.logs log info
  * @param {string} logAction 
  * @param {string} logInfo 
  */
@@ -53,8 +72,7 @@ function insertLogInfo(logAction, logInfo) {
     insertQuery(queryString, 'insertLogInfo()');
 }
 
-/**
- * insert hero stats info in DB
+/** insert hero stats info in DB
  * * @param {object} heroInfo 
  */
 function saveHeroInfo(heroInfo) {
@@ -81,12 +99,12 @@ function saveHeroInfo(heroInfo) {
                     debug.debugPrint(queryString, 0);
                     debug.debugPrint(result, 0);
                 }
-                con.end();
-                con = null;
             });
         }
         catch (err) {
             debug.debugPrint('saveHeroInfo() error: ' + err);
+        }
+        finally {
             con.end();
             con = null;
         }
@@ -95,8 +113,7 @@ function saveHeroInfo(heroInfo) {
     }
 }
 
-/**
- * insert Turn info in DB
+/** insert Turn info in DB
  * * @param {object} turnInfo
  */
 function saveTurnInfo(turnInfo) {
@@ -111,8 +128,7 @@ function saveTurnInfo(turnInfo) {
 
 
 
-/**
- * 	Insert hero position on the map to DB
+/**	Insert hero position on the map to DB
  * 
  * @param {object.account_id, object.turnNumber, object.x, object.y, object.dx, object.dy} position
  */
@@ -127,8 +143,7 @@ function saveHeroPosition(position) {
 }
 
 
-/**
- * 	Insert place short information to DB
+/**	Insert place short information to DB
  * 
  * @param {object.id, object.name, object.x, object.y, object.size, object.specialization, object.frontier} place
  */
@@ -143,9 +158,7 @@ function savePlace(place) {
 }
 
 
-
-/**
- * 	Insert place's demographics information to DB
+/**	Insert place's demographics information to DB
  * 
  * @param {object.id, object.name, object.x, object.y, object.size, object.specialization, object.frontier} place
  */
@@ -172,3 +185,4 @@ module.exports.saveHeroInfo = saveHeroInfo;
 module.exports.saveHeroPosition = saveHeroPosition;
 module.exports.savePlace = savePlace;
 module.exports.savePlaceInfoDemographics = savePlaceInfoDemographics;
+module.exports.selectQuery = selectQuery;

@@ -32,11 +32,13 @@ async function start(loginInfo) {
   //console.log('result=' + result);
   if (!result) { return; }
 
-  // scraping information from current dorf1 page
-  var pageUrl = 'https://tx3.travian.ru/dorf1.php';
-  var dorf1PageInfo = await ScrapDorf1Page(page, pageUrl);
+  var villagesHrefs = await GetAllVillagesHref();
 
-  SaveDorf1Page(dorf1PageInfo);
+  for (let i=0; i< villagesHrefs.length; i++){
+    // scraping information from current dorf1 page
+    var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
+    SaveDorf1Page(dorf1PageInfo);
+  }
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -95,6 +97,20 @@ async function SaveDorf1Page(dorf1PageInfo) {
 
   SaveVillageBuildingHouses(dorf1PageInfo.buildingHouses, accountId, dorf1PageInfo.villageId);
 
+}
+
+/** Returns array with villages hrefs
+ * 
+ */
+async function GetAllVillagesHref(){
+  var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = 1", "Travian");
+  var hrefs = [];
+  while (rows.length > 0){
+    let href = rows.pop();
+    hrefs.push(href.href);
+  }
+  console.log(hrefs);
+  return hrefs;
 }
 
 /** Save current building houses with time of the end of finishing the construction */
@@ -441,3 +457,6 @@ function getRandomMS(min, max) {
 }
 
 start(login_info);
+
+
+

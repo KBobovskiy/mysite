@@ -4,7 +4,6 @@
     // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
             "type": "node",
             "request": "launch",
@@ -13,9 +12,19 @@
             "stopOnEntry": false,
             "osx": {
                 "stopOnEntry": false
-            }            
-        }
-        ,{
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Запустить travian",
+            "program": "${workspaceFolder}\\travian\\login",
+            "stopOnEntry": false,
+            "osx": {
+                "stopOnEntry": false
+            }
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Запустить autoHelper",
@@ -23,9 +32,9 @@
             "stopOnEntry": false,
             "osx": {
                 "stopOnEntry": false
-            }            
-        }
-        ,{
+            }
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Запустить Scraping_Market_History",
@@ -33,7 +42,7 @@
             "stopOnEntry": false,
             "osx": {
                 "stopOnEntry": false
-            }            
+            }
         }
     ]
 }
