@@ -86,7 +86,7 @@ async function StartBuilding(page, accountId) {
   var nowDateTime = "2018-10-22 23:45:00";
 
   var rows = await DBCon.selectQuery(
-    "SELECT NeedToBuild.VillageId, NeedToBuild.Name, NeedToBuild.Href, NeedToBuild.Level, FreeVillages.VillageHref FROM thetale.tr_VillageResources NeedToBuild\
+    "SELECT NeedToBuild.VillageId, NeedToBuild.Name, NeedToBuild.Href, NeedToBuild.Level, FreeVillages.VillageHref, FreeVillages.VillageName FROM thetale.tr_VillageResources NeedToBuild\
   INNER JOIN( SELECT Villages.id VillageId\
         , Villages.Name VillageName\
         , Villages.Href VillageHref\
@@ -104,44 +104,48 @@ async function StartBuilding(page, accountId) {
   WHERE\
   id in (SELECT max(id) id FROM thetale.tr_VillageResources group by AccountId, VillageId, PositionId) \
   and AccountId = "+ accountId + "\
-  and level <= 5\
+  and level <= 3\
   ORDER BY level; "
     , "Travian");
 
-  var i = Math.round(Math.random() * Math.min(rows.length, 5));
-  var gotoUrl = rows[i].VillageHref;
+  DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
+  if (rows.length > 0) {
+    var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+    DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level + " " + rows[i].VillageId);
+    var gotoUrl = rows[i].VillageHref;
 
-  if (gotoUrl) {
-    var minSleepTimeInSec = 0.3;
-    var maxSleepTimeInSec = 2;
-    await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-    await page.goto(gotoUrl);
-    gotoUrl = rows[i].Href;
     if (gotoUrl) {
+      var minSleepTimeInSec = 0.3;
+      var maxSleepTimeInSec = 2;
       await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
       await page.goto(gotoUrl);
+      gotoUrl = rows[i].Href;
+      if (gotoUrl) {
+        await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+        await page.goto(gotoUrl);
 
-      var buttonReady = await page.evaluate(() => {
-        const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
-        var selection = document.querySelector(buttonSelection);
-        if (selection.innerText) {
-          var innerText = selection.innerText.replace(/[^а-яА-Я]+/g, '');
-          console.log(innerText);
-          if (innerText.indexOf("Улучшитьдо") >= 0) {
-            console.log("Улучшить готово");
-            return true;
-          } else if (innerText.indexOf("Построитьсархитектором") >= 0) {
-            console.log("Архитектор");
-            return false;
+        var buttonReady = await page.evaluate(() => {
+          const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
+          var selection = document.querySelector(buttonSelection);
+          if (selection.innerText) {
+            var innerText = selection.innerText.replace(/[^а-яА-Я]+/g, '');
+            console.log(innerText);
+            if (innerText.indexOf("Улучшитьдо") >= 0) {
+              console.log("Улучшить готово");
+              return true;
+            } else if (innerText.indexOf("Построитьсархитектором") >= 0) {
+              console.log("Архитектор");
+              return false;
+            }
           }
+          return false;
+        });
+        console.log(buttonReady);
+        if (buttonReady) {
+          await page.mouse.click(814, 462);
+        } else {
+          console.log("Button for building is not ready!");
         }
-        return false;
-      });
-      console.log(buttonReady);
-      if (buttonReady) {
-        await page.mouse.click(814, 462);
-      } else {
-        console.log("Button for building is not ready!");
       }
     }
   }
