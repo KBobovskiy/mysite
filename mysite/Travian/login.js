@@ -35,7 +35,7 @@ async function start(loginInfo) {
 
   //await ScrapingAllVillagesDorf1(page, accountId);
 
-  await StartBuilding(page, accountId);
+  await StartAllBuildings(page, accountId);
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -80,11 +80,8 @@ function GetFullID(acc, vill, posId) {
   return id;
 }
 
-/** Starting building in free village */
-async function StartBuilding(page, accountId) {
-
-  var nowDateTime = "2018-10-22 23:45:00";
-
+async function getWhatWeCanBuildFromDB(accountId) {
+  var nowDateTime = getNow();
   var rows = await DBCon.selectQuery(
     "SELECT NeedToBuild.VillageId, NeedToBuild.Name, NeedToBuild.Href, NeedToBuild.Level, FreeVillages.VillageHref, FreeVillages.VillageName FROM thetale.tr_VillageResources NeedToBuild\
   INNER JOIN( SELECT Villages.id VillageId\
@@ -109,10 +106,26 @@ async function StartBuilding(page, accountId) {
     , "Travian");
 
   DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
+  return rows;
+}
+
+function RemoveVillageById(arr, villageId) {
+  var i = arr.length
+  var newArr = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].VillageId != villageId) {
+      newArr.push(arr[i]);
+    }
+  }
+  return newArr;
+}
+
+async function StartBuilding(page, rows) {
   if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
     DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level + " " + rows[i].VillageId);
     var gotoUrl = rows[i].VillageHref;
+    var villageId = rows[i].VillageId;
 
     if (gotoUrl) {
       var minSleepTimeInSec = 0.3;
@@ -143,11 +156,23 @@ async function StartBuilding(page, accountId) {
         console.log(buttonReady);
         if (buttonReady) {
           await page.mouse.click(814, 462);
+          console.log('было строк ' + rows.length);
+          rows = RemoveVillageById(rows, villageId);
+          console.log('стало строк ' + rows.length);
         } else {
           console.log("Button for building is not ready!");
         }
       }
     }
+  }
+
+}
+
+/** Starting building in free village */
+async function StartAllBuildings(page, accountId) {
+  var rows = await getWhatWeCanBuildFromDB(accountId);
+  while (rows.length > 0) {
+    await StartBuilding(page, rows);
   }
 }
 
@@ -473,7 +498,7 @@ async function ScrapingFieldsInfo(page) {
 async function ScrapDorf1Page(page, gotoUrl) {
 
   var minSleepTimeInSec = 3;
-  var maxSleepTimeInSec = 10;
+  var maxSleepTimeInSec = 7;
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
   await page.goto(gotoUrl);
 
@@ -550,4 +575,14 @@ function getRandomMS(min, max) {
   return Math.random() * 1000 * (max - min) + min;
 }
 
+function getNow() {
+  var nowDateTime = new Date();
+  nowDateTime.setHours(nowDateTime.getHours() + 3);
+  nowDateTime = nowDateTime.toISOString();
+  nowDateTime = nowDateTime.slice(0, 19).replace('T', ' ');
+  console.log("Date time = " + nowDateTime);
+}
+
 start(login_info);
+
+
