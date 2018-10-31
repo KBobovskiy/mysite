@@ -33,7 +33,7 @@ async function start(loginInfo) {
   if (!result) { return; }
 
 
-  //await ScrapingAllVillagesDorf1(page, accountId);
+  // await ScrapingAllVillagesDorf1(page, accountId);
 
   await StartAllBuildings(page, accountId);
 
@@ -101,7 +101,7 @@ async function getWhatWeCanBuildFromDB(accountId) {
   WHERE\
   id in (SELECT max(id) id FROM thetale.tr_VillageResources group by AccountId, VillageId, PositionId) \
   and AccountId = "+ accountId + "\
-  and level <= 3\
+  and level <= 5\
   ORDER BY level; "
     , "Travian");
 
@@ -110,18 +110,20 @@ async function getWhatWeCanBuildFromDB(accountId) {
 }
 
 function RemoveVillageById(arr, villageId) {
+  console.log("Удаляем деревню: " + villageId);
   var i = arr.length
   var newArr = [];
-  for (var i = 0; i < arr.length; i++) {
+  for (var i = arr.length - 1; i >= 0; i--) {
     if (arr[i].VillageId != villageId) {
       newArr.push(arr[i]);
     }
   }
+  console.log(arr);
   return newArr;
 }
 
 async function StartBuilding(page, rows) {
-  if (rows.length > 0) {
+  while (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
     DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level + " " + rows[i].VillageId);
     var gotoUrl = rows[i].VillageHref;
@@ -156,12 +158,21 @@ async function StartBuilding(page, rows) {
         console.log(buttonReady);
         if (buttonReady) {
           await page.mouse.click(814, 462);
-          console.log('было строк ' + rows.length);
-          rows = RemoveVillageById(rows, villageId);
-          console.log('стало строк ' + rows.length);
         } else {
           console.log("Button for building is not ready!");
+          // return to dorf1 page
+          var pageUrl = 'https://tx3.travian.ru/dorf1.php';
+          await sleep(getRandomMS(1, 2.5));
+          await page.goto(pageUrl);
         }
+        var j = rows.length;
+        for (var j = rows.length - 1; j >= 0; j--) {
+          if (rows[j].VillageId == villageId) {
+            console.log("Delete by index: " + j);
+            rows.splice(j, 1);
+          }
+        }
+        console.log(rows);
       }
     }
   }
@@ -171,9 +182,7 @@ async function StartBuilding(page, rows) {
 /** Starting building in free village */
 async function StartAllBuildings(page, accountId) {
   var rows = await getWhatWeCanBuildFromDB(accountId);
-  while (rows.length > 0) {
-    await StartBuilding(page, rows);
-  }
+  await StartBuilding(page, rows);
 }
 
 /** Returns array with villages hrefs */
