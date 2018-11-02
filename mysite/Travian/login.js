@@ -33,9 +33,17 @@ async function start(loginInfo) {
   if (!result) { return; }
 
 
-  // await ScrapingAllVillagesDorf1(page, accountId);
-
-  await StartAllBuildings(page, accountId);
+  //await ScrapingAllVillagesDorf1(page, accountId);
+  var i = 0;
+  while (i < 100) {
+    await StartAllBuildings(page, accountId);
+    i++;
+    var minSleepTimeInSec = 150;
+    var maxSleepTimeInSec = 300;
+    var waitTime = getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
+    console.log("sleep for " + waitTime + "sec");
+    await sleep(waitTime * 1000);
+  }
 
   await page.screenshot({ path: 'tx3.travian.png' });
 
@@ -101,7 +109,7 @@ async function getWhatWeCanBuildFromDB(accountId) {
   WHERE\
   id in (SELECT max(id) id FROM thetale.tr_VillageResources group by AccountId, VillageId, PositionId) \
   and AccountId = "+ accountId + "\
-  and level <= 5\
+  and level <= 3\
   ORDER BY level; "
     , "Travian");
 
@@ -122,7 +130,7 @@ function RemoveVillageById(arr, villageId) {
   return newArr;
 }
 
-async function StartBuilding(page, rows) {
+async function StartBuilding(page, rows, accountId) {
   while (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
     DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level + " " + rows[i].VillageId);
@@ -141,11 +149,36 @@ async function StartBuilding(page, rows) {
 
         var buttonReady = await page.evaluate(() => {
           const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
+          const buttonSelection2 = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer > div.section1';
+          const contentContainer = '#contentOuterContainer > div.contentContainer';
+          var innerText = "";
+
+          var selection = document.querySelector(contentContainer);
+          if (!selection) {
+            return false;
+          }
+          if (selection.textContent && selection.textContent) {
+            innerText = selection.textContent;
+            innerText = innerText.replace(/[^а-яА-Я]+/g, '');
+            if (innerText.indexOf('зданиеотстроенополностью') >= 0) {
+              return false;
+            }
+          }
+
           var selection = document.querySelector(buttonSelection);
+          if (!selection) {
+            selection = document.querySelector(buttonSelection2);
+            if (!selection) {
+              return false;
+            }
+          }
           if (selection.innerText) {
-            var innerText = selection.innerText.replace(/[^а-яА-Я]+/g, '');
+            innerText = selection.innerText.replace(/[^а-яА-Я0-9]+/g, '');
             console.log(innerText);
-            if (innerText.indexOf("Улучшитьдо") >= 0) {
+            if (innerText.indexOf("Улучшитьдоуровня1") >= 0) {
+              console.log("Улучшить готово до уровня 1");
+              return 1;
+            } else if (innerText.indexOf("Улучшитьдо") >= 0) {
               console.log("Улучшить готово");
               return true;
             } else if (innerText.indexOf("Построитьсархитектором") >= 0) {
@@ -156,15 +189,21 @@ async function StartBuilding(page, rows) {
           return false;
         });
         console.log(buttonReady);
-        if (buttonReady) {
+        if (buttonReady === 1) {
+          await page.mouse.click(946, 462);
+        } else if (buttonReady) {
           await page.mouse.click(814, 462);
         } else {
-          console.log("Button for building is not ready!");
+          console.log("Button for building is not ready or building complite!");
           // return to dorf1 page
           var pageUrl = 'https://tx3.travian.ru/dorf1.php';
-          await sleep(getRandomMS(1, 2.5));
           await page.goto(pageUrl);
+          await sleep(getRandomMS(1, 2.5));
+
+          //await page.goto(pageUrl);
         }
+        var dorf1PageInfo = await ScrapDorf1Page(page, gotoUrl, true);
+        SaveDorf1Page(dorf1PageInfo, accountId);
         var j = rows.length;
         for (var j = rows.length - 1; j >= 0; j--) {
           if (rows[j].VillageId == villageId) {
@@ -182,7 +221,7 @@ async function StartBuilding(page, rows) {
 /** Starting building in free village */
 async function StartAllBuildings(page, accountId) {
   var rows = await getWhatWeCanBuildFromDB(accountId);
-  await StartBuilding(page, rows);
+  await StartBuilding(page, rows, accountId);
 }
 
 /** Returns array with villages hrefs */
@@ -201,6 +240,7 @@ async function GetAllVillagesHref(accountId) {
 async function ScrapingAllVillagesDorf1(page, accountId) {
   var villagesHrefs = await GetAllVillagesHref(accountId);
   for (let i = 0; i < villagesHrefs.length; i++) {
+    await sleep(getRandomMS(2, 3));
     // scraping information from current dorf1 page
     var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
     SaveDorf1Page(dorf1PageInfo, accountId);
@@ -208,7 +248,7 @@ async function ScrapingAllVillagesDorf1(page, accountId) {
 }
 
 /** Save all information from Dorf1 page */
-async function SaveDorf1Page(dorf1PageInfo, accountId) {
+async function SaveDorf1Page(dorf1PageInfo, accountId, ) {
 
   SaveVillageList(dorf1PageInfo.villageList, accountId);
 
@@ -504,12 +544,14 @@ async function ScrapingFieldsInfo(page) {
 }
 
 /**Scraping storage capacity and current resourses in it */
-async function ScrapDorf1Page(page, gotoUrl) {
+async function ScrapDorf1Page(page, gotoUrl, withOutGoto) {
 
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 7;
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-  await page.goto(gotoUrl);
+  if (!withOutGoto) {
+    await page.goto(gotoUrl);
+  }
 
   var villageName = await page.evaluate(() => {
     const villageNameSelector = '#villageNameField';
