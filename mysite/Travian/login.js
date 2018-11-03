@@ -33,7 +33,7 @@ async function start(loginInfo) {
   if (!result) { return; }
 
 
-  //await ScrapingAllVillagesDorf1(page, accountId);
+  await ScrapingAllVillagesDorf1(page, accountId);
   var i = 0;
   while (i < 100) {
     await StartAllBuildings(page, accountId);
@@ -207,7 +207,7 @@ async function StartBuilding(page, rows, accountId) {
         var j = rows.length;
         for (var j = rows.length - 1; j >= 0; j--) {
           if (rows[j].VillageId == villageId) {
-            console.log("Delete by index: " + j);
+            //console.log("Delete by index: " + j);
             rows.splice(j, 1);
           }
         }
