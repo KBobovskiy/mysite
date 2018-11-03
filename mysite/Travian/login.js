@@ -32,8 +32,8 @@ async function start(loginInfo) {
   //console.log('result=' + result);
   if (!result) { return; }
 
+  //await ScrapingAllVillagesDorf1(page, accountId);
 
-  await ScrapingAllVillagesDorf1(page, accountId);
   var i = 0;
   while (i < 100) {
     await StartAllBuildings(page, accountId);
@@ -91,26 +91,39 @@ function GetFullID(acc, vill, posId) {
 async function getWhatWeCanBuildFromDB(accountId) {
   var nowDateTime = getNow();
   var rows = await DBCon.selectQuery(
-    "SELECT NeedToBuild.VillageId, NeedToBuild.Name, NeedToBuild.Href, NeedToBuild.Level, FreeVillages.VillageHref, FreeVillages.VillageName FROM thetale.tr_VillageResources NeedToBuild\
-  INNER JOIN( SELECT Villages.id VillageId\
-        , Villages.Name VillageName\
-        , Villages.Href VillageHref\
-        , Building.Name BuildingName\
-        , Building.EndOfBuilding \
-  FROM thetale.tr_Villages Villages \
-  LEFT JOIN(SELECT * FROM thetale.tr_VillageBuilding\
-    WHERE id in (SELECT max(id) id FROM thetale.tr_VillageBuilding Where AccountId = "+ accountId + " and EndOfBuilding >= '" + nowDateTime + "' group by VillageId)) Building\
-  ON Villages.AccountId = Building.AccountId\
-  and Villages.id = Building.VillageId\
-  WHERE Villages.AccountId = "+ accountId + "\
-  and IsNull(Building.Name) \
-  order by Building.EndOfBuilding\
-    ) FreeVillages on FreeVillages.VillageId = NeedToBuild.VillageId\
-  WHERE\
-  id in (SELECT max(id) id FROM thetale.tr_VillageResources group by AccountId, VillageId, PositionId) \
-  and AccountId = "+ accountId + "\
-  and level <= 3\
-  ORDER BY level; "
+    "SELECT\
+    AllRes.AccountId\
+      , AllRes.VillageId\
+      , AllRes.Name\
+      , AllRes.Level\
+      , AllRes.Href\
+      , AllRes.PositionId\
+      , Villages.Name VillageName\
+      , Villages.Href VillageHref\
+    FROM\
+          (\
+          SELECT\
+      VillRes.AccountId\
+          , VillRes.VillageId\
+          , VillRes.Name\
+          , VillRes.Href\
+          , VillRes.Level\
+          , VillRes.PositionId\
+    FROM thetale.tr_VillageResources VillRes\
+    INNER JOIN(\
+            SELECT max(id) id\
+            , AccountId\
+            , VillageId\
+            , PositionId\
+      FROM thetale.tr_VillageResources\
+      WHERE AccountId = "+ accountId + "\
+      group by AccountId, VillageId, PositionId\
+          ) IdList ON IdList.id = VillRes.id\
+    WHERE VillRes.Level < 10\
+          ) AllRes\
+    INNER JOIN thetale.tr_Villages Villages\
+    ON Villages.AccountId = AllRes.AccountId and Villages.id = AllRes.VillageId\
+    ORDER BY AllRes.Level;"
     , "Travian");
 
   DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
@@ -198,7 +211,7 @@ async function StartBuilding(page, rows, accountId) {
           // return to dorf1 page
           var pageUrl = 'https://tx3.travian.ru/dorf1.php';
           await page.goto(pageUrl);
-          await sleep(getRandomMS(1, 2.5));
+          await sleep(getRandomMS(3, 5));
 
           //await page.goto(pageUrl);
         }
