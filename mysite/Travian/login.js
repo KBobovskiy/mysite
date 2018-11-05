@@ -23,6 +23,7 @@ async function start(loginInfo) {
   // Let's testing, can we play or not
   var pageUrl = 'https://tx3.travian.ru/dorf1.php';
   await sleep(getRandomMS(1, 2.5));
+  console.log("Goto: " + pageUrl);
   await page.goto(pageUrl);
   var result = await page.evaluate(() => {
     const warehouseSelector = '#stockBarWarehouse';
@@ -32,14 +33,20 @@ async function start(loginInfo) {
   //console.log('result=' + result);
   if (!result) { return; }
 
+  //
+  //
+  //
   //await ScrapingAllVillagesDorf1(page, accountId);
+  //
+  //
+  //
 
   var i = 0;
   while (i < 100) {
     await StartAllBuildings(page, accountId);
     i++;
-    var minSleepTimeInSec = 150;
-    var maxSleepTimeInSec = 300;
+    var minSleepTimeInSec = 180;
+    var maxSleepTimeInSec = 360;
     var waitTime = getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
     console.log("sleep for " + waitTime + "sec");
     await sleep(waitTime * 1000);
@@ -89,8 +96,7 @@ function GetFullID(acc, vill, posId) {
 }
 
 async function getWhatWeCanBuildFromDB(accountId) {
-  var nowDateTime = getNow();
-  var rows = await DBCon.selectQuery(
+  var query =
     "SELECT\
     AllRes.AccountId\
       , AllRes.VillageId\
@@ -123,8 +129,28 @@ async function getWhatWeCanBuildFromDB(accountId) {
           ) AllRes\
     INNER JOIN thetale.tr_Villages Villages\
     ON Villages.AccountId = AllRes.AccountId and Villages.id = AllRes.VillageId\
+    LEFT JOIN (\
+      SELECT\
+        AccountId\
+        ,VillageId\
+        ,EndOfBuilding\
+      FROM thetale.tr_VillageBuilding as VillBuilding\
+      WHERE\
+        VillBuilding.AccountId = "+ accountId + "\
+        and VillBuilding.id in (\
+          SELECT  \
+            max(id) id\
+          FROM thetale.tr_VillageBuilding as VillBuildingForMaxId\
+          WHERE\
+            AccountId = "+ accountId + "\
+          GROUP BY\
+            AccountId, VillageId)\
+      ) as VillBuilding\
+      ON VillBuilding.AccountId = AllRes.AccountId and VillBuilding.VillageId = AllRes.VillageId\
+    WHERE (VillBuilding.EndOfBuilding <= '" + getNow() + "' OR VillBuilding.EndOfBuilding is null)\
     ORDER BY AllRes.Level;"
-    , "Travian");
+  console.log(query);
+  var rows = await DBCon.selectQuery(query, "Travian");
 
   DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
   return rows;
@@ -154,10 +180,12 @@ async function StartBuilding(page, rows, accountId) {
       var minSleepTimeInSec = 0.3;
       var maxSleepTimeInSec = 2;
       await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+      console.log("Goto: " + gotoUrl);
       await page.goto(gotoUrl);
       gotoUrl = rows[i].Href;
       if (gotoUrl) {
         await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+        console.log("Goto: " + gotoUrl);
         await page.goto(gotoUrl);
 
         var buttonReady = await page.evaluate(() => {
@@ -170,7 +198,7 @@ async function StartBuilding(page, rows, accountId) {
           if (!selection) {
             return false;
           }
-          if (selection.textContent && selection.textContent) {
+          if (selection && selection.textContent) {
             innerText = selection.textContent;
             innerText = innerText.replace(/[^а-яА-Я]+/g, '');
             if (innerText.indexOf('зданиеотстроенополностью') >= 0) {
@@ -188,7 +216,7 @@ async function StartBuilding(page, rows, accountId) {
           if (selection.innerText) {
             innerText = selection.innerText.replace(/[^а-яА-Я0-9]+/g, '');
             console.log(innerText);
-            if (innerText.indexOf("Улучшитьдоуровня1") >= 0) {
+            if (innerText === "Улучшитьдоуровня1") {
               console.log("Улучшить готово до уровня 1");
               return 1;
             } else if (innerText.indexOf("Улучшитьдо") >= 0) {
@@ -201,7 +229,7 @@ async function StartBuilding(page, rows, accountId) {
           }
           return false;
         });
-        console.log(buttonReady);
+        console.log("buttonReady=" + buttonReady);
         if (buttonReady === 1) {
           await page.mouse.click(946, 462);
         } else if (buttonReady) {
@@ -210,12 +238,15 @@ async function StartBuilding(page, rows, accountId) {
           console.log("Button for building is not ready or building complite!");
           // return to dorf1 page
           var pageUrl = 'https://tx3.travian.ru/dorf1.php';
+          console.log("Goto: " + pageUrl);
           await page.goto(pageUrl);
           await sleep(getRandomMS(3, 5));
 
           //await page.goto(pageUrl);
         }
-        var dorf1PageInfo = await ScrapDorf1Page(page, gotoUrl, true);
+        console.log("ScrapDorf1Page after click trying button start building");
+        var gotoUrl = 'https://tx3.travian.ru/dorf1.php';
+        var dorf1PageInfo = await ScrapDorf1Page(page, gotoUrl);
         SaveDorf1Page(dorf1PageInfo, accountId);
         var j = rows.length;
         for (var j = rows.length - 1; j >= 0; j--) {
@@ -234,7 +265,19 @@ async function StartBuilding(page, rows, accountId) {
 /** Starting building in free village */
 async function StartAllBuildings(page, accountId) {
   var rows = await getWhatWeCanBuildFromDB(accountId);
+  console.log("getWhatWeCanBuildFromDB return: " + rows.length + " rows");
+  console.log(rows);
+  //
+  //
+  //
+  //
+  //
   await StartBuilding(page, rows, accountId);
+  //
+  //
+  //
+  //
+  //
 }
 
 /** Returns array with villages hrefs */
@@ -253,7 +296,7 @@ async function GetAllVillagesHref(accountId) {
 async function ScrapingAllVillagesDorf1(page, accountId) {
   var villagesHrefs = await GetAllVillagesHref(accountId);
   for (let i = 0; i < villagesHrefs.length; i++) {
-    await sleep(getRandomMS(2, 3));
+    await sleep(getRandomMS(4, 8));
     // scraping information from current dorf1 page
     var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
     SaveDorf1Page(dorf1PageInfo, accountId);
@@ -291,7 +334,8 @@ async function GetAllVillagesHref() {
 
 /** Save current building houses with time of the end of finishing the construction */
 async function SaveVillageBuildingHouses(buildingHouses, accountId, villageId) {
-  //console.log(buildingHouses);
+  console.log("Building houses in village: " + villageId);
+  console.log(buildingHouses);
   if (buildingHouses && accountId && villageId) {
 
     buildingHouses.forEach(building => {
@@ -363,7 +407,9 @@ async function SaveVillageList(villageList, accountId) {
 async function LoginToTravian(page, loginInfo) {
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 7;
-  await page.goto('https://tx3.travian.ru/');
+  var pageUrl = 'https://tx3.travian.ru/';
+  console.log("Goto: " + pageUrl);
+  await page.goto(pageUrl);
   let login = loginInfo.account.login;
   let password = loginInfo.account.password;
   await page.evaluate((login, password) => {
@@ -404,13 +450,22 @@ async function ScrapingStoreInfo(page) {
     const ironSelector = '#l3';
     const cropSelector = '#l4';
     var result = {};
-    result.warehouse = GetNumber(document.querySelector(warehouseSelector).textContent, true);
-    result.granary = GetNumber(document.querySelector(granarySelector).textContent, true);
-    result.wood = GetNumber(document.querySelector(woodSelector).textContent, true);
-    result.clay = GetNumber(document.querySelector(claySelector).textContent, true);
-    result.iron = GetNumber(document.querySelector(ironSelector).textContent, true);
-    result.crop = GetNumber(document.querySelector(cropSelector).textContent, true);
-    result.freeCrop = GetNumber(document.querySelector(Selector).textContent, true);
+    result.warehouse = 0;
+    result.granary = 0;
+    result.wood = 0;
+    result.clay = 0;
+    result.iron = 0;
+    result.crop = 0;
+    result.freeCrop = 0;
+    if (document.querySelector(warehouseSelector)) {
+      result.warehouse = GetNumber(document.querySelector(warehouseSelector).textContent, true);
+      result.granary = GetNumber(document.querySelector(granarySelector).textContent, true);
+      result.wood = GetNumber(document.querySelector(woodSelector).textContent, true);
+      result.clay = GetNumber(document.querySelector(claySelector).textContent, true);
+      result.iron = GetNumber(document.querySelector(ironSelector).textContent, true);
+      result.crop = GetNumber(document.querySelector(cropSelector).textContent, true);
+      result.freeCrop = GetNumber(document.querySelector(Selector).textContent, true);
+    }
     return result;
   });
   if (!storageInfo) {
@@ -442,10 +497,16 @@ async function ScrapingProdactionInfo(page) {
     const ironSelector = '#production > tbody > tr:nth-child(3) > td.num';
     const cropSelector = '#production > tbody > tr:nth-child(4) > td.num';
     var result = {};
-    result.wood = GetNumber(document.querySelector(woodSelector).textContent, true);
-    result.clay = GetNumber(document.querySelector(claySelector).textContent, true);
-    result.iron = GetNumber(document.querySelector(ironSelector).textContent, true);
-    result.crop = GetNumber(document.querySelector(cropSelector).textContent, true);
+    result.wood = 0;
+    result.clay = 0;
+    result.iron = 0;
+    result.crop = 0;
+    if (document.querySelector(woodSelector)) {
+      result.wood = GetNumber(document.querySelector(woodSelector).textContent, true);
+      result.clay = GetNumber(document.querySelector(claySelector).textContent, true);
+      result.iron = GetNumber(document.querySelector(ironSelector).textContent, true);
+      result.crop = GetNumber(document.querySelector(cropSelector).textContent, true);
+    }
     return result;
   });
   if (!prodactionInfo) {
@@ -528,27 +589,29 @@ async function ScrapingFieldsInfo(page) {
     var villageFieldsTemplateSelector = '#rx';
 
     var allFields = $(villageFieldsTemplateSelector);
-    for (var i = 0; i < allFields[0].children.length; i++) {
+    if (allFields && allFields[0]) {
+      for (var i = 0; i < allFields[0].children.length; i++) {
 
-      var fieldName = GetString(allFields[0].children[i].getAttribute('alt'));
-      var fieldLvl = GetNumber(fieldName);
-      var fieldName = fieldName.replace(/[0-9]+/g, '');
-      var fieldName = fieldName.replace('Уровень', '');
-      fieldName = fieldName.trim();
-      fieldName = fieldName.replace(/[^a-z*A-Z*а-я*А-Я*0-9* ]+/g, '');
+        var fieldName = GetString(allFields[0].children[i].getAttribute('alt'));
+        var fieldLvl = GetNumber(fieldName);
+        var fieldName = fieldName.replace(/[0-9]+/g, '');
+        var fieldName = fieldName.replace('Уровень', '');
+        fieldName = fieldName.trim();
+        fieldName = fieldName.replace(/[^a-z*A-Z*а-я*А-Я*0-9* ]+/g, '');
 
-      var fieldLink = allFields[0].children[i].href;
-      var idPos = fieldLink.indexOf('id=');
-      if (idPos > 0) {
-        //console.log(idPos);
-        var id = fieldLink.slice(idPos + 3);
-      }
+        var fieldLink = allFields[0].children[i].href;
+        var idPos = fieldLink.indexOf('id=');
+        if (idPos > 0) {
+          //console.log(idPos);
+          var id = fieldLink.slice(idPos + 3);
+        }
 
-      if (fieldLink.indexOf('dorf2.php') > 0) {
-        //console.log(fieldLink);
-        continue;
-      }
-      fieldsList.push({ name: fieldName, level: fieldLvl, positionId: id, href: fieldLink });
+        if (fieldLink.indexOf('dorf2.php') > 0) {
+          //console.log(fieldLink);
+          continue;
+        }
+        fieldsList.push({ name: fieldName, level: fieldLvl, positionId: id, href: fieldLink });
+      };
     };
 
     return fieldsList;
@@ -563,20 +626,29 @@ async function ScrapDorf1Page(page, gotoUrl, withOutGoto) {
   var maxSleepTimeInSec = 7;
   await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
   if (!withOutGoto) {
+    console.log("Goto: " + gotoUrl);
     await page.goto(gotoUrl);
   }
 
   var villageName = await page.evaluate(() => {
     const villageNameSelector = '#villageNameField';
-    return document.querySelector(villageNameSelector).textContent.replace('.', '').trim();
+    var res = document.querySelector(villageNameSelector);
+    if (res && res.textContent) {
+      return res.textContent.replace('.', '').trim();
+    }
+    return "Error";
   });
 
+  console.log("ScrapingStoreInfo(page)");
   var storageInfo = await ScrapingStoreInfo(page);
 
+  console.log("ScrapingProdactionInfo(page)");
   var prodactionInfo = await ScrapingProdactionInfo(page);
 
+  console.log("ScrapingVillageList(page)");
   var villageList = await ScrapingVillageList(page);
 
+  console.log("ScrapingFieldsInfo(page)");
   var villageFields = await ScrapingFieldsInfo(page);
 
   //console.log("villageName='" + villageName + "'");
@@ -587,8 +659,23 @@ async function ScrapDorf1Page(page, gotoUrl, withOutGoto) {
       villageId = villageList[i].id;
     }
   }
-  //console.log("villageId='" + villageId + "'");
 
+  console.log("ScrapingBuildingHouses(page)");
+  var buildingHouses = await ScrapingBuildingHouses(page);
+
+
+  return {
+    storageInfo: storageInfo,
+    prodactionInfo: prodactionInfo,
+    villageName: villageName,
+    villageId: villageId,
+    villageList: villageList,
+    villageFields: villageFields,
+    buildingHouses: buildingHouses
+  };
+}
+
+async function ScrapingBuildingHouses(page) {
 
   var buildingHouses = await page.evaluate(() => {
 
@@ -622,21 +709,15 @@ async function ScrapDorf1Page(page, gotoUrl, withOutGoto) {
     }
     return buildingHousesList;
   })
-
-  return {
-    storageInfo: storageInfo,
-    prodactionInfo: prodactionInfo,
-    villageName: villageName,
-    villageId: villageId,
-    villageList: villageList,
-    villageFields: villageFields,
-    buildingHouses: buildingHouses
-  };
+  if (!buildingHouses) {
+    buildingHouses = {};
+  }
+  return buildingHouses;
 }
 
 /** Returns random number in miliseconds for sleeping */
 function getRandomMS(min, max) {
-  return Math.random() * 1000 * (max - min) + min;
+  return (Math.random() * (max - min) + min) * 1000;
 }
 
 function getNow() {
@@ -645,6 +726,7 @@ function getNow() {
   nowDateTime = nowDateTime.toISOString();
   nowDateTime = nowDateTime.slice(0, 19).replace('T', ' ');
   console.log("Date time = " + nowDateTime);
+  return nowDateTime;
 }
 
 start(login_info);
