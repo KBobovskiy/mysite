@@ -4,8 +4,10 @@ const DBCon = require("../serverApp/DBConnection.js");
 const Debug = require("../serverApp/debug.js");
 const sleep = require('sleep-promise');
 
-const Scraper = require("TravianScraper");
-const Saver = require("TravianSaver");
+const Scraper = require("./TravianScraper");
+const Saver = require("./TravianSaver");
+const Reader = require("./TravianDBReader.js");
+const Common = require("./CommonFunc.js");
 
 var fs = require('fs')
 
@@ -26,28 +28,29 @@ async function start(loginInfo) {
 
   // Let's testing, can we play or not
   var pageUrl = 'https://tx3.travian.ru/dorf1.php';
-  await sleep(getRandomMS(1, 2.5));
-  console.log("Goto: " + pageUrl);
+  await sleep(Common.getRandomMS(1, 2.5));
+  Debug.debugPrint("Goto: " + pageUrl);
   await page.goto(pageUrl);
   var result = await page.evaluate(() => {
     const warehouseSelector = '#stockBarWarehouse';
-    //console.log("typeof = " + typeof document.querySelector(warehouseSelector));
+    //Debug.debugPrint("typeof = " + typeof document.querySelector(warehouseSelector));
     return !(typeof document.querySelector(warehouseSelector) === 'undeined');
   });
-  //console.log('result=' + result);
+  //Debug.debugPrint('result=' + result);
   if (!result) { return; }
 
   //
   //
   //
+  /*
   var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
   var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
   while (Dorf1PageInfo) {
-    await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
     Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
     await sleep(1000);
   }
-
+*/
   //
   //
   //
@@ -58,8 +61,8 @@ async function start(loginInfo) {
     i++;
     var minSleepTimeInSec = 180;
     var maxSleepTimeInSec = 360;
-    var waitTime = getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
-    console.log("sleep for " + waitTime + "sec");
+    var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
+    Debug.debugPrint("sleep for " + waitTime + "sec");
     await sleep(waitTime * 1000);
   }
 
@@ -70,20 +73,20 @@ async function start(loginInfo) {
 }
 
 function GetString(strValue) {
-  //console.log(strValue);
+  //Debug.debugPrint(strValue);
   strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-]+/g, ' ');
-  //console.log(strValue);
+  //Debug.debugPrint(strValue);
   strValue = strValue.replace(/ +/g, ' ');
-  //console.log(strValue);
+  //Debug.debugPrint(strValue);
   strValue = strValue.trim();
-  //console.log(strValue);
+  //Debug.debugPrint(strValue);
   return strValue;
 }
 
 function GetNumber(strValue, parseToInt) {
   strValue = strValue.replace(/[^0-9-]/g, '');
   strValue = strValue.trim();
-  console.log(strValue);
+  Debug.debugPrint(strValue);
   if (parseToInt) {
     return parseInt(strValue);
   }
@@ -91,10 +94,10 @@ function GetNumber(strValue, parseToInt) {
 }
 
 function GetTime(strValue) {
-  //console.log(strValue);
+  //Debug.debugPrint(strValue);
   strValue = strValue.match(/[0-9]+:[0-9]+:[0-9]+/);
   if (strValue.length = 1) {
-    //console.log(strValue[0]);
+    //Debug.debugPrint(strValue[0]);
     return strValue[0];
   }
   return '';
@@ -106,69 +109,9 @@ function GetFullID(acc, vill, posId) {
   return id;
 }
 
-async function getWhatWeCanBuildFromDB(accountId) {
-  var query =
-    "SELECT\
-    AllRes.AccountId\
-      , AllRes.VillageId\
-      , AllRes.Name\
-      , AllRes.Level\
-      , AllRes.Href\
-      , AllRes.PositionId\
-      , Villages.Name VillageName\
-      , Villages.Href VillageHref\
-    FROM\
-          (\
-          SELECT\
-      VillRes.AccountId\
-          , VillRes.VillageId\
-          , VillRes.Name\
-          , VillRes.Href\
-          , VillRes.Level\
-          , VillRes.PositionId\
-    FROM thetale.tr_VillageResources VillRes\
-    INNER JOIN(\
-            SELECT max(id) id\
-            , AccountId\
-            , VillageId\
-            , PositionId\
-      FROM thetale.tr_VillageResources\
-      WHERE AccountId = "+ accountId + "\
-      group by AccountId, VillageId, PositionId\
-          ) IdList ON IdList.id = VillRes.id\
-    WHERE VillRes.Level < 10\
-          ) AllRes\
-    INNER JOIN thetale.tr_Villages Villages\
-    ON Villages.AccountId = AllRes.AccountId and Villages.id = AllRes.VillageId\
-    LEFT JOIN (\
-      SELECT\
-        AccountId\
-        ,VillageId\
-        ,EndOfBuilding\
-      FROM thetale.tr_VillageBuilding as VillBuilding\
-      WHERE\
-        VillBuilding.AccountId = "+ accountId + "\
-        and VillBuilding.id in (\
-          SELECT  \
-            max(id) id\
-          FROM thetale.tr_VillageBuilding as VillBuildingForMaxId\
-          WHERE\
-            AccountId = "+ accountId + "\
-          GROUP BY\
-            AccountId, VillageId)\
-      ) as VillBuilding\
-      ON VillBuilding.AccountId = AllRes.AccountId and VillBuilding.VillageId = AllRes.VillageId\
-    WHERE (VillBuilding.EndOfBuilding <= '" + getNow() + "' OR VillBuilding.EndOfBuilding is null)\
-    ORDER BY AllRes.Level;"
-  console.log(query);
-  var rows = await DBCon.selectQuery(query, "Travian");
-
-  DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
-  return rows;
-}
 
 function RemoveVillageById(arr, villageId) {
-  console.log("Удаляем деревню: " + villageId);
+  Debug.debugPrint("Удаляем деревню: " + villageId);
   var i = arr.length
   var newArr = [];
   for (var i = arr.length - 1; i >= 0; i--) {
@@ -176,7 +119,7 @@ function RemoveVillageById(arr, villageId) {
       newArr.push(arr[i]);
     }
   }
-  console.log(arr);
+  Debug.debugPrint(arr);
   return newArr;
 }
 
@@ -190,13 +133,13 @@ async function StartBuilding(page, rows, accountId) {
     if (gotoUrl) {
       var minSleepTimeInSec = 0.3;
       var maxSleepTimeInSec = 2;
-      await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-      console.log("Goto: " + gotoUrl);
+      await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+      Debug.debugPrint("Goto: " + gotoUrl);
       await page.goto(gotoUrl);
       gotoUrl = rows[i].Href;
       if (gotoUrl) {
-        await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-        console.log("Goto: " + gotoUrl);
+        await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+        Debug.debugPrint("Goto: " + gotoUrl);
         await page.goto(gotoUrl);
 
         var buttonReady = await page.evaluate(() => {
@@ -226,47 +169,47 @@ async function StartBuilding(page, rows, accountId) {
           }
           if (selection.innerText) {
             innerText = selection.innerText.replace(/[^а-яА-Я0-9]+/g, '');
-            console.log(innerText);
+            //Debug.debugPrint(innerText);
             if (innerText === "Улучшитьдоуровня1") {
-              console.log("Улучшить готово до уровня 1");
+              //Debug.debugPrint("Улучшить готово до уровня 1");
               return 1;
             } else if (innerText.indexOf("Улучшитьдо") >= 0) {
-              console.log("Улучшить готово");
+              //Debug.debugPrint("Улучшить готово");
               return true;
             } else if (innerText.indexOf("Построитьсархитектором") >= 0) {
-              console.log("Архитектор");
+              //Debug.debugPrint("Архитектор");
               return false;
             }
           }
           return false;
         });
-        console.log("buttonReady=" + buttonReady);
+        Debug.debugPrint("buttonReady=" + buttonReady);
         if (buttonReady === 1) {
           await page.mouse.click(946, 462);
         } else if (buttonReady) {
           await page.mouse.click(814, 462);
         } else {
-          console.log("Button for building is not ready or building complite!");
+          Debug.debugPrint("Button for building is not ready or building complite!");
           // return to dorf1 page
           var pageUrl = 'https://tx3.travian.ru/dorf1.php';
-          console.log("Goto: " + pageUrl);
+          Debug.debugPrint("Goto: " + pageUrl);
           await page.goto(pageUrl);
-          await sleep(getRandomMS(3, 5));
+          await sleep(Common.getRandomMS(3, 5));
 
           //await page.goto(pageUrl);
         }
-        console.log("ScrapDorf1Page after click trying button start building");
+        Debug.debugPrint("ScrapDorf1Page after click trying button start building");
         var gotoUrl = 'https://tx3.travian.ru/dorf1.php';
-        var dorf1PageInfo = await ScrapDorf1Page(page, gotoUrl);
-        SaveDorf1Page(dorf1PageInfo, accountId);
+        var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, gotoUrl);
+        Saver.SaveDorf1Page(dorf1PageInfo, accountId);
         var j = rows.length;
         for (var j = rows.length - 1; j >= 0; j--) {
           if (rows[j].VillageId == villageId) {
-            //console.log("Delete by index: " + j);
+            //Debug.debugPrint("Delete by index: " + j);
             rows.splice(j, 1);
           }
         }
-        console.log(rows);
+        Debug.debugPrint(rows);
       }
     }
   }
@@ -275,9 +218,9 @@ async function StartBuilding(page, rows, accountId) {
 
 /** Starting building in free village */
 async function StartAllBuildings(page, accountId) {
-  var rows = await getWhatWeCanBuildFromDB(accountId);
-  console.log("getWhatWeCanBuildFromDB return: " + rows.length + " rows");
-  console.log(rows);
+  var rows = await Reader.getWhatWeCanBuildFromDB(accountId);
+  Debug.debugPrint("getWhatWeCanBuildFromDB return: " + rows.length + " rows");
+  Debug.debugPrint(rows);
   //
   //
   //
@@ -291,33 +234,6 @@ async function StartAllBuildings(page, accountId) {
   //
 }
 
-/** Returns array with villages hrefs */
-async function GetAllVillagesHref(accountId) {
-  var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = " + accountId, "Travian");
-  var hrefs = [];
-  while (rows.length > 0) {
-    let href = rows.pop();
-    hrefs.push(href.href);
-  }
-  console.log(hrefs);
-  return hrefs;
-}
-
-
-
-/** Returns array with villages hrefs
- * 
- */
-async function GetAllVillagesHref() {
-  var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = 1", "Travian");
-  var hrefs = [];
-  while (rows.length > 0) {
-    let href = rows.pop();
-    hrefs.push(href.href);
-  }
-  console.log(hrefs);
-  return hrefs;
-}
 
 
 /** Loging into the game, return 1 if we in the game */
@@ -325,7 +241,7 @@ async function LoginToTravian(page, loginInfo) {
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 7;
   var pageUrl = 'https://tx3.travian.ru/';
-  console.log("Goto: " + pageUrl);
+  Debug.debugPrint("Goto: " + pageUrl);
   await page.goto(pageUrl);
   let login = loginInfo.account.login;
   let password = loginInfo.account.password;
@@ -338,26 +254,13 @@ async function LoginToTravian(page, loginInfo) {
   const lowResolutionCheckBoxSelector = '#lowRes';
 
   await page.click(lowResolutionCheckBoxSelector);
-  await sleep(getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+  await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
   await page.mouse.click(856, 378);
-  await sleep(getRandomMS(minSleepTimeInSec / 2, maxSleepTimeInSec / 2));
+  await sleep(Common.getRandomMS(minSleepTimeInSec / 2, maxSleepTimeInSec / 2));
   return 1;
 }
 
 
-/** Returns random number in miliseconds for sleeping */
-function getRandomMS(min, max) {
-  return (Math.random() * (max - min) + min) * 1000;
-}
-
-function getNow() {
-  var nowDateTime = new Date();
-  nowDateTime.setHours(nowDateTime.getHours() + 3);
-  nowDateTime = nowDateTime.toISOString();
-  nowDateTime = nowDateTime.slice(0, 19).replace('T', ' ');
-  console.log("Date time = " + nowDateTime);
-  return nowDateTime;
-}
 
 start(login_info);
 
