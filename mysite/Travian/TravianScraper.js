@@ -5,7 +5,7 @@ const TravianDBReader = require("./TravianDBReader.js");
 const Common = require("./CommonFunc.js");
 const Debug = require("../serverApp/debug.js");
 
-/** Scraping all information from Dorf1 for all villages and save it into DB */
+/** Scraping all information from Dorf1 for all villages */
 async function ScrapingAllVillagesDorf1(page, accountId) {
   var villagesHrefs = await TravianDBReader.GetAllVillagesHref(accountId);
   var result = [];
@@ -14,6 +14,20 @@ async function ScrapingAllVillagesDorf1(page, accountId) {
     // scraping information from current dorf1 page
     var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
     result.push(dorf1PageInfo);
+  }
+  return result;
+}
+
+/** Scraping all information from Dorf2 for all villages */
+async function ScrapingAllVillagesDorf2(page, accountId) {
+  var villagesHrefs = await TravianDBReader.GetAllVillagesHref(accountId);
+  var result = [];
+  for (let i = 0; i < villagesHrefs.length; i++) {
+    await sleep(Common.getRandomMS(4, 8));
+    // scraping information from current dorf1 page
+    var dorf2PageInfo = await ScrapDorf2Page(page, villagesHrefs[i]);
+    result.push(dorf2PageInfo);
+    break;
   }
   return result;
 }
@@ -307,8 +321,119 @@ async function ScrapingBuildingHouses(page) {
   return buildingHouses;
 }
 
+async function ScrapingBuildingHouses(page) {
+  var villageHouses = await page.evaluate(() => {
+
+    var buildingHouseTemplateSelector = '#village_map > div.buildingSlot.a';
+    var i = 26;
+    var houseSelector = buildingHouseTemplateSelector + i;
+    var elem = $(houseSelector);
+    console.log(elem && elem.innerText);
+    if (elem && elem.innerText) {
+      var houseClass = elem.attr('class');
+      console.log(houseClass);
+      var houseLevelSelector = houseSelector + ' > div';
+    }
+    buildingHousesList = {
+      houseSelector: houseSelector,
+      houseLevelSelector: houseLevelSelector,
+      houseClass: houseClass
+
+
+    };
+
+    //#village_map > div.buildingSlot.a26.g15.aid26 > div
+    /*
+        var buildingHousesList = new Array;
+        for (var i = 1; i < 3; i++) {
+          var name = $(buildingHouseNameTemplateSelector.replace('buldingIndex', i));
+          var level = $(buildingHouseLevelTemplateSelector.replace('buldingIndex', i));
+          var duration = $(buildingHouseDurationTemplateSelector.replace('buldingIndex', i));
+    
+          if (name.length > 0) {
+    
+            nameText = name[0].innerText
+            nameText = nameText.replace(level[0].innerText, '');
+            //Debug.debugPrint(nameText);
+    
+            levelText = level[0].innerText;
+            levelText = levelText.replace('Уровень', '').trim();
+            //Debug.debugPrint(levelText);
+    
+            var endTimeConstruction = duration[0].innerText;
+            var pos = endTimeConstruction.indexOf('Готово в');
+            endTimeConstruction = endTimeConstruction.slice(pos + 8).trim();
+            //Debug.debugPrint(endTimeConstruction);
+    
+            buildingHousesList.push({ name: nameText, level: levelText, endOfConstructionTime: endTimeConstruction });
+          }
+        }
+        */
+    return buildingHousesList;
+  })
+  console.log(villageHouses);
+  if (!villageHouses) {
+    villageHouses = new Array;
+  }
+  return villageHouses;
+}
+
+/**Scraping storage capacity and current resourses in it */
+async function ScrapDorf2Page(page, gotoUrl, withOutGoto) {
+
+  var minSleepTimeInSec = 3;
+  var maxSleepTimeInSec = 7;
+  await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+  gotoUrl = gotoUrl.replace('orf1.', 'orf2.');
+  if (!withOutGoto) {
+    Debug.debugPrint("Goto: " + gotoUrl);
+    await page.goto(gotoUrl);
+  }
+
+  var villageName = await page.evaluate(() => {
+    const villageNameSelector = '#villageNameField';
+    var res = document.querySelector(villageNameSelector);
+    if (res && res.textContent) {
+      return res.textContent.replace('.', '').trim();
+    }
+    return "Error";
+  });
+
+  Debug.debugPrint("ScrapingStoreInfo(page)");
+  var storageInfo = await ScrapingStoreInfo(page);
+
+  Debug.debugPrint("ScrapingVillageList(page)");
+  var villageList = await ScrapingVillageList(page);
+
+  Debug.debugPrint("ScrapingFieldsInfo(page)");
+  var villageHouses = await ScrapingHousesInfo(page);
+
+  Debug.debugPrint("villageName='" + villageName + "'");
+  var villageId = 0;
+  for (let i = 0; i < villageList.length; i++) {
+    //Debug.debugPrint("villageList[i].name = '" + villageList[i].name + "'");
+    if (villageName == villageList[i].name) {
+      villageId = villageList[i].id;
+    }
+  }
+
+  Debug.debugPrint("ScrapingBuildingHouses(page)");
+  var buildingHouses = await ScrapingBuildingHouses(page);
+
+
+  return {
+    storageInfo: storageInfo,
+    villageName: villageName,
+    villageId: villageId,
+    villageList: villageList,
+    villageHouses: villageHouses,
+    buildingHouses: buildingHouses
+  };
+}
+
 
 module.exports.ScrapingAllVillagesDorf1 = ScrapingAllVillagesDorf1;
+module.exports.ScrapingAllVillagesDorf2 = ScrapingAllVillagesDorf2;
 module.exports.ScrapingStoreInfo = ScrapingStoreInfo;
 module.exports.ScrapingProdactionInfo = ScrapingProdactionInfo;
 module.exports.ScrapingVillageList = ScrapingVillageList;
