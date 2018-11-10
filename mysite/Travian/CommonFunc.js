@@ -5,6 +5,19 @@ function getRandomMS(min, max) {
   return (Math.random() * (max - min) + min) * 1000;
 }
 
+function NumberWithLeadingZero(number, stringLength) {
+  var str = "" + number;
+  if (stringLength > 0) {
+
+    var str = "0";
+    for (var i = 2; i <= stringLength; i++) {
+      str = str + "0";
+    }
+    str = str + number;
+    str = str.slice(-stringLength);
+  }
+  return str;
+}
 
 function getNow() {
   var nowDateTime = new Date();
@@ -17,3 +30,4 @@ function getNow() {
 
 module.exports.getRandomMS = getRandomMS;
 module.exports.getNow = getNow;
+module.exports.NumberWithLeadingZero = NumberWithLeadingZero;

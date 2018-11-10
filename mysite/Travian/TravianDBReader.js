@@ -4,22 +4,22 @@ const Common = require("./CommonFunc.js");
 
 /** Returns array with villages hrefs */
 async function GetAllVillagesHref(accountId) {
-    var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = " + accountId, "Travian");
-    var hrefs = [];
-    while (rows.length > 0) {
-        let href = rows.pop();
-        hrefs.push(href.href);
-    }
-    Debug.debugPrint(hrefs);
-    return hrefs;
+  var rows = await DBCon.selectQuery("SELECT distinct href FROM thetale.tr_Villages where AccountId = " + accountId, "Travian");
+  var hrefs = [];
+  while (rows.length > 0) {
+    let href = rows.pop();
+    hrefs.push(href.href);
+  }
+  Debug.debugPrint(hrefs);
+  return hrefs;
 }
 
 /**
  * Returns array with buildings needed to upgrade
  */
 async function getWhatWeCanBuildFromDB(accountId) {
-    var query =
-        "SELECT\
+  var query =
+    "SELECT\
     AllRes.AccountId\
       , AllRes.VillageId\
       , AllRes.Name\
@@ -71,11 +71,11 @@ async function getWhatWeCanBuildFromDB(accountId) {
       ON VillBuilding.AccountId = AllRes.AccountId and VillBuilding.VillageId = AllRes.VillageId\
     WHERE (VillBuilding.EndOfBuilding <= '" + Common.getNow() + "' OR VillBuilding.EndOfBuilding is null)\
     ORDER BY AllRes.Level;"
-    Debug.debugPrint(query);
-    var rows = await DBCon.selectQuery(query, "Travian");
+  Debug.debugPrint(query);
+  var rows = await DBCon.selectQuery(query, "Travian");
 
-    DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
-    return rows;
+  DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
+  return rows;
 }
 
 module.exports.GetAllVillagesHref = GetAllVillagesHref;

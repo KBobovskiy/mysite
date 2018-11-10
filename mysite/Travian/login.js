@@ -43,22 +43,23 @@ async function start(loginInfo) {
   //
   //
   /*
-  var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
-  var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-  while (Dorf1PageInfo) {
-    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
-    Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-    await sleep(1000);
-  }
-*/
+    var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+    var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+    while (Dorf1PageInfo) {
+      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
+      Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+      await sleep(1000);
+    }
+  */
+
   //
   //
   //
 
   // lets start scraping Dorf2 page
-  var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
-  console.log(arrayWithDorf2PageInfo);
-  /*
+  //var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
+  //console.log(arrayWithDorf2PageInfo);
+
 
   var i = 0;
   while (i < 100) {
@@ -70,7 +71,7 @@ async function start(loginInfo) {
     Debug.debugPrint("sleep for " + waitTime + "sec");
     await sleep(waitTime * 1000);
   }
-*/
+
 
   await page.screenshot({ path: 'tx3.travian.png' });
 

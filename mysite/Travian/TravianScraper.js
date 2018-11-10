@@ -321,6 +321,7 @@ async function ScrapingBuildingHouses(page) {
   return buildingHouses;
 }
 
+/*
 async function ScrapingBuildingHouses(page) {
   var villageHouses = await page.evaluate(() => {
 
@@ -343,7 +344,6 @@ async function ScrapingBuildingHouses(page) {
     };
 
     //#village_map > div.buildingSlot.a26.g15.aid26 > div
-    /*
         var buildingHousesList = new Array;
         for (var i = 1; i < 3; i++) {
           var name = $(buildingHouseNameTemplateSelector.replace('buldingIndex', i));
@@ -368,7 +368,7 @@ async function ScrapingBuildingHouses(page) {
             buildingHousesList.push({ name: nameText, level: levelText, endOfConstructionTime: endTimeConstruction });
           }
         }
-        */
+        
     return buildingHousesList;
   })
   console.log(villageHouses);
@@ -377,6 +377,7 @@ async function ScrapingBuildingHouses(page) {
   }
   return villageHouses;
 }
+*/
 
 /**Scraping storage capacity and current resourses in it */
 async function ScrapDorf2Page(page, gotoUrl, withOutGoto) {
