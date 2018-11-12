@@ -321,63 +321,52 @@ async function ScrapingBuildingHouses(page) {
   return buildingHouses;
 }
 
-/*
-async function ScrapingBuildingHouses(page) {
-  var villageHouses = await page.evaluate(() => {
 
-    var buildingHouseTemplateSelector = '#village_map > div.buildingSlot.a';
-    var i = 26;
-    var houseSelector = buildingHouseTemplateSelector + i;
-    var elem = $(houseSelector);
-    console.log(elem && elem.innerText);
-    if (elem && elem.innerText) {
-      var houseClass = elem.attr('class');
-      console.log(houseClass);
-      var houseLevelSelector = houseSelector + ' > div';
+async function ScrapingTownHousesInfo(page) {
+  var townHouses = await page.evaluate(() => {
+
+    function GetString(strValue) {
+      //Debug.debuGetStringgPrint(strValue);
+      strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|]/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.replace(/ +/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.trim();
+      //Debug.debugPrint(strValue);
+      return strValue;
     }
-    buildingHousesList = {
-      houseSelector: houseSelector,
-      houseLevelSelector: houseLevelSelector,
-      houseClass: houseClass
 
+    var buildingHouseNameTemplateSelector = "#village_map > div.buildingSlot.a";
+    var townHousesList = new Array;
+    for (var i = 19; i < 40; i++) {
+      var name = $(buildingHouseNameTemplateSelector + i);
 
-    };
+      if (name.length > 0) {
+        nameText = name[0].className;
+        nameText = nameText.replace('buildingSlot', '');
+        nameText = nameText.replace('a' + i, '');
+        nameText = nameText.replace('aid' + i, '');
+        nameText = GetString(nameText).trim();
 
-    //#village_map > div.buildingSlot.a26.g15.aid26 > div
-        var buildingHousesList = new Array;
-        for (var i = 1; i < 3; i++) {
-          var name = $(buildingHouseNameTemplateSelector.replace('buldingIndex', i));
-          var level = $(buildingHouseLevelTemplateSelector.replace('buldingIndex', i));
-          var duration = $(buildingHouseDurationTemplateSelector.replace('buldingIndex', i));
-    
-          if (name.length > 0) {
-    
-            nameText = name[0].innerText
-            nameText = nameText.replace(level[0].innerText, '');
-            //Debug.debugPrint(nameText);
-    
-            levelText = level[0].innerText;
-            levelText = levelText.replace('Уровень', '').trim();
-            //Debug.debugPrint(levelText);
-    
-            var endTimeConstruction = duration[0].innerText;
-            var pos = endTimeConstruction.indexOf('Готово в');
-            endTimeConstruction = endTimeConstruction.slice(pos + 8).trim();
-            //Debug.debugPrint(endTimeConstruction);
-    
-            buildingHousesList.push({ name: nameText, level: levelText, endOfConstructionTime: endTimeConstruction });
-          }
-        }
-        
-    return buildingHousesList;
+        levelText = GetString(name[0].innerText);
+
+        townHousesList.push({
+          id: i
+          , name: nameText
+          , level: levelText
+        });
+      }
+    }
+
+    return townHousesList;
   })
-  console.log(villageHouses);
-  if (!villageHouses) {
-    villageHouses = new Array;
+  console.log(townHouses);
+  if (!townHouses) {
+    townHouses = new Array;
   }
-  return villageHouses;
+  return townHouses;
 }
-*/
+
 
 /**Scraping storage capacity and current resourses in it */
 async function ScrapDorf2Page(page, gotoUrl, withOutGoto) {
@@ -406,8 +395,8 @@ async function ScrapDorf2Page(page, gotoUrl, withOutGoto) {
   Debug.debugPrint("ScrapingVillageList(page)");
   var villageList = await ScrapingVillageList(page);
 
-  Debug.debugPrint("ScrapingFieldsInfo(page)");
-  var villageHouses = await ScrapingHousesInfo(page);
+  Debug.debugPrint("ScrapingTownHousesInfo(page)");
+  var villageHouses = await ScrapingTownHousesInfo(page);
 
   Debug.debugPrint("villageName='" + villageName + "'");
   var villageId = 0;

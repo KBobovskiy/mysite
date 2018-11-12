@@ -57,22 +57,22 @@ async function start(loginInfo) {
   //
 
   // lets start scraping Dorf2 page
-  //var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
-  //console.log(arrayWithDorf2PageInfo);
+  var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
+  console.log(arrayWithDorf2PageInfo);
 
-
-  var i = 0;
-  while (i < 100) {
-    await StartAllBuildings(page, accountId);
-    i++;
-    var minSleepTimeInSec = 180;
-    var maxSleepTimeInSec = 360;
-    var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
-    Debug.debugPrint("sleep for " + waitTime + "sec");
-    await sleep(waitTime * 1000);
-  }
-
-
+  /*
+    var i = 0;
+    while (i < 100) {
+      await StartAllBuildings(page, accountId);
+      i++;
+      var minSleepTimeInSec = 180;
+      var maxSleepTimeInSec = 360;
+      var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
+      Debug.debugPrint("sleep for " + waitTime + "sec");
+      await sleep(waitTime * 1000);
+    }
+  
+  */
   await page.screenshot({ path: 'tx3.travian.png' });
 
   DBCon.insertLogInfo('Travian', 'Stop');
