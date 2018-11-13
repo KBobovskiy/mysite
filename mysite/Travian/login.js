@@ -58,7 +58,13 @@ async function start(loginInfo) {
 
   // lets start scraping Dorf2 page
   var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
-  console.log(arrayWithDorf2PageInfo);
+  var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+  while (Dorf2PageInfo) {
+    await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
+    Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+    await sleep(1000);
+  }
+  //console.log(arrayWithDorf2PageInfo);
 
   /*
     var i = 0;

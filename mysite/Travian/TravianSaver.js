@@ -19,10 +19,39 @@ async function SaveDorf1Page(dorf1PageInfo, accountId, ) {
 
 }
 
+/** Save all information from Dorf2 page */
+async function SaveDorf2Page(dorf2PageInfo, accountId, ) {
+
+  //SaveVillageList(dorf2PageInfo.villageList, accountId);
+
+  //SaveVillageStorages(dorf2PageInfo.storageInfo, accountId, dorf2PageInfo.villageId);
+
+  //SaveVillageResourses(dorf2PageInfo.villageFields, accountId, dorf2PageInfo.villageId);
+
+  SaveVillageTownHousesInfo(dorf2PageInfo.villageHouses, accountId, dorf2PageInfo.villageId);
+
+  //SaveVillageBuildingHouses(dorf2PageInfo.buildingHouses, accountId, dorf2PageInfo.villageId);
+
+}
+
+/** Save village town houses information */
+async function SaveVillageTownHousesInfo(villageHouses, accountId, villageId) {
+  Debug.debugPrint("Town houses in village: " + villageId);
+  Debug.debugPrint(villageHouses);
+  if (villageHouses && accountId && villageId) {
+
+    villageHouses.forEach(house => {
+      var now = new Date(new Date() + 60 * 60 * 3 * 1000);
+      DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageBuilding`(`AccountId`, `VillageId`, `PositionId`, `Code`, `Href`, `Level`) VALUES('" + accountId + "', '" + villageId.trim() + "', '" + house.Id + "', '" + house.code + "', '" + house.href + "', '" + house.level + "'); "
+        , "Travian");
+    });
+  }
+}
+
 /** Save current building houses with time of the end of finishing the construction */
 async function SaveVillageBuildingHouses(buildingHouses, accountId, villageId) {
-  console.log("Building houses in village: " + villageId);
-  console.log(buildingHouses);
+  Debug.debugPrint("Building houses in village: " + villageId);
+  Debug.debugPrint(buildingHouses);
   if (buildingHouses && accountId && villageId) {
 
     buildingHouses.forEach(building => {
@@ -36,7 +65,7 @@ async function SaveVillageBuildingHouses(buildingHouses, accountId, villageId) {
         now.setDate(now.getDate() + 1);
         DateTimeEnd = '' + now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate() + ' ' + building.endOfConstructionTime + ':59';
       }
-      //console.log(DateTimeNow + ' => ' + DateTimeEnd);
+      //Debug.debugPrint(DateTimeNow + ' => ' + DateTimeEnd);
       DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageBuilding`(`AccountId`, `VillageId`, `Name`, `EndOfBuilding`, `Level`) VALUES('" + accountId + "', '" + villageId.trim() + "', '" + building.name + "', '" + DateTimeEnd + "', '" + building.level + "');"
         , "Travian");
     });
@@ -53,7 +82,7 @@ async function SaveVillageProdactionInfo(prodactionInfo, accountId, villageId) {
 
 /** Save village store capacity and stocks */
 async function SaveVillageStorages(storageInfo, accountId, villageId) {
-  console.log("dorf1PageInfo.villageId = " + villageId + " store: " + storageInfo);
+  Debug.debugPrint("dorf1PageInfo.villageId = " + villageId + " store: " + storageInfo);
   if (storageInfo && villageId && accountId) {
     DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageStore`(`AccountId`, `VillageId`, `Warehouse`, `Granary`, `FreeCorp`, `Wood`, `Clay`, `Iron`, `Crop`) VALUES('" + accountId + "','" + villageId.trim() + "', '" + storageInfo.warehouse + "', '" + storageInfo.granary + "', '" + storageInfo.freeCrop + "', '" + storageInfo.wood + "', '" + storageInfo.clay + "', '" + storageInfo.iron + "', '" + storageInfo.crop + "');"
       , "Travian");

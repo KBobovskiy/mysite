@@ -347,13 +347,14 @@ async function ScrapingTownHousesInfo(page) {
         nameText = nameText.replace('a' + i, '');
         nameText = nameText.replace('aid' + i, '');
         nameText = GetString(nameText).trim();
-
+        var href = "https://tx3.travian.ru/build.php?id='+i;
         levelText = GetString(name[0].innerText);
 
         townHousesList.push({
           id: i
           , name: nameText
           , level: levelText
+          , href: href
         });
       }
     }
