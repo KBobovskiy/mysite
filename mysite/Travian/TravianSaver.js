@@ -119,6 +119,7 @@ async function SaveVillageList(villageList, accountId) {
 }
 
 module.exports.SaveDorf1Page = SaveDorf1Page;
+module.exports.SaveDorf2Page = SaveDorf2Page;
 module.exports.SaveVillageList = SaveVillageList;
 module.exports.SaveVillageResourses = SaveVillageResourses;
 module.exports.SaveVillageStorages = SaveVillageStorages;
