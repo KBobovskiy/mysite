@@ -21,13 +21,14 @@ async function start(loginInfo) {
   var accountId = 1;
 
   const browser = await puppeteer.launch({ headless: false });
+  //const browser = await puppeteer.launch({ args:['--no-sandbox'] });
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 })
 
   await LoginToTravian(page, loginInfo);
 
   // Let's testing, can we play or not
-  var pageUrl = 'https://tx3.travian.ru/dorf1.php';
+  var pageUrl = 'https://ts2.travian.ru/dorf1.php';
   await sleep(Common.getRandomMS(1, 2.5));
   Debug.debugPrint("Goto: " + pageUrl);
   await page.goto(pageUrl);
@@ -42,15 +43,21 @@ async function start(loginInfo) {
   //
   //
   //
-  /*
-    var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
-    var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-    while (Dorf1PageInfo) {
-      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
-      Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-      await sleep(1000);
-    }
-  */
+
+  var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+  var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+  if (!Dorf1PageInfo) {
+    var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+    console.log(dorf1PageInfo.villageName);
+    console.log(dorf1PageInfo.villageId);
+    console.log(dorf1PageInfo.villageList);
+    await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+  }
+  while (Dorf1PageInfo) {
+    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
+    Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+    await sleep(1000);
+  }
 
   //
   //
@@ -79,7 +86,7 @@ async function start(loginInfo) {
     }
   
   */
-  await page.screenshot({ path: 'tx3.travian.png' });
+  //await page.screenshot({ path: 'ts2.travian.png' });
 
   DBCon.insertLogInfo('Travian', 'Stop');
   //await browser.close();
@@ -204,7 +211,7 @@ async function StartBuilding(page, rows, accountId) {
         } else {
           Debug.debugPrint("Button for building is not ready or building complite!");
           // return to dorf1 page
-          var pageUrl = 'https://tx3.travian.ru/dorf1.php';
+          var pageUrl = 'https://ts2.travian.ru/dorf1.php';
           Debug.debugPrint("Goto: " + pageUrl);
           await page.goto(pageUrl);
           await sleep(Common.getRandomMS(3, 5));
@@ -212,7 +219,7 @@ async function StartBuilding(page, rows, accountId) {
           //await page.goto(pageUrl);
         }
         Debug.debugPrint("ScrapDorf1Page after click trying button start building");
-        var gotoUrl = 'https://tx3.travian.ru/dorf1.php';
+        var gotoUrl = 'https://ts2.travian.ru/dorf1.php';
         var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, gotoUrl);
         Saver.SaveDorf1Page(dorf1PageInfo, accountId);
         var j = rows.length;
@@ -253,7 +260,7 @@ async function StartAllBuildings(page, accountId) {
 async function LoginToTravian(page, loginInfo) {
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 7;
-  var pageUrl = 'https://tx3.travian.ru/';
+  var pageUrl = 'https://ts2.travian.ru/';
   Debug.debugPrint("Goto: " + pageUrl);
   await page.goto(pageUrl);
   let login = loginInfo.account.login;
@@ -278,32 +285,32 @@ async function LoginToTravian(page, loginInfo) {
 start(login_info);
 
 /*
-g0 Пустое место
+g0 пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 g1
 g2
 g3
 g4
-g5 Лесопильный завод
-g6 Кирпичный завод
-g7 Чугунолитейный завод
-g8 Мельница
-g9 Пекарня
-g10 Склад
-g11 Амбар
+g5 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+g6 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+g7 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+g8 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+g9 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+g10 пїЅпїЅпїЅпїЅпїЅ
+g11 пїЅпїЅпїЅпїЅпїЅ
 g12
-g13 Кузница
+g13 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 g14
-g15 Главное здание / Кузница
-g16 Пункт сбора
-g17 Рынок
+g15 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ / пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+g16 пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+g17 пїЅпїЅпїЅпїЅпїЅ
 g18
-g19 Казарма
-g20 Конюшня
+g19 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+g20 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 g21
-g22 Академия
-g23 Тайник
-g24 Ратуша
-g25 Резиденция
+g22 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+g23 пїЅпїЅпїЅпїЅпїЅпїЅ
+g24 пїЅпїЅпїЅпїЅпїЅпїЅ
+g25 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 g26
 g27
 g28
@@ -311,7 +318,7 @@ g29
 g30
 g31
 g32
-g33 Изгородь
-g37 Таверна
+g33 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+g37 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 */

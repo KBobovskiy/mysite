@@ -2,7 +2,7 @@
 
 const DBCon = require("../serverApp/DBConnection.js");
 const CommonFunc = require("./CommonFunc.js");
-
+const Debug = require("../serverApp/debug.js");
 
 /** Save all information from Dorf1 page */
 async function SaveDorf1Page(dorf1PageInfo, accountId, ) {
@@ -42,7 +42,7 @@ async function SaveVillageTownHousesInfo(villageHouses, accountId, villageId) {
 
     villageHouses.forEach(house => {
       var now = new Date(new Date() + 60 * 60 * 3 * 1000);
-      DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageBuilding`(`AccountId`, `VillageId`, `PositionId`, `Code`, `Href`, `Level`) VALUES('" + accountId + "', '" + villageId.trim() + "', '" + house.Id + "', '" + house.code + "', '" + house.href + "', '" + house.level + "'); "
+      DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageTownHouse`(`AccountId`, `VillageId`, `PositionId`, `Code`, `Href`, `Level`) VALUES('" + accountId + "', '" + villageId.trim() + "', '" + house.Id + "', '" + house.code + "', '" + house.href + "', '" + house.level + "'); "
         , "Travian");
     });
   }
