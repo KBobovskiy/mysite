@@ -41,8 +41,9 @@ async function SaveVillageTownHousesInfo(villageHouses, accountId, villageId) {
   if (villageHouses && accountId && villageId) {
 
     villageHouses.forEach(house => {
-      var now = new Date(new Date() + 60 * 60 * 3 * 1000);
-      DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageTownHouse`(`AccountId`, `VillageId`, `PositionId`, `Code`, `Href`, `Level`) VALUES('" + accountId + "', '" + villageId.trim() + "', '" + house.Id + "', '" + house.code + "', '" + house.href + "', '" + house.level + "'); "
+      Debug.debugPrint(house);
+      DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageTownHouse`(`AccountId`, `VillageId`, `PositionId`, `Code`, `Href`, `Level`) \
+      VALUES('" + accountId + "', '" + villageId.trim() + "', '" + house.id + "', '" + house.code + "', '" + house.href + "', '" + house.level + "'); "
         , "Travian");
     });
   }

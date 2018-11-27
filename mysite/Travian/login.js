@@ -43,22 +43,22 @@ async function start(loginInfo) {
   //
   //
   //
-
-  var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
-  var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-  if (!Dorf1PageInfo) {
-    var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
-    console.log(dorf1PageInfo.villageName);
-    console.log(dorf1PageInfo.villageId);
-    console.log(dorf1PageInfo.villageList);
-    await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
-  }
-  while (Dorf1PageInfo) {
-    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
-    Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-    await sleep(1000);
-  }
-
+  /*
+    var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+    var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+    if (!Dorf1PageInfo) {
+      var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+      console.log(dorf1PageInfo.villageName);
+      console.log(dorf1PageInfo.villageId);
+      console.log(dorf1PageInfo.villageList);
+      await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+    }
+    while (Dorf1PageInfo) {
+      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
+      Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+      await sleep(1000);
+    }
+  */
   //
   //
   //
