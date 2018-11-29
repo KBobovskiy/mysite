@@ -349,10 +349,13 @@ async function ScrapingTownHousesInfo(page) {
         nameText = GetString(nameText).trim();
         var href = 'https://ts2.travian.ru/build.php?id=' + i;
         levelText = GetString(name[0].innerText);
+        if (!levelText) {
+          levelText = '0';
+        }
 
         townHousesList.push({
           id: i
-          , name: nameText
+          , code: nameText
           , level: levelText
           , href: href
         });

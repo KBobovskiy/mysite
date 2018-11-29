@@ -54,22 +54,22 @@ async function start(loginInfo) {
   //
   //
   //
-
-  var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
-  var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-  if (!Dorf1PageInfo) {
-    var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
-    console.log(dorf1PageInfo.villageName);
-    console.log(dorf1PageInfo.villageId);
-    console.log(dorf1PageInfo.villageList);
-    await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
-  }
-  while (Dorf1PageInfo) {
-    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
-    Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-    await sleep(1000);
-  }
-
+  /*
+    var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+    var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+    if (!Dorf1PageInfo) {
+      var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+      console.log(dorf1PageInfo.villageName);
+      console.log(dorf1PageInfo.villageId);
+      console.log(dorf1PageInfo.villageList);
+      await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+    }
+    while (Dorf1PageInfo) {
+      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
+      Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+      await sleep(1000);
+    }
+  */
   //
   //
   //
@@ -298,32 +298,32 @@ async function LoginToTravian(page, loginInfo) {
 start(login_info);
 
 /*
-g0 ������ �����
+g0 Пустое место
 g1
 g2
 g3
 g4
-g5 ����������� �����
-g6 ��������� �����
-g7 �������������� �����
-g8 ��������
-g9 �������
-g10 �����
-g11 �����
+g5 Лесопильный завод
+g6 Кирпичный завод
+g7 Чугунолитейный завод
+g8 Мельница
+g9 Пекарня
+g10 Склад
+g11 Амбар
 g12
-g13 �������
+g13 Кузница
 g14
-g15 ������� ������ / �������
-g16 ����� �����
-g17 �����
+g15 Главное здание / Кузница
+g16 Пункт сбора
+g17 Рынок
 g18
-g19 �������
-g20 �������
+g19 Казарма
+g20 Конюшня
 g21
-g22 ��������
-g23 ������
-g24 ������
-g25 ����������
+g22 Академия
+g23 Тайник
+g24 Ратуша
+g25 Резиденция
 g26
 g27
 g28
@@ -331,7 +331,6 @@ g29
 g30
 g31
 g32
-g33 ��������
-g37 �������
-
+g33 Изгородь
+g37 Таверна
 */
