@@ -20,15 +20,15 @@ async function start(loginInfo) {
   DBCon.insertLogInfo('Travian', errMsg);
   var now = new Date();
   var h = now.getHours();
-  console.log('h=' + h);
-  if (h < 6) {
+  console.log('h='+h);
+  if (h<6){
     var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
-    let errMsg = 'It is not working time, sleep for ' + (sleepTime / 1000) + ' sec';
+    let errMsg = 'It is not working time, sleep for '+(sleepTime/1000)+' sec';
     DBCon.insertLogInfo('Travian', errMsg);
     await sleep(sleepTime);
     return;
   }
-
+  
   var accountId = 1;
 
   const browser = await puppeteer.launch({ headless: false });
@@ -99,10 +99,8 @@ async function start(loginInfo) {
   */
   //await page.screenshot({ path: 'ts2.travian.png' });
 
-  var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
-  DBCon.insertLogInfo('Travian', 'Stop, sleep for ' + (sleepTime / 1000) + ' sec');
+  DBCon.insertLogInfo('Travian', 'Stop');
   //await browser.close();
-  await sleep(sleepTime);
 }
 
 function GetString(strValue) {
