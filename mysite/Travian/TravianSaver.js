@@ -37,11 +37,11 @@ async function SaveDorf2Page(dorf2PageInfo, accountId, ) {
 /** Save village town houses information */
 async function SaveVillageTownHousesInfo(villageHouses, accountId, villageId) {
   Debug.debugPrint("Town houses in village: " + villageId);
-  Debug.debugPrint(villageHouses);
+  //Debug.debugPrint(villageHouses);
   if (villageHouses && accountId && villageId) {
 
     villageHouses.forEach(house => {
-      Debug.debugPrint(house);
+      //Debug.debugPrint(house);
       DBCon.insertQuery("INSERT INTO`thetale`.`tr_VillageTownHouse`(`AccountId`, `VillageId`, `PositionId`, `Code`, `Href`, `Level`) \
       VALUES('" + accountId + "', '" + villageId.trim() + "', '" + house.id + "', '" + house.code + "', '" + house.href + "', '" + house.level + "'); "
         , "Travian");

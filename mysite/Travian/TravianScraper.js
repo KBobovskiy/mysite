@@ -1,5 +1,10 @@
 // Async module
 
+// TODO
+// 1. https://ts2.travian.ru/allianz.php?s=3&filter=32&own=0
+// 2. https://ts2.travian.ru/allianz.php?s=3&filter=31&own=0
+// 3. https://ts2.travian.ru/berichte.php?id=113549&aid=49
+
 const sleep = require('sleep-promise');
 const TravianDBReader = require("./TravianDBReader.js");
 const Common = require("./CommonFunc.js");

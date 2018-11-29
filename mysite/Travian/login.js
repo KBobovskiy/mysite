@@ -20,7 +20,7 @@ async function start(loginInfo) {
   DBCon.insertLogInfo('Travian', errMsg);
   var now = new Date();
   var h = now.getHours();
-  console.log('h=' + h);
+  Debug.debugPrint('Current hour = ' + h);
   if (h < 6) {
     var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
     let errMsg = 'It is not working time, sleep for ' + (sleepTime / 1000) + ' sec';
@@ -31,8 +31,12 @@ async function start(loginInfo) {
 
   var accountId = 1;
 
-  const browser = await puppeteer.launch({ headless: false });
-  //const browser = await puppeteer.launch({ args:['--no-sandbox'] });
+  if (login_info.showBrowser) {
+    var browser = await puppeteer.launch({ headless: false });
+  } else {
+    var browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  }
+
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 })
 
@@ -101,7 +105,9 @@ async function start(loginInfo) {
 
   var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
   DBCon.insertLogInfo('Travian', 'Stop, sleep for ' + (sleepTime / 1000) + ' sec');
-  //await browser.close();
+  if (!login_info.showBrowser) {
+    await browser.close();
+  }
   await sleep(sleepTime);
 }
 
