@@ -431,6 +431,59 @@ async function ScrapDorf2Page(page, gotoUrl, withOutGoto) {
 }
 
 
+/** Scraping defense report */
+async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
+
+  Debug.debugPrint("ScrapingAllDefenseReport(page, accountId, lastReportsId)");
+
+  const gotoUrl = 'https://ts2.travian.ru/allianz.php?s=3&filter=31&own=0';
+
+  var minSleepTimeInSec = 2;
+  var maxSleepTimeInSec = 4;
+  await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+  Debug.debugPrint("Goto: " + gotoUrl);
+  await page.goto(gotoUrl);
+
+  var reportsIds = await page.evaluate(() => {
+
+    function GetString(strValue) {
+      //Debug.debuGetStringgPrint(strValue);
+      strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|]/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.replace(/ +/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.trim();
+      //Debug.debugPrint(strValue);
+      return strValue;
+    }
+    //const villageNameSelector = '#offs > tbody > tr:nth-child(rowNumber)';
+    const descriptionSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > a > img'; //attr alt + class
+    const playersAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > div > a';
+    const dateTimeAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.dat';
+    var reportsIds = [];
+    for (var i = 1; i <= 1; i++) {
+      var rowData = {
+        players: '',
+        description: '',
+        id: '',
+        href: '',
+        dateTime: ''
+      };
+      var res = document.querySelector(dateTimeAdnIdSelector.replace('rowNumber', i));
+      if (res && res.textContent) {
+        dateTime = GetString(res.textContent).trim();
+      }
+      rowData.dateTime = dateTime;
+      reportsIds.push(rowData);
+    }
+    return reportsIds;
+  });
+
+  return reportsIds;
+}
+
+
+
 module.exports.ScrapingAllVillagesDorf1 = ScrapingAllVillagesDorf1;
 module.exports.ScrapingAllVillagesDorf2 = ScrapingAllVillagesDorf2;
 module.exports.ScrapingStoreInfo = ScrapingStoreInfo;
@@ -439,3 +492,4 @@ module.exports.ScrapingVillageList = ScrapingVillageList;
 module.exports.ScrapingFieldsInfo = ScrapingFieldsInfo;
 module.exports.ScrapDorf1Page = ScrapDorf1Page;
 module.exports.ScrapingBuildingHouses = ScrapingBuildingHouses;
+module.exports.ScrapingAllDefenseReport = ScrapingAllDefenseReport;
