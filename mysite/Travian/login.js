@@ -116,7 +116,7 @@ async function start(loginInfo) {
 
   var savedReportsId = await Reader.getLastDeffenseReports(accountId);
   var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
-  Debug.debugPrint('arrayWithDeffenseReports');
+  Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
   Debug.debugPrint(arrayWithDeffenseReports);
   var defReport = arrayWithDeffenseReports.pop();
   while (defReport) {

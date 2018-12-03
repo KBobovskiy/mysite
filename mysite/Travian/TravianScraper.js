@@ -436,7 +436,7 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
 
   Debug.debugPrint("ScrapingAllDefenseReport(page, accountId, lastReportsId)");
 
-  const gotoUrl = 'https://ts2.travian.ru/allianz.php?s=3&filter=31&own=0';
+  const gotoUrl = 'https://ts2.travian.ru/allianz.php?s=3&filter=32&own=0';
 
   var minSleepTimeInSec = 2;
   var maxSleepTimeInSec = 4;
@@ -461,7 +461,8 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
     const playersAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > div > a';
     const dateTimeAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.dat';
     var reportsIds = [];
-    for (var i = 1; i <= 1; i++) {
+    for (var i = 1; i <= 20; i++) {
+      playersAdnIdSelector
       var rowData = {
         players: '',
         description: '',
@@ -469,16 +470,44 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
         href: '',
         dateTime: ''
       };
-      var res = document.querySelector(dateTimeAdnIdSelector.replace('rowNumber', i));
-      if (res && res.textContent) {
-        dateTime = GetString(res.textContent).trim();
+      var description = '';
+      var descr = document.querySelector(descriptionSelector.replace('rowNumber', i));
+      if (descr) {
+        description = GetString(descr.getAttribute('alt')).trim();
       }
-      rowData.dateTime = dateTime;
-      reportsIds.push(rowData);
+      var dtTime = document.querySelector(dateTimeAdnIdSelector.replace('rowNumber', i));
+      if (dtTime && dtTime.textContent) {
+        dateTime = GetString(dtTime.textContent).trim();
+      }
+      var playersElem = document.querySelector(playersAdnIdSelector.replace('rowNumber', i));
+      if (playersElem && playersElem.textContent) {
+        players = GetString(playersElem.textContent).trim();
+      }
+      var href = '';
+      var id = 0;
+      if (playersElem) {
+        href = playersElem.href;
+        var arr = href.split('?id=');
+        if (arr.length) {
+          id = arr[1].split('&')[0];
+        }
+      }
+      if (id && href) {
+        rowData.dateTime = dateTime;
+        rowData.id = id;
+        rowData.description = description;
+        rowData.players = players;
+        rowData.href = href;
+        reportsIds.push(rowData);
+      }
+      else {
+        break;
+      }
     }
     return reportsIds;
   });
 
+  Debug.debugPrint('Reports counts: ' + reportsIds.length);
   return reportsIds;
 }
 
