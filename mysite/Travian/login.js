@@ -120,8 +120,7 @@ async function start(loginInfo) {
   Debug.debugPrint(arrayWithDeffenseReports);
   var defReport = arrayWithDeffenseReports.pop();
   while (defReport) {
-
-    //await Saver.SaveDeffenseReport(Dorf2PageInfo, accountId);
+    await Saver.SaveDeffenseReport(defReport, accountId);
     defReport = arrayWithDeffenseReports.pop();
     await sleep(1000);
   }

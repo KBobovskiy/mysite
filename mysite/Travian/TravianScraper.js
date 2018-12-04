@@ -478,6 +478,28 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
       var dtTime = document.querySelector(dateTimeAdnIdSelector.replace('rowNumber', i));
       if (dtTime && dtTime.textContent) {
         dateTime = GetString(dtTime.textContent).trim();
+        dateTimeOriginal = dateTime;
+        //вчера, 02:26
+        //02.12.18, 12:42
+        var today = new Date();
+        var arr = dateTime.split(',');
+        if (arr[0] === 'сегодня') {
+          var year = today.getFullYear();
+          var month = today.getMonth();
+          var day = today.getDate();
+        } else if (arr[0] === 'вчера') {
+          today.setDate(today.getDate() - 1);
+          var year = today.getFullYear();
+          var month = today.getMonth();
+          var day = today.getDate();
+        } else {
+          dateTime = dateTime.split(',');
+          var arrDt = dateTime[0].split('.');
+          var year = '20' + arrDt[2];
+          var month = arrDt[1];
+          var day = arrDt[0];
+        }
+        dateTime = '' + year + '-' + month + '-' + day + ' ' + arr[1].trim() + ':00';
       }
       var playersElem = document.querySelector(playersAdnIdSelector.replace('rowNumber', i));
       if (playersElem && playersElem.textContent) {
@@ -493,8 +515,9 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
         }
       }
       if (id && href) {
-        rowData.dateTime = dateTime;
         rowData.id = id;
+        rowData.dateTime = dateTime;
+        rowData.dateTimeOriginal = dateTimeOriginal;
         rowData.description = description;
         rowData.players = players;
         rowData.href = href;
@@ -507,7 +530,6 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
     return reportsIds;
   });
 
-  Debug.debugPrint('Reports counts: ' + reportsIds.length);
   return reportsIds;
 }
 
