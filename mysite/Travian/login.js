@@ -256,7 +256,7 @@ async function StartBuilding(page, rows, accountId) {
 
           //await page.goto(pageUrl);
         }
-        Debug.debugPrint("ScrapDorf1Page after click trying button start building");
+        DBCon.insertLogInfo('Travian', "ScrapDorf1Page after click trying button start building");
         var gotoUrl = 'https://ts2.travian.ru/dorf1.php';
         var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, gotoUrl);
         Saver.SaveDorf1Page(dorf1PageInfo, accountId);
