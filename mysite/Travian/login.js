@@ -88,6 +88,19 @@ async function start(loginInfo) {
   }
   //console.log(arrayWithDorf2PageInfo);
 
+  // Scraping reports
+
+  var savedReportsId = await Reader.getLastDeffenseReports(accountId);
+  var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
+  Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
+  Debug.debugPrint(arrayWithDeffenseReports);
+  var defReport = arrayWithDeffenseReports.pop();
+  while (defReport) {
+    await Saver.SaveDeffenseReport(defReport, accountId);
+    defReport = arrayWithDeffenseReports.pop();
+    await sleep(1000);
+  }
+
 
 
   // Building houses
@@ -107,19 +120,6 @@ async function start(loginInfo) {
 
   //await page.screenshot({ path: 'ts2.travian.png' });
 
-
-  // Scraping reports
-
-  var savedReportsId = await Reader.getLastDeffenseReports(accountId);
-  var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
-  Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
-  Debug.debugPrint(arrayWithDeffenseReports);
-  var defReport = arrayWithDeffenseReports.pop();
-  while (defReport) {
-    await Saver.SaveDeffenseReport(defReport, accountId);
-    defReport = arrayWithDeffenseReports.pop();
-    await sleep(1000);
-  }
 
 
   var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
@@ -194,6 +194,7 @@ async function StartBuilding(page, rows, accountId) {
       await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
       Debug.debugPrint("Goto: " + gotoUrl);
       await page.goto(gotoUrl);
+
       gotoUrl = rows[i].Href;
       if (gotoUrl) {
         await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
