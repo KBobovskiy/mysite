@@ -433,6 +433,110 @@ async function ScrapDorf2Page(page, gotoUrl, withOutGoto) {
 }
 
 
+/** Scraping defense report */
+async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
+
+  Debug.debugPrint("ScrapingAllDefenseReport(page, accountId, lastReportsId)");
+
+  const gotoUrl = 'https://ts2.travian.ru/allianz.php?s=3&filter=32&own=0';
+
+  var minSleepTimeInSec = 2;
+  var maxSleepTimeInSec = 4;
+  await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+  Debug.debugPrint("Goto: " + gotoUrl);
+  await page.goto(gotoUrl);
+
+  var reportsIds = await page.evaluate(() => {
+
+    function GetString(strValue) {
+      //Debug.debuGetStringgPrint(strValue);
+      strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|]/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.replace(/ +/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.trim();
+      //Debug.debugPrint(strValue);
+      return strValue;
+    }
+    //const villageNameSelector = '#offs > tbody > tr:nth-child(rowNumber)';
+    const descriptionSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > a > img'; //attr alt + class
+    const playersAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > div > a';
+    const dateTimeAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.dat';
+    var reportsIds = [];
+    for (var i = 1; i <= 20; i++) {
+      playersAdnIdSelector
+      var rowData = {
+        players: '',
+        description: '',
+        id: '',
+        href: '',
+        dateTime: ''
+      };
+      var description = '';
+      var descr = document.querySelector(descriptionSelector.replace('rowNumber', i));
+      if (descr) {
+        description = GetString(descr.getAttribute('alt')).trim();
+      }
+      var dtTime = document.querySelector(dateTimeAdnIdSelector.replace('rowNumber', i));
+      if (dtTime && dtTime.textContent) {
+        dateTime = GetString(dtTime.textContent).trim();
+        dateTimeOriginal = dateTime;
+        //вчера, 02:26
+        //02.12.18, 12:42
+        var today = new Date();
+        var arr = dateTime.split(',');
+        if (arr[0] === 'сегодня') {
+          var year = today.getFullYear();
+          var month = today.getMonth();
+          var day = today.getDate();
+        } else if (arr[0] === 'вчера') {
+          today.setDate(today.getDate() - 1);
+          var year = today.getFullYear();
+          var month = today.getMonth();
+          var day = today.getDate();
+        } else {
+          dateTime = dateTime.split(',');
+          var arrDt = dateTime[0].split('.');
+          var year = '20' + arrDt[2];
+          var month = arrDt[1];
+          var day = arrDt[0];
+        }
+        dateTime = '' + year + '-' + month + '-' + day + ' ' + arr[1].trim() + ':00';
+      }
+      var playersElem = document.querySelector(playersAdnIdSelector.replace('rowNumber', i));
+      if (playersElem && playersElem.textContent) {
+        players = GetString(playersElem.textContent).trim();
+      }
+      var href = '';
+      var id = 0;
+      if (playersElem) {
+        href = playersElem.href;
+        var arr = href.split('?id=');
+        if (arr.length) {
+          id = arr[1].split('&')[0];
+        }
+      }
+      if (id && href) {
+        rowData.id = id;
+        rowData.dateTime = dateTime;
+        rowData.dateTimeOriginal = dateTimeOriginal;
+        rowData.description = description;
+        rowData.players = players;
+        rowData.href = href;
+        reportsIds.push(rowData);
+      }
+      else {
+        break;
+      }
+    }
+    return reportsIds;
+  });
+
+  return reportsIds;
+}
+
+
+
 module.exports.ScrapingAllVillagesDorf1 = ScrapingAllVillagesDorf1;
 module.exports.ScrapingAllVillagesDorf2 = ScrapingAllVillagesDorf2;
 module.exports.ScrapingStoreInfo = ScrapingStoreInfo;
@@ -441,3 +545,4 @@ module.exports.ScrapingVillageList = ScrapingVillageList;
 module.exports.ScrapingFieldsInfo = ScrapingFieldsInfo;
 module.exports.ScrapDorf1Page = ScrapDorf1Page;
 module.exports.ScrapingBuildingHouses = ScrapingBuildingHouses;
+module.exports.ScrapingAllDefenseReport = ScrapingAllDefenseReport;

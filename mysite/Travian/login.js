@@ -59,6 +59,8 @@ async function start(loginInfo) {
   //
   //
   /*
+  // lets start scraping Dorf2 page
+
     var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
     var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
     if (!Dorf1PageInfo) {
@@ -77,18 +79,24 @@ async function start(loginInfo) {
   //
   //
   //
+  /*
+    // lets start scraping Dorf2 page
 
-  // lets start scraping Dorf2 page
-  var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
-  var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
-  while (Dorf2PageInfo) {
-    await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
-    Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
-    await sleep(1000);
-  }
-  //console.log(arrayWithDorf2PageInfo);
+    var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
+    var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+    while (Dorf2PageInfo) {
+      await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
+      Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+      await sleep(1000);
+    }
+    //console.log(arrayWithDorf2PageInfo);
+  */
+
 
   /*
+  // Building houses
+
+
     var i = 0;
     while (i < 100) {
       await StartAllBuildings(page, accountId);
@@ -102,6 +110,21 @@ async function start(loginInfo) {
   
   */
   //await page.screenshot({ path: 'ts2.travian.png' });
+
+
+  // Scraping reports
+
+  var savedReportsId = await Reader.getLastDeffenseReports(accountId);
+  var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
+  Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
+  Debug.debugPrint(arrayWithDeffenseReports);
+  var defReport = arrayWithDeffenseReports.pop();
+  while (defReport) {
+    await Saver.SaveDeffenseReport(defReport, accountId);
+    defReport = arrayWithDeffenseReports.pop();
+    await sleep(1000);
+  }
+
 
   var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
   DBCon.insertLogInfo('Travian', 'Stop, sleep for ' + (sleepTime / 1000) + ' sec');

@@ -74,9 +74,21 @@ async function getWhatWeCanBuildFromDB(accountId) {
   Debug.debugPrint(query);
   var rows = await DBCon.selectQuery(query, "Travian");
 
-  DBCon.insertLogInfo('Travian', "Найдено вохможных строек: " + rows.length);
+  DBCon.insertLogInfo('Travian', "Can start build houses: " + rows.length);
+  return rows;
+}
+
+/*Returns last 30 defense reports id. It is only stub yet*/
+async function getLastDeffenseReports(accountId) {
+  var query = "Not implementeed yet!";
+  Debug.debugPrint(query);
+
+  //var rows = await DBCon.selectQuery(query, "Travian");
+  //DBCon.insertLogInfo('Travian', "Get deffense reports from DB: " + rows.length);
+  var rows = [0, 1, 2, 3];
   return rows;
 }
 
 module.exports.GetAllVillagesHref = GetAllVillagesHref;
 module.exports.getWhatWeCanBuildFromDB = getWhatWeCanBuildFromDB;
+module.exports.getLastDeffenseReports = getLastDeffenseReports;
