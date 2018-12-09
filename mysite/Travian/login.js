@@ -58,57 +58,53 @@ async function start(loginInfo) {
   //
   //
   //
-  /*
+  // lets start scraping Dorf1 page
+
+  var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+  var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+  if (!Dorf1PageInfo) {
+    var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+    console.log(dorf1PageInfo.villageName);
+    console.log(dorf1PageInfo.villageId);
+    console.log(dorf1PageInfo.villageList);
+    await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+  }
+  while (Dorf1PageInfo) {
+    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
+    Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+    await sleep(1000);
+  }
+  //
+  //
+  //
   // lets start scraping Dorf2 page
 
-    var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
-    var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-    if (!Dorf1PageInfo) {
-      var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
-      console.log(dorf1PageInfo.villageName);
-      console.log(dorf1PageInfo.villageId);
-      console.log(dorf1PageInfo.villageList);
-      await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
-    }
-    while (Dorf1PageInfo) {
-      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
-      Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-      await sleep(1000);
-    }
-  */
-  //
-  //
-  //
-  /*
-    // lets start scraping Dorf2 page
-
-    var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
-    var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
-    while (Dorf2PageInfo) {
-      await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
-      Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
-      await sleep(1000);
-    }
-    //console.log(arrayWithDorf2PageInfo);
-  */
+  var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
+  var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+  while (Dorf2PageInfo) {
+    await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
+    Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+    await sleep(1000);
+  }
+  //console.log(arrayWithDorf2PageInfo);
 
 
-  /*
+
   // Building houses
 
 
-    var i = 0;
-    while (i < 100) {
-      await StartAllBuildings(page, accountId);
-      i++;
-      var minSleepTimeInSec = 180;
-      var maxSleepTimeInSec = 360;
-      var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
-      Debug.debugPrint("sleep for " + waitTime + "sec");
-      await sleep(waitTime * 1000);
-    }
-  
-  */
+  var i = 0;
+  while (i < 100) {
+    await StartAllBuildings(page, accountId);
+    i++;
+    var minSleepTimeInSec = 180;
+    var maxSleepTimeInSec = 360;
+    var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
+    Debug.debugPrint("Now:" + new Date() + ", sleep for " + waitTime + "sec");
+    await sleep(waitTime * 1000);
+  }
+
+
   //await page.screenshot({ path: 'ts2.travian.png' });
 
 
@@ -247,9 +243,9 @@ async function StartBuilding(page, rows, accountId) {
         });
         Debug.debugPrint("buttonReady=" + buttonReady);
         if (buttonReady === 1) {
-          await page.mouse.click(946, 462);
+          await page.mouse.click(946, 515);
         } else if (buttonReady) {
-          await page.mouse.click(814, 462);
+          await page.mouse.click(814, 515);
         } else {
           Debug.debugPrint("Button for building is not ready or building complite!");
           // return to dorf1 page
