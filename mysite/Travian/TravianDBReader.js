@@ -89,6 +89,22 @@ async function getLastDeffenseReports(accountId) {
   return rows;
 }
 
+/*Returns last 10 reports href. It is only stub yet*/
+async function getLastReportsWithoutDetails(accountId) {
+  var query =
+    "SELECT reports.Href FROM thetale.tr_Reports reports\
+    left join thetale.tr_ReportsDetails details\
+    on reports.id = details.id and reports.AccountId = details.AccountId\
+    where reports.AccountId = "+ accountId + "\
+    order by reports.id desc\
+    LIMIT 10;";
+  var rows = await DBCon.selectQuery(query, "Travian");
+  DBCon.insertLogInfo('Travian', "Get first reports without details from DB: " + rows.length);
+  return rows;
+}
+
+
 module.exports.GetAllVillagesHref = GetAllVillagesHref;
 module.exports.getWhatWeCanBuildFromDB = getWhatWeCanBuildFromDB;
 module.exports.getLastDeffenseReports = getLastDeffenseReports;
+module.exports.getLastReportsWithoutDetails = getLastReportsWithoutDetails;
