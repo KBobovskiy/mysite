@@ -60,61 +60,69 @@ async function start(loginInfo) {
   //
   // lets start scraping Dorf1 page
 
-  var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
-  var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-  if (!Dorf1PageInfo) {
-    var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
-    console.log(dorf1PageInfo.villageName);
-    console.log(dorf1PageInfo.villageId);
-    console.log(dorf1PageInfo.villageList);
-    await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
-  }
-  while (Dorf1PageInfo) {
-    await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
-    Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
-    await sleep(1000);
+  if (login_info.scrapDorf1 === true) {
+
+    var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+    var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+    if (!Dorf1PageInfo) {
+      var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+      console.log(dorf1PageInfo.villageName);
+      console.log(dorf1PageInfo.villageId);
+      console.log(dorf1PageInfo.villageList);
+      await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+    }
+    while (Dorf1PageInfo) {
+      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
+      Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
+      await sleep(1000);
+    }
   }
   //
   //
   //
   // lets start scraping Dorf2 page
+  if (login_info.scrapDorf2 === true) {
 
-  var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
-  var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
-  while (Dorf2PageInfo) {
-    await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
-    Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
-    await sleep(1000);
+    var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
+    var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+    while (Dorf2PageInfo) {
+      await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
+      Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
+      await sleep(1000);
+    }
   }
   //console.log(arrayWithDorf2PageInfo);
 
   // Scraping reports
+  if (login_info.scrapReports === true) {
 
-  var savedReportsId = await Reader.getLastDeffenseReports(accountId);
-  var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
-  Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
-  Debug.debugPrint(arrayWithDeffenseReports);
-  var defReport = arrayWithDeffenseReports.pop();
-  while (defReport) {
-    await Saver.SaveDeffenseReport(defReport, accountId);
-    defReport = arrayWithDeffenseReports.pop();
-    await sleep(1000);
+    var savedReportsId = await Reader.getLastDeffenseReports(accountId);
+    var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
+    Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
+    Debug.debugPrint(arrayWithDeffenseReports);
+    var defReport = arrayWithDeffenseReports.pop();
+    while (defReport) {
+      await Saver.SaveDeffenseReport(defReport, accountId);
+      defReport = arrayWithDeffenseReports.pop();
+      await sleep(1000);
+    }
   }
 
 
 
   // Building houses
 
-
-  var i = 0;
-  while (i < 100) {
-    await StartAllBuildings(page, accountId);
-    i++;
-    var minSleepTimeInSec = 180;
-    var maxSleepTimeInSec = 360;
-    var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
-    Debug.debugPrint("Now:" + new Date() + ", sleep for " + waitTime + "sec");
-    await sleep(waitTime * 1000);
+  if (login_info.runBuilding === true) {
+    var i = 0;
+    while (i < 100) {
+      await StartAllBuildings(page, accountId);
+      i++;
+      var minSleepTimeInSec = 180;
+      var maxSleepTimeInSec = 360;
+      var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
+      Debug.debugPrint("Now:" + new Date() + ", sleep for " + waitTime + "sec");
+      await sleep(waitTime * 1000);
+    }
   }
 
 
