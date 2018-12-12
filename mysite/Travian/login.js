@@ -101,40 +101,41 @@ async function start(loginInfo) {
     }
   }
 
-  /*
-    // Scraping reports
-    if (login_info.scrapReports === true) {
+
+  // Scraping reports
+  if (login_info.scrapReports === true) {
+
+    var savedReportsId = await Reader.getLastDeffenseReports(accountId);
+    var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
+    Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
+    Debug.debugPrint(arrayWithDeffenseReports);
+    var defReport = arrayWithDeffenseReports.pop();
+    while (defReport) {
+      await Saver.SaveDeffenseReport(defReport, accountId);
+      defReport = arrayWithDeffenseReports.pop();
+      await sleep(1000);
+    }
+
+
+    /*
+    '#reportWrapper > div.header > div.subject > div.header.text'//    Thailand атакует Астана
+    '#reportWrapper > div.header > div.time > div.header.text'//    11.12.18, 05: 46: 14
+    '#reportWrapper > div.body > div.role.attacker > div.header > h2'// нападение
+    '#reportWrapper > div.body > div.role.attacker > div.troopHeadline' //[CRB] happyday из деревни Thailand
+    //<div class="troopHeadline"><span class="inline-block">[<a href="allianz.php?aid=190" title="">CRB</a>]</span> <a class="player" href="spieler.php?uid=3916">happyday</a> из деревни <a class="village" href="karte.php?d=65221">Thailand</a> </div>
+    '#attacker' //войска атакующего
+    // < table id = "attacker" class="attacker" cellpadding = "0" cellspacing = "0" > <tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u11" alt="Дубинщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u12" alt="Копьеносец"></td><td class="uniticon"><img src="img/x.gif" class="unit u13" alt="Топорщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u14" alt="Скаут"></td><td class="uniticon"><img src="img/x.gif" class="unit u15" alt="Паладин"></td><td class="uniticon"><img src="img/x.gif" class="unit u16" alt="Тевтонская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u17" alt="Стенобитное орудие"></td><td class="uniticon"><img src="img/x.gif" class="unit u18" alt="Катапульта"></td><td class="uniticon"><img src="img/x.gif" class="unit u19" alt="Вождь"></td><td class="uniticon"><img src="img/x.gif" class="unit u20" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit">100</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
   
-      var savedReportsId = await Reader.getLastDeffenseReports(accountId);
-      var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
-      Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
-      Debug.debugPrint(arrayWithDeffenseReports);
-      var defReport = arrayWithDeffenseReports.pop();
-      while (defReport) {
-        await Saver.SaveDeffenseReport(defReport, accountId);
-        defReport = arrayWithDeffenseReports.pop();
-        await sleep(1000);
-      }
-  */
+    '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.infos > tr' //Информация	Вы освободили 15 своих солдат. Но смогли спасти 11
+    '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.goods > tr' //Добыча	    869    935    733    944 Награбленное‭‭ 3481‬/‭6000‬‬
+  
+    '#reportWrapper > div.body > div.role.defender > div.troopHeadline'
+    //< div class="troopHeadline" > <span class="inline-block">[<a href="allianz.php?aid=49" title="">Crusader</a>]</span> <a class="player" href="spieler.php?uid=423">АКА</a> из деревни < a class="village" href = "karte.php?d=65222" > Астана</a > </div >
+    '#defender'
+    //<table id="defender" class="defender" cellpadding="0" cellspacing="0"><tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u21" alt="Фаланга"></td><td class="uniticon"><img src="img/x.gif" class="unit u22" alt="Мечник"></td><td class="uniticon"><img src="img/x.gif" class="unit u23" alt="Следопыт"></td><td class="uniticon"><img src="img/x.gif" class="unit u24" alt="Тевтатский гром"></td><td class="uniticon"><img src="img/x.gif" class="unit u25" alt="Друид-всадник"></td><td class="uniticon"><img src="img/x.gif" class="unit u26" alt="Эдуйская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u27" alt="Таран"></td><td class="uniticon"><img src="img/x.gif" class="unit u28" alt="Требушет"></td><td class="uniticon"><img src="img/x.gif" class="unit u29" alt="Предводитель"></td><td class="uniticon"><img src="img/x.gif" class="unit u30" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
+    */
+  }
 
-  /*
-  '#reportWrapper > div.header > div.subject > div.header.text'//    Thailand атакует Астана
-  '#reportWrapper > div.header > div.time > div.header.text'//    11.12.18, 05: 46: 14
-  '#reportWrapper > div.body > div.role.attacker > div.header > h2'// нападение
-  '#reportWrapper > div.body > div.role.attacker > div.troopHeadline' //[CRB] happyday из деревни Thailand
-  //<div class="troopHeadline"><span class="inline-block">[<a href="allianz.php?aid=190" title="">CRB</a>]</span> <a class="player" href="spieler.php?uid=3916">happyday</a> из деревни <a class="village" href="karte.php?d=65221">Thailand</a> </div>
-  '#attacker' //войска атакующего
-  // < table id = "attacker" class="attacker" cellpadding = "0" cellspacing = "0" > <tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u11" alt="Дубинщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u12" alt="Копьеносец"></td><td class="uniticon"><img src="img/x.gif" class="unit u13" alt="Топорщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u14" alt="Скаут"></td><td class="uniticon"><img src="img/x.gif" class="unit u15" alt="Паладин"></td><td class="uniticon"><img src="img/x.gif" class="unit u16" alt="Тевтонская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u17" alt="Стенобитное орудие"></td><td class="uniticon"><img src="img/x.gif" class="unit u18" alt="Катапульта"></td><td class="uniticon"><img src="img/x.gif" class="unit u19" alt="Вождь"></td><td class="uniticon"><img src="img/x.gif" class="unit u20" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit">100</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
-
-  '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.infos > tr' //Информация	Вы освободили 15 своих солдат. Но смогли спасти 11
-  '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.goods > tr' //Добыча	    869    935    733    944 Награбленное‭‭ 3481‬/‭6000‬‬
-
-  '#reportWrapper > div.body > div.role.defender > div.troopHeadline'
-  //< div class="troopHeadline" > <span class="inline-block">[<a href="allianz.php?aid=49" title="">Crusader</a>]</span> <a class="player" href="spieler.php?uid=423">АКА</a> из деревни < a class="village" href = "karte.php?d=65222" > Астана</a > </div >
-  '#defender'
-  //<table id="defender" class="defender" cellpadding="0" cellspacing="0"><tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u21" alt="Фаланга"></td><td class="uniticon"><img src="img/x.gif" class="unit u22" alt="Мечник"></td><td class="uniticon"><img src="img/x.gif" class="unit u23" alt="Следопыт"></td><td class="uniticon"><img src="img/x.gif" class="unit u24" alt="Тевтатский гром"></td><td class="uniticon"><img src="img/x.gif" class="unit u25" alt="Друид-всадник"></td><td class="uniticon"><img src="img/x.gif" class="unit u26" alt="Эдуйская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u27" alt="Таран"></td><td class="uniticon"><img src="img/x.gif" class="unit u28" alt="Требушет"></td><td class="uniticon"><img src="img/x.gif" class="unit u29" alt="Предводитель"></td><td class="uniticon"><img src="img/x.gif" class="unit u30" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
-}
-*/
 
   //
   //
@@ -142,12 +143,12 @@ async function start(loginInfo) {
   //
   //
   // Scraping Reports
-  if (login_info.scrapReports === true) {
-    var savedReportsIdWithoutDetails = await Reader.getLastReportsWithoutDetails(accountId);
-    //  var arrayWithDeffenseReports = await Scraper.ScrapingReportsDetail(page, accountId, savedReportsIdWithoutDetails);
-    Debug.debugPrint('savedReportsIdWithoutDetails: ' + savedReportsIdWithoutDetails.length);
-    Debug.debugPrint(savedReportsIdWithoutDetails);
-  }
+  // if (login_info.scrapReports === true) {
+  var savedReportsIdWithoutDetails = await Reader.getLastReportsWithoutDetails(accountId);
+  //  var arrayWithDeffenseReports = await Scraper.ScrapingReportsDetail(page, accountId, savedReportsIdWithoutDetails);
+  Debug.debugPrint('savedReportsIdWithoutDetails: ' + savedReportsIdWithoutDetails.length);
+  Debug.debugPrint(savedReportsIdWithoutDetails);
+  // }
 
 
   // Building houses

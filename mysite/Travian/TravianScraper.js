@@ -464,7 +464,6 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
     const dateTimeAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.dat';
     var reportsIds = [];
     for (var i = 1; i <= 20; i++) {
-      playersAdnIdSelector
       var rowData = {
         players: '',
         description: '',
@@ -536,6 +535,145 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
 }
 
 
+/** Scraping war reports information */
+async function ScrapingReportsDetail(page, reports) {
+
+  Debug.debugPrint("ScrapingReportsDetail()");
+
+  reports.forEach(report => {
+    var gotoUrl = report.href;
+
+    var minSleepTimeInSec = 2;
+    var maxSleepTimeInSec = 4;
+    await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+    Debug.debugPrint("Goto: " + gotoUrl);
+    await page.goto(gotoUrl);
+
+    var reportInfo = await page.evaluate(() => {
+
+      function GetString(strValue) {
+        //Debug.debuGetStringgPrint(strValue);
+        strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|]/g, ' ');
+        //Debug.debugPrint(strValue);
+        strValue = strValue.replace(/ +/g, ' ');
+        //Debug.debugPrint(strValue);
+        strValue = strValue.trim();
+        //Debug.debugPrint(strValue);
+        return strValue;
+      }
+
+      function GetDAteTime(dateTimeAdnIdSelector) {
+        var dtTime = document.querySelector(dateTimeAdnIdSelector);
+        if (dtTime && dtTime.textContent) {
+          dateTime = GetString(dtTime.textContent).trim();
+          dateTimeOriginal = dateTime;
+          //вчера, 02:26
+          //02.12.18, 12:42
+          var today = new Date();
+          var arr = dateTime.split(',');
+          if (arr[0] === 'сегодня') {
+            var year = today.getFullYear();
+            var month = today.getMonth();
+            var day = today.getDate();
+          } else if (arr[0] === 'вчера') {
+            today.setDate(today.getDate() - 1);
+            var year = today.getFullYear();
+            var month = today.getMonth();
+            var day = today.getDate();
+          } else {
+            dateTime = dateTime.split(',');
+            var arrDt = dateTime[0].split('.');
+            var year = '20' + arrDt[2];
+            var month = arrDt[1];
+            var day = arrDt[0];
+          }
+          dateTime = '' + year + '-' + month + '-' + day + ' ' + arr[1].trim();
+        }
+      }
+
+      function GetStringValue(elemSelector) {
+        var elem = document.querySelector(elemSelector);
+        var valueStr = '';
+        if (elem && elem.textContent) {
+          valueStr = GetString(typeElem.textContent);
+        }
+        valueStr = valueStr.trim();
+        return valueStr;
+      }
+
+      //const villageNameSelector = '#offs > tbody > tr:nth-child(rowNumber)';
+      const playersSelector = '#reportWrapper > div.header > div.subject > div.header.text'; //    Thailand атакует Астана
+      const typeSelector = '#reportWrapper > div.body > div.role.attacker > div.header > h2'; // нападение
+      const dateTimeAdnIdSelector = '#reportWrapper > div.header > div.time > div.header.text'; //    11.12.18, 05: 46: 14
+      const AttackerSelector = '#reportWrapper > div.body > div.role.attacker > div.troopHeadline'; //[CRB] happyday из деревни Thailand
+      //<div class="troopHeadline"><span class="inline-block">[<a href="allianz.php?aid=190" title="">CRB</a>]</span> <a class="player" href="spieler.php?uid=3916">happyday</a> из деревни <a class="village" href="karte.php?d=65221">Thailand</a> </div>
+      const AttackerArmySelector = '#attacker'; //войска атакующего
+      // < table id = "attacker" class="attacker" cellpadding = "0" cellspacing = "0" > <tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u11" alt="Дубинщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u12" alt="Копьеносец"></td><td class="uniticon"><img src="img/x.gif" class="unit u13" alt="Топорщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u14" alt="Скаут"></td><td class="uniticon"><img src="img/x.gif" class="unit u15" alt="Паладин"></td><td class="uniticon"><img src="img/x.gif" class="unit u16" alt="Тевтонская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u17" alt="Стенобитное орудие"></td><td class="uniticon"><img src="img/x.gif" class="unit u18" alt="Катапульта"></td><td class="uniticon"><img src="img/x.gif" class="unit u19" alt="Вождь"></td><td class="uniticon"><img src="img/x.gif" class="unit u20" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit">100</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
+      const informationSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.infos > tr'; //Информация	Вы освободили 15 своих солдат. Но смогли спасти 11
+      const lootSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.goods > tr'; //Добыча	    869    935    733    944 Награбленное‭‭ 3481‬/‭6000‬‬
+      const defenderSelector = '#reportWrapper > div.body > div.role.defender > div.troopHeadline';
+      //< div class="troopHeadline" > <span class="inline-block">[<a href="allianz.php?aid=49" title="">Crusader</a>]</span> <a class="player" href="spieler.php?uid=423">АКА</a> из деревни < a class="village" href = "karte.php?d=65222" > Астана</a > </div >
+      const defenderArmySelector = '#defender';
+      //<table id="defender" class="defender" cellpadding="0" cellspacing="0"><tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u21" alt="Фаланга"></td><td class="uniticon"><img src="img/x.gif" class="unit u22" alt="Мечник"></td><td class="uniticon"><img src="img/x.gif" class="unit u23" alt="Следопыт"></td><td class="uniticon"><img src="img/x.gif" class="unit u24" alt="Тевтатский гром"></td><td class="uniticon"><img src="img/x.gif" class="unit u25" alt="Друид-всадник"></td><td class="uniticon"><img src="img/x.gif" class="unit u26" alt="Эдуйская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u27" alt="Таран"></td><td class="uniticon"><img src="img/x.gif" class="unit u28" alt="Требушет"></td><td class="uniticon"><img src="img/x.gif" class="unit u29" alt="Предводитель"></td><td class="uniticon"><img src="img/x.gif" class="unit u30" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
+
+      var reportInfo = [];
+      for (var i = 1; i <= 20; i++) {
+        var rowData = {
+          id: '',
+          DateTime: '',
+          Type: '',
+          Players: '',
+          Attacker: '',
+          Information: '',
+          Loot: '',
+          Defender: '',
+          ArmyAttaker: '',
+          ArmyDefender: ''
+        };
+
+        var dtTime = GetDAteTime(dateTimeAdnIdSelector);
+        var typeElem = document.querySelector(typeSelector);
+        var type = GetStringValue(typeSelector);
+        var type = '';
+        if (typeElem && typeElem.textContent) {
+          type = GetString(typeElem.textContent);
+        }
+
+        playersSelector
+        var playersElem = document.querySelector(playersAdnIdSelector);
+        if (playersElem && playersElem.textContent) {
+          players = GetString(playersElem.textContent).trim();
+        }
+        var href = '';
+        var id = 0;
+        if (playersElem) {
+          href = playersElem.href;
+          var arr = href.split('?id=');
+          if (arr.length) {
+            id = arr[1].split('&')[0];
+          }
+        }
+        if (id && href) {
+          rowData.id = id;
+          rowData.dateTime = dateTime;
+          rowData.Type = type;
+          rowData.description = description;
+          rowData.players = players;
+          rowData.href = href;
+          reportInfo.push(rowData);
+        }
+        else {
+          break;
+        }
+      }
+      return reportInfo;
+    });
+
+  });
+
+  return reportInfo;
+}
+
 
 module.exports.ScrapingAllVillagesDorf1 = ScrapingAllVillagesDorf1;
 module.exports.ScrapingAllVillagesDorf2 = ScrapingAllVillagesDorf2;
@@ -546,3 +684,4 @@ module.exports.ScrapingFieldsInfo = ScrapingFieldsInfo;
 module.exports.ScrapDorf1Page = ScrapDorf1Page;
 module.exports.ScrapingBuildingHouses = ScrapingBuildingHouses;
 module.exports.ScrapingAllDefenseReport = ScrapingAllDefenseReport;
+module.exports.ScrapingReportsDetail = ScrapingReportsDetail;
