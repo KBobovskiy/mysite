@@ -536,12 +536,16 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
 
 
 /** Scraping war reports information */
-async function ScrapingReportsDetail(page, reports) {
+async function ScrapingReportsDetail(page, accountId, reports) {
 
   Debug.debugPrint("ScrapingReportsDetail()");
+  Debug.debugPrint("reports.length = " + reports.length);
+  Debug.debugPrint(reports);
+  var reportInfo = [];
 
-  reports.forEach(report => {
-    var gotoUrl = report.href;
+  for (var i = 0; i < reports.length; i++) {
+    var report = reports[i];
+    var gotoUrl = report.Href;
 
     var minSleepTimeInSec = 2;
     var maxSleepTimeInSec = 4;
@@ -562,8 +566,9 @@ async function ScrapingReportsDetail(page, reports) {
         return strValue;
       }
 
-      function GetDAteTime(dateTimeAdnIdSelector) {
+      function GetDateTime(dateTimeAdnIdSelector) {
         var dtTime = document.querySelector(dateTimeAdnIdSelector);
+        var dateTime = '';
         if (dtTime && dtTime.textContent) {
           dateTime = GetString(dtTime.textContent).trim();
           dateTimeOriginal = dateTime;
@@ -589,6 +594,7 @@ async function ScrapingReportsDetail(page, reports) {
           }
           dateTime = '' + year + '-' + month + '-' + day + ' ' + arr[1].trim();
         }
+        return dateTime;
       }
 
       function GetStringValue(elemSelector) {
@@ -601,76 +607,99 @@ async function ScrapingReportsDetail(page, reports) {
         return valueStr;
       }
 
+      function GetElementStringValue(elemSelector) {
+        var elem = document.querySelector(elemSelector);
+        var strValue = '';
+        if (elem && elem.textContent) {
+          strValue = GetString(elem.textContent).trim();
+        }
+        return strValue;
+      }
+
+      function GetElementHrefStringValue(elemSelector) {
+        var elem = document.querySelector(elemSelector);
+        if (elem && elem.href) {
+          return elem.href;
+        }
+        return '';
+      }
+
+
       //const villageNameSelector = '#offs > tbody > tr:nth-child(rowNumber)';
       const playersSelector = '#reportWrapper > div.header > div.subject > div.header.text'; //    Thailand атакует Астана
       const typeSelector = '#reportWrapper > div.body > div.role.attacker > div.header > h2'; // нападение
       const dateTimeAdnIdSelector = '#reportWrapper > div.header > div.time > div.header.text'; //    11.12.18, 05: 46: 14
-      const AttackerSelector = '#reportWrapper > div.body > div.role.attacker > div.troopHeadline'; //[CRB] happyday из деревни Thailand
+      const attackerSelector = '#reportWrapper > div.body > div.role.attacker > div.troopHeadline'; //[CRB] happyday из деревни Thailand
+      const attackerSelectorPlayerHref = '#reportWrapper > div.body > div.role.attacker > div.troopHeadline > a'
+      const attackerSelectorVillageHref = '#reportWrapper > div.body > div.role.attacker > div.troopHeadline > a.village'
       //<div class="troopHeadline"><span class="inline-block">[<a href="allianz.php?aid=190" title="">CRB</a>]</span> <a class="player" href="spieler.php?uid=3916">happyday</a> из деревни <a class="village" href="karte.php?d=65221">Thailand</a> </div>
-      const AttackerArmySelector = '#attacker'; //войска атакующего
+      const attackerArmySelector = '#attacker'; //войска атакующего
       // < table id = "attacker" class="attacker" cellpadding = "0" cellspacing = "0" > <tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u11" alt="Дубинщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u12" alt="Копьеносец"></td><td class="uniticon"><img src="img/x.gif" class="unit u13" alt="Топорщик"></td><td class="uniticon"><img src="img/x.gif" class="unit u14" alt="Скаут"></td><td class="uniticon"><img src="img/x.gif" class="unit u15" alt="Паладин"></td><td class="uniticon"><img src="img/x.gif" class="unit u16" alt="Тевтонская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u17" alt="Стенобитное орудие"></td><td class="uniticon"><img src="img/x.gif" class="unit u18" alt="Катапульта"></td><td class="uniticon"><img src="img/x.gif" class="unit u19" alt="Вождь"></td><td class="uniticon"><img src="img/x.gif" class="unit u20" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit">100</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
       const informationSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.infos > tr'; //Информация	Вы освободили 15 своих солдат. Но смогли спасти 11
-      const lootSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.goods > tr'; //Добыча	    869    935    733    944 Награбленное‭‭ 3481‬/‭6000‬‬
+      //const lootSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody.goods > tr'; //Добыча	    869    935    733    944 Награбленное‭‭ 3481‬/‭6000‬‬
+      const lootWoodSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody > tr > td > div.res > div > div:nth-child(1)';
+      const lootClaySelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody > tr > td > div.res > div > div:nth-child(2)';
+      const lootIronSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody > tr > td > div.res > div > div:nth-child(3)';
+      const lootCropSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody > tr > td > div.res > div > div:nth-child(4)';
+      const lootTotalSelector = '#reportWrapper > div.body > div.role.attacker > table.additionalInformation > tbody > tr > td > div.carry';
       const defenderSelector = '#reportWrapper > div.body > div.role.defender > div.troopHeadline';
+      const defenderSelectorPlayerHref = '#reportWrapper > div.body > div.role.defender > div.troopHeadline > a';
+      const defenderSelectorVillageHref = '#reportWrapper > div.body > div.role.defender > div.troopHeadline > a.village';
       //< div class="troopHeadline" > <span class="inline-block">[<a href="allianz.php?aid=49" title="">Crusader</a>]</span> <a class="player" href="spieler.php?uid=423">АКА</a> из деревни < a class="village" href = "karte.php?d=65222" > Астана</a > </div >
       const defenderArmySelector = '#defender';
       //<table id="defender" class="defender" cellpadding="0" cellspacing="0"><tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u21" alt="Фаланга"></td><td class="uniticon"><img src="img/x.gif" class="unit u22" alt="Мечник"></td><td class="uniticon"><img src="img/x.gif" class="unit u23" alt="Следопыт"></td><td class="uniticon"><img src="img/x.gif" class="unit u24" alt="Тевтатский гром"></td><td class="uniticon"><img src="img/x.gif" class="unit u25" alt="Друид-всадник"></td><td class="uniticon"><img src="img/x.gif" class="unit u26" alt="Эдуйская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u27" alt="Таран"></td><td class="uniticon"><img src="img/x.gif" class="unit u28" alt="Требушет"></td><td class="uniticon"><img src="img/x.gif" class="unit u29" alt="Предводитель"></td><td class="uniticon"><img src="img/x.gif" class="unit u30" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
 
-      var reportInfo = [];
-      for (var i = 1; i <= 20; i++) {
-        var rowData = {
-          id: '',
-          DateTime: '',
-          Type: '',
-          Players: '',
-          Attacker: '',
-          Information: '',
-          Loot: '',
-          Defender: '',
-          ArmyAttaker: '',
-          ArmyDefender: ''
-        };
+      var rowData = {
+        id: '',
+        DateTime: '',
+        Type: '',
+        Players: '',
+        Attacker: '',
+        AttackerPlayerHref: '',
+        AttackerVillageHref: '',
+        Information: '',
+        Loot: '',
+        Defender: '',
+        DefenderPlayerHref: '',
+        DefenderVillageHref: '',
+        ArmyAttaker: '',
+        ArmyDefender: ''
+      };
 
-        var dtTime = GetDAteTime(dateTimeAdnIdSelector);
-        var typeElem = document.querySelector(typeSelector);
-        var type = GetStringValue(typeSelector);
-        var type = '';
-        if (typeElem && typeElem.textContent) {
-          type = GetString(typeElem.textContent);
-        }
+      var dtTime = GetDateTime(dateTimeAdnIdSelector);
+      var type = GetElementStringValue(typeSelector);
+      var players = GetElementStringValue(playersSelector);
+      var attacker = GetElementStringValue(attackerSelector);
+      var attackerHref = GetElementHrefStringValue(attackerSelectorVillageHref);
+      var attackerPlayerHref = GetElementHrefStringValue(attackerSelectorPlayerHref);
 
-        playersSelector
-        var playersElem = document.querySelector(playersAdnIdSelector);
-        if (playersElem && playersElem.textContent) {
-          players = GetString(playersElem.textContent).trim();
-        }
-        var href = '';
-        var id = 0;
-        if (playersElem) {
-          href = playersElem.href;
-          var arr = href.split('?id=');
-          if (arr.length) {
-            id = arr[1].split('&')[0];
-          }
-        }
-        if (id && href) {
-          rowData.id = id;
-          rowData.dateTime = dateTime;
-          rowData.Type = type;
-          rowData.description = description;
-          rowData.players = players;
-          rowData.href = href;
-          reportInfo.push(rowData);
-        }
-        else {
-          break;
-        }
-      }
-      return reportInfo;
+      var defender = GetElementStringValue(defenderSelector);
+      var defenderHref = GetElementHrefStringValue(defenderSelectorVillageHref);
+      var defenderPlayerHref = GetElementHrefStringValue(defenderSelectorPlayerHref);
+      var loot = GetElementStringValue(lootWoodSelector) + '/'
+        + GetElementStringValue(lootClaySelector) + '/'
+        + GetElementStringValue(lootIronSelector) + '/'
+        + GetElementStringValue(lootCropSelector)
+        + ' {' + GetElementStringValue(lootTotalSelector) + '}';
+      var information = GetElementStringValue(informationSelector);
+
+      rowData.DateTime = dtTime;
+      rowData.Type = type;
+      rowData.Players = players;
+      rowData.Information = information;
+      rowData.Loot = loot;
+      rowData.Attacker = attacker;
+      rowData.AttackerPlayerHref = attackerPlayerHref;
+      rowData.AttackerVillageHref = attackerHref;
+      rowData.Defender = defender;
+      rowData.DefenderPlayerHref = defenderPlayerHref;
+      rowData.DefenderVillageHref = defenderHref;
+      return rowData;
     });
-
-  });
-
+    reportInfo.Href = gotoUrl;
+    reportInfo.id = report.id;
+    break;
+  }
   return reportInfo;
 }
 

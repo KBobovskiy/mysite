@@ -92,7 +92,7 @@ async function getLastDeffenseReports(accountId) {
 /*Returns last 10 reports href. It is only stub yet*/
 async function getLastReportsWithoutDetails(accountId) {
   var query =
-    "SELECT reports.Href FROM thetale.tr_Reports reports\
+    "SELECT reports.Href, reports.id FROM thetale.tr_Reports reports\
     left join thetale.tr_ReportsDetails details\
     on reports.id = details.id and reports.AccountId = details.AccountId\
     where reports.AccountId = "+ accountId + "\

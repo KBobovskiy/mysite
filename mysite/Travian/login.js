@@ -105,6 +105,7 @@ async function start(loginInfo) {
   // Scraping reports
   if (login_info.scrapReports === true) {
 
+    /*
     var savedReportsId = await Reader.getLastDeffenseReports(accountId);
     var arrayWithDeffenseReports = await Scraper.ScrapingAllDefenseReport(page, accountId, savedReportsId);
     Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
@@ -115,7 +116,7 @@ async function start(loginInfo) {
       defReport = arrayWithDeffenseReports.pop();
       await sleep(1000);
     }
-
+*/
 
     /*
     '#reportWrapper > div.header > div.subject > div.header.text'//    Thailand атакует Астана
@@ -145,9 +146,9 @@ async function start(loginInfo) {
   // Scraping Reports
   // if (login_info.scrapReports === true) {
   var savedReportsIdWithoutDetails = await Reader.getLastReportsWithoutDetails(accountId);
-  //  var arrayWithDeffenseReports = await Scraper.ScrapingReportsDetail(page, accountId, savedReportsIdWithoutDetails);
-  Debug.debugPrint('savedReportsIdWithoutDetails: ' + savedReportsIdWithoutDetails.length);
-  Debug.debugPrint(savedReportsIdWithoutDetails);
+  var arrayWithDeffenseReports = await Scraper.ScrapingReportsDetail(page, accountId, savedReportsIdWithoutDetails);
+  Debug.debugPrint('arrayWithDeffenseReports: ' + arrayWithDeffenseReports.length);
+  Debug.debugPrint(arrayWithDeffenseReports);
   // }
 
 
