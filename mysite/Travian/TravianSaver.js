@@ -119,8 +119,8 @@ async function SaveVillageList(villageList, accountId) {
   }
 }
 
-/** Save repots list */
-async function SaveDeffenseReport(report, accountId) {
+/** Save reports list */
+async function SaveDefenseReport(report, accountId) {
   if (!report) {
     return;
   }
@@ -132,6 +132,18 @@ async function SaveDeffenseReport(report, accountId) {
 
 }
 
+/** Save reports info */
+async function SaveReportInfo(reportInfo, accountId) {
+  if (!reportInfo) {
+    return;
+  }
+  DBCon.insertQuery(
+    "INSERT INTO`thetale`.`tr_Reports` (`id`, `AccountId`, `DateTime`, `Players`, `Description`, `Href`)\
+        VALUES ('"+ report.id + "', '" + accountId + "', '" + report.dateTime + "', '" + report.players + "', '" + report.description + "','" + report.href + "')\
+        ON DUPLICATE KEY UPDATE `DateTime` = '" + report.dateTime + "',`Players`='" + report.players + "',\
+        `Description`='"+ report.description + "', `Href`='" + report.href + "'; ", 'Travian');
+
+}
 
 
 module.exports.SaveDorf1Page = SaveDorf1Page;
@@ -141,4 +153,5 @@ module.exports.SaveVillageResourses = SaveVillageResourses;
 module.exports.SaveVillageStorages = SaveVillageStorages;
 module.exports.SaveVillageProdactionInfo = SaveVillageProdactionInfo;
 module.exports.SaveVillageBuildingHouses = SaveVillageBuildingHouses;
-module.exports.SaveDeffenseReport = SaveDeffenseReport;
+module.exports.SaveDefenseReport = SaveDefenseReport;
+module.exports.SaveReportInfo = SaveReportInfo;

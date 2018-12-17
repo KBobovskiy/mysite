@@ -541,7 +541,7 @@ async function ScrapingReportsDetail(page, accountId, reports) {
   Debug.debugPrint("ScrapingReportsDetail()");
   Debug.debugPrint("reports.length = " + reports.length);
   Debug.debugPrint(reports);
-  var reportInfo = [];
+  var reportsInfo = [];
 
   for (var i = 0; i < reports.length; i++) {
     var report = reports[i];
@@ -557,7 +557,7 @@ async function ScrapingReportsDetail(page, accountId, reports) {
 
       function GetString(strValue) {
         //Debug.debuGetStringgPrint(strValue);
-        strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|]/g, ' ');
+        strValue = strValue.replace(/[^a-zA-Zа-яА-Я ,.0-9:-\|\/]/g, ' ');
         //Debug.debugPrint(strValue);
         strValue = strValue.replace(/ +/g, ' ');
         //Debug.debugPrint(strValue);
@@ -648,6 +648,10 @@ async function ScrapingReportsDetail(page, accountId, reports) {
       //< div class="troopHeadline" > <span class="inline-block">[<a href="allianz.php?aid=49" title="">Crusader</a>]</span> <a class="player" href="spieler.php?uid=423">АКА</a> из деревни < a class="village" href = "karte.php?d=65222" > Астана</a > </div >
       const defenderArmySelector = '#defender';
       //<table id="defender" class="defender" cellpadding="0" cellspacing="0"><tbody class="units"><tr><th class="coords"></th><td class="uniticon"><img src="img/x.gif" class="unit u21" alt="Фаланга"></td><td class="uniticon"><img src="img/x.gif" class="unit u22" alt="Мечник"></td><td class="uniticon"><img src="img/x.gif" class="unit u23" alt="Следопыт"></td><td class="uniticon"><img src="img/x.gif" class="unit u24" alt="Тевтатский гром"></td><td class="uniticon"><img src="img/x.gif" class="unit u25" alt="Друид-всадник"></td><td class="uniticon"><img src="img/x.gif" class="unit u26" alt="Эдуйская конница"></td><td class="uniticon"><img src="img/x.gif" class="unit u27" alt="Таран"></td><td class="uniticon"><img src="img/x.gif" class="unit u28" alt="Требушет"></td><td class="uniticon"><img src="img/x.gif" class="unit u29" alt="Предводитель"></td><td class="uniticon"><img src="img/x.gif" class="unit u30" alt="Поселенец"></td><td class="uniticon last"><img src="img/x.gif" class="unit uhero" alt="Герой"></td></tr></tbody><tbody class="units"><tr><th><i class="troopCount"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody><tbody class="units last"><tr><th><i class="troopDead"> </i></th><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none">0</td><td class="unit none last">0</td></tr></tbody></table>
+      const armyAttacker = '#attacker > tbody:nth-child(2) > tr > td:nth-child(XXX)';
+      const armyAttackerDead = '#attacker > tbody.units.last > tr > td:nth-child(XXX)';
+      const armyDefender = '#defender > tbody:nth-child(2) > tr > td:nth-child(XXX)';
+      const armyDefenderDead = '#defender > tbody.units.last > tr > td:nth-child(XXX)';
 
       var rowData = {
         id: '',
@@ -658,12 +662,18 @@ async function ScrapingReportsDetail(page, accountId, reports) {
         AttackerPlayerHref: '',
         AttackerVillageHref: '',
         Information: '',
+        LootTotal: '',
         Loot: '',
+        Looted: '',
+        LootMax: '',
+        LootFull: '',
         Defender: '',
         DefenderPlayerHref: '',
         DefenderVillageHref: '',
         ArmyAttaker: '',
-        ArmyDefender: ''
+        ArmyAttakerDead: '',
+        ArmyDefender: '',
+        ArmyDefenderDead: ''
       };
 
       var dtTime = GetDateTime(dateTimeAdnIdSelector);
@@ -679,28 +689,61 @@ async function ScrapingReportsDetail(page, accountId, reports) {
       var loot = GetElementStringValue(lootWoodSelector) + '/'
         + GetElementStringValue(lootClaySelector) + '/'
         + GetElementStringValue(lootIronSelector) + '/'
-        + GetElementStringValue(lootCropSelector)
-        + ' {' + GetElementStringValue(lootTotalSelector) + '}';
+        + GetElementStringValue(lootCropSelector);
+      var lootTotal = GetElementStringValue(lootTotalSelector);
+      var lootArr = lootTotal.split('/');
+      var looted = lootArr[0];
+      if (!looted) looted = '0';
+      looted.trim();
+      var lootMax = lootArr[1];
+      if (!lootMax) lootMax = '0';
+      lootMax.trim();
       var information = GetElementStringValue(informationSelector);
+
+      var arrAttackerArmy = [];
+      var arrAttackerArmyDead = [];
+      for (var i = 2; i <= 12; i++) {
+        var army = GetElementStringValue(armyAttacker.replace('XXX', i));
+        var armyDead = GetElementStringValue(armyAttackerDead.replace('XXX', i));
+        arrAttackerArmy.push(army);
+        arrAttackerArmyDead.push(armyDead);
+      }
+
+      var arrDefenderArmy = [];
+      var arrDefenderArmyDead = [];
+      for (var i = 2; i <= 12; i++) {
+        var army = GetElementStringValue(armyDefender.replace('XXX', i));
+        var armyDead = GetElementStringValue(armyDefenderDead.replace('XXX', i));
+        arrDefenderArmy.push(army);
+        arrDefenderArmyDead.push(armyDead);
+      }
 
       rowData.DateTime = dtTime;
       rowData.Type = type;
       rowData.Players = players;
       rowData.Information = information;
       rowData.Loot = loot;
+      rowData.Looted = looted;
+      rowData.LootTotal = lootTotal;
+      rowData.LootMax = lootMax;
+      rowData.LootFull = lootMax === looted ? true : false;
       rowData.Attacker = attacker;
       rowData.AttackerPlayerHref = attackerPlayerHref;
       rowData.AttackerVillageHref = attackerHref;
       rowData.Defender = defender;
       rowData.DefenderPlayerHref = defenderPlayerHref;
       rowData.DefenderVillageHref = defenderHref;
+      rowData.ArmyAttaker = arrAttackerArmy.join('/');
+      rowData.ArmyAttakerDead = arrAttackerArmyDead.join('/');
+      rowData.ArmyDefender = arrDefenderArmy.join('/');
+      rowData.ArmyDefenderDead = arrDefenderArmyDead.join('/');
       return rowData;
     });
     reportInfo.Href = gotoUrl;
     reportInfo.id = report.id;
-    break;
+    reportsInfo.push(reportInfo);
   }
-  return reportInfo;
+  return reportsInfo;
 }
 
 
