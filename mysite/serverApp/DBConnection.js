@@ -16,7 +16,7 @@ const util = require('util');
  * @param {string} queryString 
  * @param {string} logAction 
  */
-function insertQuery(queryString, logAction) {
+function insertQuery(queryString, logAction, logQuery) {
     if (!queryString) {
         return;
     }
@@ -24,12 +24,16 @@ function insertQuery(queryString, logAction) {
     con.connect(function (err) {
         if (err) { throw err };
     });
-    debug.debugPrint(queryString, 0);
+    if (logQuery === true) {
+        debug.debugPrint(queryString, 0);
+    }
     try {
         con.query(queryString, function (err, result, fields) {
             if (result && result.affectedRows !== 1 && result.serverStatus !== 2) {
-                debug.debugPrint(queryString, 0);
-                debug.debugPrint(result, 0);
+                if (login_info.queryDebugPrint === true) {
+                    debug.debugPrint(queryString, 0);
+                    debug.debugPrint(result, 0);
+                }
             } else if (!debug.isNULL(err)) {
                 debug.debugPrint(err, 0);
             }
@@ -69,7 +73,7 @@ async function selectQuery(queryString, logAction) {
  */
 function insertLogInfo(logAction, logInfo) {
     let queryString = "INSERT INTO thetale.logs (`action`, `info`) VALUES ('" + logAction + "','" + logInfo + "')";
-    insertQuery(queryString, 'insertLogInfo()');
+    insertQuery(queryString, 'insertLogInfo()', true);
 }
 
 /** insert hero stats info in DB

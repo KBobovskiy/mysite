@@ -14,6 +14,93 @@ async function GetAllVillagesHref(accountId) {
   return hrefs;
 }
 
+/** Returns array with villages id */
+async function GetAllVillagesId(accountId) {
+  var rows = await DBCon.selectQuery("SELECT distinct id FROM thetale.tr_Villages where AccountId = " + accountId, "Travian");
+  var result = [];
+  while (rows.length > 0) {
+    let elem = rows.pop();
+    result.push(elem.id);
+  }
+  Debug.debugPrint(result);
+  return result;
+}
+
+
+/** Returns array with building query last N elements */
+async function GetBuildingQuery(accountId, villageId, limitRow) {
+  var query =
+    "SELECT DISTINCT EndOfBuilding\
+    FROM thetale.tr_VillageBuilding\
+    where AccountId = '"+ accountId + "' and VillageId = '" + villageId + "'\
+    order by EndOfBuilding desc limit "+ limitRow + ";"
+
+  //Debug.debugPrint(query);
+
+  var rows = await DBCon.selectQuery(query, "Travian");
+  var result = [];
+  while (rows.length > 0) {
+    let elem = rows.pop();
+    //Debug.debugPrint(elem.EndOfBuilding.toString());
+    //elem.EndOfBuilding = ConvertStringUTCToDateTime(elem.EndOfBuilding);
+    //elem.Date = ConvertStringUTCToDateTime(elem.Date);
+    result.push(elem);
+  }
+
+  //Debug.debugPrint(rows);
+  //Debug.debugPrint(result);
+  return result;
+}
+
+function ConvertStringUTCToDateTime(stringDateTime) {
+  var result = "" + stringDateTime;
+  Debug.debugPrint(result);
+  result = result.substring(0, stringDateTime.length - 5);
+  Debug.debugPrint(result);
+  result = result.replace('T', ' ');
+  Debug.debugPrint(result);
+  result = result.replace('-', '');
+  result = result.replace('-', '');
+  result = result.replace('-', '');
+  Debug.debugPrint(result);
+  result = new Date(result);
+  Debug.debugPrint(result);
+  return result;
+}
+
+/**
+ * Returns array with buildings needed to upgrade in village
+ */
+async function getWhatWeCanBuildInVillageFromDB(accountId, villageId) {
+  var query =
+    "SELECT\
+  VillRes.AccountId\
+    , VillRes.VillageId\
+    , VillRes.Name\
+    , VillRes.Href\
+    , VillRes.Level\
+    , VillRes.PositionId\
+  FROM thetale.tr_VillageResources VillRes\
+  INNER JOIN(\
+    SELECT max(id) id\
+    , AccountId\
+    , VillageId\
+    , PositionId\
+      FROM thetale.tr_VillageResources\
+      WHERE AccountId = "+ accountId + "\
+      and VillageId = "+ villageId + "\
+      group by AccountId, VillageId, PositionId\
+  ) IdList ON IdList.id = VillRes.id\
+  WHERE VillRes.Level < 10\
+  order by VillRes.Level;";
+
+  //Debug.debugPrint(query);
+  var rows = await DBCon.selectQuery(query, "Travian");
+
+  DBCon.insertLogInfo('Travian', "Can start build houses in village " + villageId + ": " + rows.length);
+  return rows;
+}
+
 /**
  * Returns array with buildings needed to upgrade
  */
@@ -71,7 +158,7 @@ async function getWhatWeCanBuildFromDB(accountId) {
       ON VillBuilding.AccountId = AllRes.AccountId and VillBuilding.VillageId = AllRes.VillageId\
     WHERE (VillBuilding.EndOfBuilding <= '" + Common.getNow() + "' OR VillBuilding.EndOfBuilding is null)\
     ORDER BY AllRes.Level;"
-  Debug.debugPrint(query);
+  //Debug.debugPrint(query);
   var rows = await DBCon.selectQuery(query, "Travian");
 
   DBCon.insertLogInfo('Travian', "Can start build houses: " + rows.length);
@@ -106,5 +193,8 @@ async function getLastReportsWithoutDetails(accountId) {
 
 module.exports.GetAllVillagesHref = GetAllVillagesHref;
 module.exports.getWhatWeCanBuildFromDB = getWhatWeCanBuildFromDB;
+module.exports.getWhatWeCanBuildInVillageFromDB = getWhatWeCanBuildInVillageFromDB;
 module.exports.getLastDeffenseReports = getLastDeffenseReports;
 module.exports.getLastReportsWithoutDetails = getLastReportsWithoutDetails;
+module.exports.GetBuildingQuery = GetBuildingQuery;
+module.exports.GetAllVillagesId = GetAllVillagesId;

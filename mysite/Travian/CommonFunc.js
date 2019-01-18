@@ -2,7 +2,7 @@ const Debug = require("../serverApp/debug.js");
 
 /** Returns random number in miliseconds for sleeping */
 function getRandomMS(min, max) {
-  return (Math.random() * (max - min) + min) * 1000;
+  return Math.floor((Math.random() * (max - min) + min) * 1000);
 }
 
 function NumberWithLeadingZero(number, stringLength) {
@@ -27,6 +27,7 @@ function getNow() {
   Debug.debugPrint("Date time = " + nowDateTime);
   return nowDateTime;
 }
+
 
 module.exports.getRandomMS = getRandomMS;
 module.exports.getNow = getNow;

@@ -9,8 +9,10 @@ const Saver = require("./TravianSaver");
 const Reader = require("./TravianDBReader.js");
 const Common = require("./CommonFunc.js");
 
-var fs = require('fs')
+const global_UrlDorf1 = 'https://ts2.travian.ru/dorf1.php';
+const gotoUrlDorf2 = 'https://ts2.travian.ru/dorf2.php';
 
+var fs = require('fs')
 
 puppeteer.defaultArgs({ headless: false });
 
@@ -52,9 +54,7 @@ async function start(loginInfo) {
 
   // Let's testing, can we play or not
   var pageUrl = 'https://ts2.travian.ru/dorf1.php';
-  await sleep(Common.getRandomMS(1, 2.5));
-  Debug.debugPrint("Goto: " + pageUrl);
-  await page.goto(pageUrl);
+  await GotoPage(page, pageUrl, 1, 2.5);
   var result = await page.evaluate(() => {
     const warehouseSelector = '#stockBarWarehouse';
     //Debug.debugPrint("typeof = " + typeof document.querySelector(warehouseSelector));
@@ -127,6 +127,8 @@ async function start(loginInfo) {
   //
   // Scraping Reports
   // if (login_info.scrapReports === true) {
+
+  /*
   var savedReportsIdWithoutDetails = await Reader.getLastReportsWithoutDetails(accountId);
   savedReportsIdWithoutDetails.length = 3;
   var arrayWithDeffenseReports = await Scraper.ScrapingReportsDetail(page, accountId, savedReportsIdWithoutDetails);
@@ -138,21 +140,61 @@ async function start(loginInfo) {
     reportInfo = arrayWithDeffenseReports.pop();
     await sleep(1000);
   }
-
+*/
   // }
 
 
   // Building houses
 
   if (login_info.runBuilding === true) {
-    var i = 0;
-    while (i < 100) {
-      await StartAllBuildings(page, accountId);
-      i++;
+    var loopIndex = 0;
+    var maxLoopIndex = 20 + Math.floor(Math.random() * 20);
+    Debug.debugPrint("Check villages for building houses, maxLoopIndex = " + maxLoopIndex);
+    for (loopIndex = 0; loopIndex < maxLoopIndex; loopIndex++) {
+
+      var villagesId = await Reader.GetAllVillagesId(accountId);
+      for (var vIndex = 0; vIndex < villagesId.length; vIndex++) {
+        var vill_ID = villagesId[vIndex];
+        Debug.debugPrint("Check village id = " + vill_ID);
+
+        // Last 2 buliding from query
+        var buildingQuery = await Reader.GetBuildingQuery(accountId, vill_ID, 2);
+        buildingQuery.sort((a, b) => {
+          if (a.id <= b.id) return 1;
+          return -1;
+        })
+        Debug.debugPrint("Check village id = " + vill_ID + " building query length = " + buildingQuery.length);
+        if (buildingQuery.length >= 0) {
+          var canStartBuild = false;
+
+          for (var i = 0; i < buildingQuery.length; i++) {
+            var last = buildingQuery[i];
+            if (last && last.EndOfBuilding) {
+              var now = new Date();
+              Debug.debugPrint("Village Id = " + vill_ID + ", last.EndOfBuilding < now  = " + last.EndOfBuilding + " < " + now + " = " + (last.EndOfBuilding < now));
+              if (last.EndOfBuilding < now) {
+                canStartBuild = true;
+                break;
+              }
+            }
+          }
+
+          if (buildingQuery.length === 0) {
+            canStartBuild = true;
+          }
+
+          Debug.debugPrint("Village Id = " + vill_ID + ", canStartBuild = " + canStartBuild);
+          if (canStartBuild === true) {
+            await StartBuildInVillage(page, accountId, vill_ID);
+          }
+        }
+      }
+
       var minSleepTimeInSec = 180;
       var maxSleepTimeInSec = 360;
       var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
-      Debug.debugPrint("Now:" + new Date() + ", sleep for " + waitTime + "sec");
+      var dt = new Date();
+      Debug.debugPrint("Now:" + dt + ", sleep for " + waitTime + " sec, till: " + new Date(dt.setSeconds(dt.getSeconds() + waitTime)));
       await sleep(waitTime * 1000);
     }
   }
@@ -221,6 +263,89 @@ function RemoveVillageById(arr, villageId) {
   return newArr;
 }
 
+async function GetButtonStartBuildingText(page) {
+
+  var buttonText = await page.evaluate(() => {
+    const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
+    const buttonSelection2 = '#build .upgradeButtonsContainer > div.section1';
+
+    const contentContainer = '.build';
+    var innerText = "";
+
+    var selection = document.querySelector('#build');
+    if (selection === null) {
+      return 'error #1 Can not find element with selector: ' + contentContainer;
+    }
+    var innerText = selection.textContent;
+    if (innerText) {
+      innerText = innerText.replace(/[^а-яА-Я]+/g, '');
+      if (innerText.indexOf('зданиеотстроенополностью') >= 0) {
+        return 'зданиеотстроенополностью';;
+      }
+      if (innerText.indexOf('Улучшитьдоуровня1') >= 0) {
+        return 'Улучшитьдоуровня1';;
+      }
+      if (innerText.indexOf('Улучшитьдо') >= 0) {
+        return 'Улучшитьдо';;
+      }
+      if (innerText.indexOf('Построитьсархитектором') >= 0) {
+        return 'Построитьсархитектором';;
+      }
+    }
+
+    return innerText;
+
+  });
+
+  await sleep(Common.getRandomMS(1.7, 3.5));
+
+  return buttonText;
+}
+
+async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
+
+  await GotoPage(page, gotoBuildingUrl, 0.3, 2);
+
+  var buttonReady = await GetButtonStartBuildingText(page);
+
+  Debug.debugPrint("Button start building text = " + buttonReady);
+
+  if (buttonReady === "Улучшитьдоуровня1") {
+    await page.mouse.click(807, 515);
+    await page.mouse.click(946, 515);
+  } else if (buttonReady.indexOf("Улучшитьдо") >= 0) {
+    await page.mouse.click(807, 515);
+    await page.mouse.click(946, 515);
+  } else if (buttonReady.indexOf("Построитьсархитектором") >= 0) {
+    Debug.debugPrint("Button for building is not ready or building complite!");
+    await GotoPage(page, global_UrlDorf1, 3, 5);
+  }
+
+  DBCon.insertLogInfo('Travian', "ScrapDorf1Page after click trying button start building");
+  var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, global_UrlDorf1);
+  Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+}
+
+
+async function StartBuildInVillage(page, accountId, villageId) {
+  Debug.debugPrint("------------------------------------------------------");
+  Debug.debugPrint("--  StartBuildInVillage: " + villageId);
+
+  var rows = await Reader.getWhatWeCanBuildInVillageFromDB(accountId, villageId);
+
+  if (rows.length > 0) {
+    var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+    DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+    var gotoBuildingUrl = rows[i].Href; // Building href
+    if (gotoBuildingUrl) {
+      await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+      await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+    }
+  }
+}
+
+/** OLD VERSION */
+/*
 async function StartBuilding(page, rows, accountId) {
   while (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
@@ -229,95 +354,28 @@ async function StartBuilding(page, rows, accountId) {
     var villageId = rows[i].VillageId;
 
     if (gotoUrl) {
-      var minSleepTimeInSec = 0.3;
-      var maxSleepTimeInSec = 2;
-      await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-      Debug.debugPrint("Goto: " + gotoUrl);
-      await page.goto(gotoUrl);
-
-      gotoUrl = rows[i].Href;
-      if (gotoUrl) {
-        await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
-        Debug.debugPrint("Goto: " + gotoUrl);
-        await page.goto(gotoUrl);
-
-        var buttonReady = await page.evaluate(() => {
-          const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
-          const buttonSelection2 = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer > div.section1';
-          const contentContainer = '#contentOuterContainer > div.contentContainer';
-          var innerText = "";
-
-          var selection = document.querySelector(contentContainer);
-          if (!selection) {
-            return false;
-          }
-          if (selection && selection.textContent) {
-            innerText = selection.textContent;
-            innerText = innerText.replace(/[^а-яА-Я]+/g, '');
-            if (innerText.indexOf('зданиеотстроенополностью') >= 0) {
-              return false;
-            }
-          }
-
-          var selection = document.querySelector(buttonSelection);
-          if (!selection) {
-            selection = document.querySelector(buttonSelection2);
-            if (!selection) {
-              return false;
-            }
-          }
-          if (selection.innerText) {
-            innerText = selection.innerText.replace(/[^а-яА-Я0-9]+/g, '');
-            //Debug.debugPrint(innerText);
-            if (innerText === "Улучшитьдоуровня1") {
-              //Debug.debugPrint("Улучшить готово до уровня 1");
-              return 1;
-            } else if (innerText.indexOf("Улучшитьдо") >= 0) {
-              //Debug.debugPrint("Улучшить готово");
-              return true;
-            } else if (innerText.indexOf("Построитьсархитектором") >= 0) {
-              //Debug.debugPrint("Архитектор");
-              return false;
-            }
-          }
-          return false;
-        });
-        Debug.debugPrint("buttonReady=" + buttonReady);
-        if (buttonReady === 1) {
-          await page.mouse.click(946, 515);
-        } else if (buttonReady) {
-          await page.mouse.click(814, 515);
-        } else {
-          Debug.debugPrint("Button for building is not ready or building complite!");
-          // return to dorf1 page
-          var pageUrl = 'https://ts2.travian.ru/dorf1.php';
-          Debug.debugPrint("Goto: " + pageUrl);
-          await page.goto(pageUrl);
-          await sleep(Common.getRandomMS(3, 5));
-
-          //await page.goto(pageUrl);
+      await TryToStartBuilding(page, gotoUrl, accountId, rows);
+      var j = rows.length;
+      for (var j = rows.length - 1; j >= 0; j--) {
+        if (rows[j].VillageId == villageId) {
+          //Debug.debugPrint("Delete by index: " + j);
+          rows.splice(j, 1);
         }
-        DBCon.insertLogInfo('Travian', "ScrapDorf1Page after click trying button start building");
-        var gotoUrl = 'https://ts2.travian.ru/dorf1.php';
-        var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, gotoUrl);
-        Saver.SaveDorf1Page(dorf1PageInfo, accountId);
-        var j = rows.length;
-        for (var j = rows.length - 1; j >= 0; j--) {
-          if (rows[j].VillageId == villageId) {
-            //Debug.debugPrint("Delete by index: " + j);
-            rows.splice(j, 1);
-          }
-        }
-        Debug.debugPrint(rows);
       }
+      Debug.debugPrint(rows);
     }
   }
 
 }
+*/
 
-/** Starting building in free village */
+/** OLD VERSION */
+/*
 async function StartAllBuildings(page, accountId) {
   var rows = await Reader.getWhatWeCanBuildFromDB(accountId);
+  Debug.debugPrint("------------------------------------------------------");
+  Debug.debugPrint("--  --  --  --  --  --  --  --  --  --  --  --  --  --");
+  Debug.debugPrint("------------------------------------------------------");
   Debug.debugPrint("getWhatWeCanBuildFromDB return: " + rows.length + " rows");
   Debug.debugPrint(rows);
   //
@@ -332,16 +390,14 @@ async function StartAllBuildings(page, accountId) {
   //
   //
 }
+*/
 
 
 
 /** Loging into the game, return 1 if we in the game */
 async function LoginToTravian(page, loginInfo) {
-  var minSleepTimeInSec = 3;
-  var maxSleepTimeInSec = 7;
-  var pageUrl = 'https://ts2.travian.ru/';
-  Debug.debugPrint("Goto: " + pageUrl);
-  await page.goto(pageUrl);
+
+  await GotoPage(page, 'https://ts2.travian.ru/', 2.5, 6);
   let login = loginInfo.account.login;
   let password = loginInfo.account.password;
   await page.evaluate((login, password) => {
@@ -353,13 +409,19 @@ async function LoginToTravian(page, loginInfo) {
   const lowResolutionCheckBoxSelector = '#lowRes';
 
   await page.click(lowResolutionCheckBoxSelector);
-  await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
+  await sleep(Common.getRandomMS(2, 5));
   await page.mouse.click(856, 378);
-  await sleep(Common.getRandomMS(minSleepTimeInSec / 2, maxSleepTimeInSec / 2));
+  await sleep(Common.getRandomMS(1, 3));
   return 1;
 }
 
-
+async function GotoPage(page, pageUrl, timeoutMin = 1, timeoutMax = 5) {
+  var waitTime = Common.getRandomMS(timeoutMin, timeoutMax);
+  Debug.debugPrint("Goto: " + pageUrl + " with waiting " + waitTime + " milisec.");
+  await sleep(waitTime);
+  await page.goto(pageUrl);
+  await sleep(300);
+}
 
 start(login_info);
 
