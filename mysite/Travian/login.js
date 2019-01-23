@@ -310,12 +310,18 @@ async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
 
   Debug.debugPrint("Button start building text = " + buttonReady);
 
+  await page.screenshot({ path: 'ts2.travian.png' });
+
+  var cordY = 575;
+  if (login_info.unix === false) {
+    cordY = 515;
+  }
   if (buttonReady === "Улучшитьдоуровня1") {
-    await page.mouse.click(807, 515);
-    await page.mouse.click(946, 515);
+    await page.mouse.click(807, cordY);
+    await page.mouse.click(946, cordY);
   } else if (buttonReady.indexOf("Улучшитьдо") >= 0) {
-    await page.mouse.click(807, 515);
-    await page.mouse.click(946, 515);
+    await page.mouse.click(807, cordY);
+    await page.mouse.click(946, cordY);
   } else if (buttonReady.indexOf("Построитьсархитектором") >= 0) {
     Debug.debugPrint("Button for building is not ready or building complite!");
     await GotoPage(page, global_UrlDorf1, 3, 5);
