@@ -150,22 +150,24 @@ async function ScrapingVillageList(page) {
 
     var allVillage = $(villagesListTemplateSelector);
 
-    for (var i = 0; i < allVillage[0].children.length; i++) {
-      var name = allVillage[0].children[i].innerText.trim();
-      var href = allVillage[0].children[i].children[0].href;
-      name = name.split('\n');
-      name[0] = GetString(name[0]);
-      var coordinates = name[2];
-      coordinates = coordinates.replace('(', '').replace(')', '');
-      coordinates = coordinates.split('|')
+    if (allVillage && allVillage[0]) {
+      for (var i = 0; i < allVillage[0].children.length; i++) {
+        var name = allVillage[0].children[i].innerText.trim();
+        var href = allVillage[0].children[i].children[0].href;
+        name = name.split('\n');
+        name[0] = GetString(name[0]);
+        var coordinates = name[2];
+        coordinates = coordinates.replace('(', '').replace(')', '');
+        coordinates = coordinates.split('|')
 
-      var id = null;
-      var pos = href.indexOf('newdid=');
-      if (pos > 0) {
-        id = href.slice(pos + 7);
-        id = id.replace(/[^0-9]+/g, '');
+        var id = null;
+        var pos = href.indexOf('newdid=');
+        if (pos > 0) {
+          id = href.slice(pos + 7);
+          id = id.replace(/[^0-9]+/g, '');
+        }
+        villageList.push({ id: id, href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1], coordinatX: coordinates[0].trim(), coordinatY: coordinates[1].trim() });
       }
-      villageList.push({ id: id, href: href, name: name[0], coordinats: coordinates[0] + '|' + coordinates[1], coordinatX: coordinates[0].trim(), coordinatY: coordinates[1].trim() });
     }
     return villageList;
   });
@@ -458,7 +460,6 @@ async function ScrapingAllDefenseReport(page, accountId, lastReportsId) {
       //Debug.debugPrint(strValue);
       return strValue;
     }
-    //const villageNameSelector = '#offs > tbody > tr:nth-child(rowNumber)';
     const descriptionSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > a > img'; //attr alt + class
     const playersAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.sub > div > a';
     const dateTimeAdnIdSelector = '#offs > tbody > tr:nth-child(rowNumber) > td.dat';
@@ -625,7 +626,6 @@ async function ScrapingReportsDetail(page, accountId, reports) {
       }
 
 
-      //const villageNameSelector = '#offs > tbody > tr:nth-child(rowNumber)';
       const playersSelector = '#reportWrapper > div.header > div.subject > div.header.text'; //    Thailand атакует Астана
       const typeSelector = '#reportWrapper > div.body > div.role.attacker > div.header > h2'; // нападение
       const dateTimeAdnIdSelector = '#reportWrapper > div.header > div.time > div.header.text'; //    11.12.18, 05: 46: 14
