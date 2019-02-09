@@ -69,9 +69,9 @@ function ConvertStringUTCToDateTime(stringDateTime) {
 }
 
 /**
- * Returns array with buildings needed to upgrade in village
+ * Returns array with Resourse fields buildings needed to upgrade in village
  */
-async function getWhatWeCanBuildInVillageFromDB(accountId, villageId) {
+async function getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId) {
   var query =
     "SELECT\
   VillRes.AccountId\
@@ -98,6 +98,41 @@ async function getWhatWeCanBuildInVillageFromDB(accountId, villageId) {
   var rows = await DBCon.selectQuery(query, "Travian");
 
   DBCon.insertLogInfo('Travian', "Can start build houses in village " + villageId + ": " + rows.length);
+  return rows;
+}
+
+/**
+ * Returns array with Resourse fields buildings needed to upgrade in village
+ */
+async function getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, housesCodes, level) {
+  var query =
+    "SELECT\
+        TownHouses.AccountId\
+        ,TownHouses.VillageId\
+        ,TownHouses.Code Name\
+        ,TownHouses.Href\
+        ,TownHouses.Level\
+        ,TownHouses.PositionId\
+      FROM thetale.tr_VillageTownHouse TownHouses\
+      INNER JOIN(\
+        SELECT max(id) id\
+        ,AccountId\
+        ,VillageId\
+        ,PositionId\
+      FROM thetale.tr_VillageTownHouse\
+      WHERE AccountId = "+ accountId + "\
+        and VillageId = "+ villageId + "\
+        and Code in ("+ housesCodes + ")\
+      group by AccountId, VillageId, PositionId\
+      ) IdList ON IdList.id = TownHouses.id\
+      WHERE TownHouses.Level < "+ level + "; ";
+
+  //Debug.debugPrint(query);
+  var rows = await DBCon.selectQuery(query, "Travian");
+
+  if (rows.length > 0) {
+    DBCon.insertLogInfo('Travian', "Can start build houses " + housesCodes.replace(/\'/g, '') + " level < " + level + " in town " + villageId + ": " + rows.length);
+  }
   return rows;
 }
 
@@ -193,7 +228,8 @@ async function getLastReportsWithoutDetails(accountId) {
 
 module.exports.GetAllVillagesHref = GetAllVillagesHref;
 module.exports.getWhatWeCanBuildFromDB = getWhatWeCanBuildFromDB;
-module.exports.getWhatWeCanBuildInVillageFromDB = getWhatWeCanBuildInVillageFromDB;
+module.exports.getResourcesFieldsWhatWeCanBuildInVillageFromDB = getResourcesFieldsWhatWeCanBuildInVillageFromDB;
+module.exports.getTownHousesWhatWeCanBuildInVillageFromDB = getTownHousesWhatWeCanBuildInVillageFromDB;
 module.exports.getLastDeffenseReports = getLastDeffenseReports;
 module.exports.getLastReportsWithoutDetails = getLastReportsWithoutDetails;
 module.exports.GetBuildingQuery = GetBuildingQuery;

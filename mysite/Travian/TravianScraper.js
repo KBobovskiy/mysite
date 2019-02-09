@@ -30,11 +30,13 @@ async function ScrapingAllVillagesDorf2(page, accountId) {
   var villagesHrefs = await TravianDBReader.GetAllVillagesHref(accountId);
   var result = [];
   for (let i = 0; i < villagesHrefs.length; i++) {
+    Debug.debugPrint('---------------------------');
+    Debug.debugPrint('ScrapingAllVillagesDorf2: i=' + i + " villagesHrefs.length=" + villagesHrefs.length);
+    Debug.debugPrint('---------------------------');
     await sleep(Common.getRandomMS(4, 8));
     // scraping information from current dorf1 page
     var dorf2PageInfo = await ScrapDorf2Page(page, villagesHrefs[i]);
     result.push(dorf2PageInfo);
-    break;
   }
   return result;
 }

@@ -71,15 +71,15 @@ async function start(loginInfo) {
   if (login_info.scrapDorf1 === true) {
 
     var arrayWithDorf1PageInfo = await Scraper.ScrapingAllVillagesDorf1(page, accountId);
+    Debug.debugPrint("SaveDorf1Page: array length = " + arrayWithDorf1PageInfo.length);
     var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
     if (!Dorf1PageInfo) {
-      var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
-      console.log(dorf1PageInfo.villageName);
-      console.log(dorf1PageInfo.villageId);
-      console.log(dorf1PageInfo.villageList);
-      await Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+      //var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+      Debug.debugPrint("SaveDorf1Page: " + Dorf1PageInfo.villageId);
+      await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
     }
     while (Dorf1PageInfo) {
+      Debug.debugPrint("SaveDorf1Page: " + Dorf1PageInfo.villageId);
       await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
       Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
       await sleep(1000);
@@ -93,6 +93,7 @@ async function start(loginInfo) {
   if (login_info.scrapDorf2 === true) {
 
     var arrayWithDorf2PageInfo = await Scraper.ScrapingAllVillagesDorf2(page, accountId);
+    Debug.debugPrint('arrayWithDorf2PageInfo.length: ' + arrayWithDorf2PageInfo.length);
     var Dorf2PageInfo = arrayWithDorf2PageInfo.pop();
     while (Dorf2PageInfo) {
       await Saver.SaveDorf2Page(Dorf2PageInfo, accountId);
@@ -155,6 +156,9 @@ async function start(loginInfo) {
       var villagesId = await Reader.GetAllVillagesId(accountId);
       for (var vIndex = 0; vIndex < villagesId.length; vIndex++) {
         var vill_ID = villagesId[vIndex];
+        if (vill_ID != 26398) {
+          continue;
+        }
         Debug.debugPrint("Check village id = " + vill_ID);
 
         // Last 2 buliding from query
@@ -332,22 +336,57 @@ async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
   Saver.SaveDorf1Page(dorf1PageInfo, accountId);
 }
 
+/** */
+async function RunBulidingInTown(page, rows, accountId, villageId) {
+  if (rows.length > 0) {
+    var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+    DBCon.insertLogInfo('Travian', "Деревня " + villageId + ". Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+    var gotoBuildingUrl = rows[i].Href; // Building href
+    if (gotoBuildingUrl) {
+      await GotoPage(page, global_UrlDorf2 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+      await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+    }
+  }
+}
 
+/** Starting building process*/
 async function StartBuildInVillage(page, accountId, villageId) {
   Debug.debugPrint("------------------------------------------------------");
   Debug.debugPrint("--  StartBuildInVillage: " + villageId);
 
-  var rows = await Reader.getWhatWeCanBuildInVillageFromDB(accountId, villageId);
+  // g15 - Main Building
+  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, "'g15'", '5');
+  Debug.debugPrint("-- g15 lvl 5 : " + JSON.stringify(rows));
+  //await RunBulidingInTown(page, rows, accountId, villageId);
+  /*
+  'g10' - Store
+  'g11' - Barn
+  */
+  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, "'g10','g11'", '3');
+  Debug.debugPrint("-- 'g10', 'g11' lvl 3" + JSON.stringify(rows));
 
-  if (rows.length > 0) {
-    var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
-    DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
-    var gotoBuildingUrl = rows[i].Href; // Building href
-    if (gotoBuildingUrl) {
-      await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
-      await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+
+  /*
+  'g13' - Kuznitza
+  'g19' - Kazarma
+  'g20' - Konushnya
+  'g22' - Akademiya*/
+  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, "'g13','g19','g20','g22'", '3');
+  Debug.debugPrint("-- 'g13', 'g19', 'g20', 'g22' lvl 3" + JSON.stringify(rows));
+
+  /*
+    var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId);
+  
+    if (rows.length > 0) {
+      var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+      DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+      var gotoBuildingUrl = rows[i].Href; // Building href
+      if (gotoBuildingUrl) {
+        await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+        await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+      }
     }
-  }
+  */
 }
 
 /** OLD VERSION */
@@ -429,5 +468,11 @@ async function GotoPage(page, pageUrl, timeoutMin = 1, timeoutMax = 5) {
   await sleep(300);
 }
 
-start(login_info);
+try {
+  start(login_info);
+}
+catch (err) {
+  Debug.debugPrint("Fatal Error. Exiting...");
+  return;
+};
 
