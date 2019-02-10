@@ -10,7 +10,7 @@ const Reader = require("./TravianDBReader.js");
 const Common = require("./CommonFunc.js");
 
 const global_UrlDorf1 = 'https://ts2.travian.ru/dorf1.php';
-const gotoUrlDorf2 = 'https://ts2.travian.ru/dorf2.php';
+const global_UrlDorf2 = 'https://ts2.travian.ru/dorf2.php';
 
 var fs = require('fs')
 
@@ -306,13 +306,26 @@ async function GetButtonStartBuildingText(page) {
   return buttonText;
 }
 
+async function GetButtonStartBuildingCoordinate(page) {
+  var coord = await page.evaluate(() => {
+    return $('.upgradeButtonsContainer .section1 button').offset();
+  });
+
+  await sleep(Common.getRandomMS(1.7, 3.5));
+  if (!coord) {
+    coord = { top: 1, left: 1 };
+  }
+  return coord;
+}
+
 async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
 
   await GotoPage(page, gotoBuildingUrl, 0.3, 2);
 
   var buttonReady = await GetButtonStartBuildingText(page);
+  var buttonCoord = await GetButtonStartBuildingCoordinate(page);
 
-  Debug.debugPrint("Button start building text = " + buttonReady);
+  Debug.debugPrint("Button start building text = " + buttonReady + " " + JSON.stringify(buttonCoord));
 
   await page.screenshot({ path: 'ts2.travian.png' });
 
@@ -320,33 +333,55 @@ async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
   if (login_info.unix === false) {
     cordY = 515;
   }
+  var result = false;
   if (buttonReady === "Улучшитьдоуровня1") {
-    await page.mouse.click(807, cordY);
-    await page.mouse.click(946, cordY);
+    await page.mouse.click(buttonCoord.left + 50, buttonCoord.top + 10);
+    result = true;
   } else if (buttonReady.indexOf("Улучшитьдо") >= 0) {
-    await page.mouse.click(807, cordY);
-    await page.mouse.click(946, cordY);
+    await page.mouse.click(buttonCoord.left + 50, buttonCoord.top + 10);
+    result = true;
   } else if (buttonReady.indexOf("Построитьсархитектором") >= 0) {
     Debug.debugPrint("Button for building is not ready or building complite!");
     await GotoPage(page, global_UrlDorf1, 3, 5);
   }
 
-  DBCon.insertLogInfo('Travian', "ScrapDorf1Page after click trying button start building");
-  var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, global_UrlDorf1);
-  Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+  if (rows === 'town') {
+    DBCon.insertLogInfo('Travian', "ScrapDorf2Page after click trying button start building");
+    var dorf2PageInfo = await Scraper.ScrapDorf2Page(page, global_UrlDorf1);
+    Saver.SaveDorf2Page(dorf2PageInfo, accountId);
+  }
+  else {
+    DBCon.insertLogInfo('Travian', "ScrapDorf1Page after click trying button start building");
+    var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, global_UrlDorf1);
+    Saver.SaveDorf1Page(dorf1PageInfo, accountId);
+  }
+
+  return result;
 }
 
 /** */
 async function RunBulidingInTown(page, rows, accountId, villageId) {
+  var result = false;
   if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
     DBCon.insertLogInfo('Travian', "Деревня " + villageId + ". Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
     var gotoBuildingUrl = rows[i].Href; // Building href
     if (gotoBuildingUrl) {
       await GotoPage(page, global_UrlDorf2 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
-      await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+      result = await TryToStartBuilding(page, gotoBuildingUrl, accountId, 'town'); // Goto building page
     }
   }
+  return result;
+}
+
+/** Start building house in town if it posible */
+async function BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) {
+  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, housesIsRow, housesLevel);
+  if (rows) {
+    Debug.debugPrint("-- " + housesIsRow + " " + housesLevel + " JSON: " + JSON.stringify(rows));
+    return await RunBulidingInTown(page, rows, accountId, villageId);
+  };
+  return false;
 }
 
 /** Starting building process*/
@@ -354,39 +389,116 @@ async function StartBuildInVillage(page, accountId, villageId) {
   Debug.debugPrint("------------------------------------------------------");
   Debug.debugPrint("--  StartBuildInVillage: " + villageId);
 
+  var housesIsRow = "";
+  var housesLevel = "";
+
+  //------------------------------------------------------------------------------
   // g15 - Main Building
-  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, "'g15'", '5');
-  Debug.debugPrint("-- g15 lvl 5 : " + JSON.stringify(rows));
-  //await RunBulidingInTown(page, rows, accountId, villageId);
-  /*
+  housesIsRow = "'g15'";
+  housesLevel = "'5'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
+
+  /*------------------------------------------------------------------------------
   'g10' - Store
   'g11' - Barn
   */
-  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, "'g10','g11'", '3');
-  Debug.debugPrint("-- 'g10', 'g11' lvl 3" + JSON.stringify(rows));
+  housesIsRow = "'g10','g11'";
+  housesLevel = "'3'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
 
+  // var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, "'4'");
+  // if (rows.length > 0) {
+  //   var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+  //   DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+  //   var gotoBuildingUrl = rows[i].Href; // Building href
+  //   if (gotoBuildingUrl) {
+  //     await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+  //     await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+  //   }
+  // }
 
-  /*
+  //------------------------------------------------------------------------------
+  // g15 - Main Building
+  housesIsRow = "'g15'";
+  housesLevel = "'7'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
+
+  /*------------------------------------------------------------------------------
   'g13' - Kuznitza
   'g19' - Kazarma
   'g20' - Konushnya
   'g22' - Akademiya*/
-  var rows = await Reader.getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, "'g13','g19','g20','g22'", '3');
-  Debug.debugPrint("-- 'g13', 'g19', 'g20', 'g22' lvl 3" + JSON.stringify(rows));
+  housesIsRow = "'g13','g19','g20','g22'";
+  housesLevel = "'3'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
 
-  /*
-    var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId);
-  
-    if (rows.length > 0) {
-      var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
-      DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
-      var gotoBuildingUrl = rows[i].Href; // Building href
-      if (gotoBuildingUrl) {
-        await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
-        await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
-      }
-    }
+  /*------------------------------------------------------------------------------
+  'g10' - Store
+  'g11' - Barn
   */
+  housesIsRow = "'g10','g11'";
+  housesLevel = "'7'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
+
+  // var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, "'6'");
+  // if (rows.length > 0) {
+  //   var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+  //   DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+  //   var gotoBuildingUrl = rows[i].Href; // Building href
+  //   if (gotoBuildingUrl) {
+  //     await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+  //     await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+  //   }
+  // }
+
+  //------------------------------------------------------------------------------
+  // g15 - Main Building
+  housesIsRow = "'g15'";
+  housesLevel = "'15'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
+
+  /*------------------------------------------------------------------------------
+  'g10' - Store
+  'g11' - Barn
+  */
+  housesIsRow = "'g10','g11'";
+  housesLevel = "'12'";
+  if (await (page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
+
+  /*------------------------------------------------------------------------------
+  'g5-9' - factory, mill, baker
+  */
+  housesIsRow = "'g5','g6','g7','g8','g9'";
+  housesLevel = "'5'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  }
+
+  // var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, "'10'");
+  // if (rows.length > 0) {
+  //   var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
+  //   DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+  //   var gotoBuildingUrl = rows[i].Href; // Building href
+  //   if (gotoBuildingUrl) {
+  //     await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+  //     await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
+  //   }
+  // }
+
 }
 
 /** OLD VERSION */

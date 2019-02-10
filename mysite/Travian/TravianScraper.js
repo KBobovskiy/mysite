@@ -756,6 +756,7 @@ module.exports.ScrapingProdactionInfo = ScrapingProdactionInfo;
 module.exports.ScrapingVillageList = ScrapingVillageList;
 module.exports.ScrapingFieldsInfo = ScrapingFieldsInfo;
 module.exports.ScrapDorf1Page = ScrapDorf1Page;
+module.exports.ScrapDorf2Page = ScrapDorf2Page;
 module.exports.ScrapingBuildingHouses = ScrapingBuildingHouses;
 module.exports.ScrapingAllDefenseReport = ScrapingAllDefenseReport;
 module.exports.ScrapingReportsDetail = ScrapingReportsDetail;

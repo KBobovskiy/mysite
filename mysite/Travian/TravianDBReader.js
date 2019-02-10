@@ -71,7 +71,7 @@ function ConvertStringUTCToDateTime(stringDateTime) {
 /**
  * Returns array with Resourse fields buildings needed to upgrade in village
  */
-async function getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId) {
+async function getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, maxLevel) {
   var query =
     "SELECT\
   VillRes.AccountId\
@@ -91,7 +91,7 @@ async function getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villag
       and VillageId = "+ villageId + "\
       group by AccountId, VillageId, PositionId\
   ) IdList ON IdList.id = VillRes.id\
-  WHERE VillRes.Level < 10\
+  WHERE VillRes.Level < "+ maxLevel + "\
   order by VillRes.Level;";
 
   //Debug.debugPrint(query);
@@ -131,7 +131,7 @@ async function getTownHousesWhatWeCanBuildInVillageFromDB(accountId, villageId, 
   var rows = await DBCon.selectQuery(query, "Travian");
 
   if (rows.length > 0) {
-    DBCon.insertLogInfo('Travian', "Can start build houses " + housesCodes.replace(/\'/g, '') + " level < " + level + " in town " + villageId + ": " + rows.length);
+    DBCon.insertLogInfo('Travian', "Can start build houses " + housesCodes.replace(/\'/g, '') + " level < " + level.replace(/\'/g, '') + " in town " + villageId + ": " + rows.length);
   }
   return rows;
 }
