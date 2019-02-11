@@ -30,7 +30,7 @@ async function SaveDorf2Page(dorf2PageInfo, accountId, ) {
 
   SaveVillageTownHousesInfo(dorf2PageInfo.villageHouses, accountId, dorf2PageInfo.villageId);
 
-  //SaveVillageBuildingHouses(dorf2PageInfo.buildingHouses, accountId, dorf2PageInfo.villageId);
+  SaveVillageBuildingHouses(dorf2PageInfo.buildingHouses, accountId, dorf2PageInfo.villageId);
 
 }
 

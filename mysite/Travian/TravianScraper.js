@@ -375,7 +375,7 @@ async function ScrapingTownHousesInfo(page) {
 
     return townHousesList;
   })
-  console.log(townHouses);
+  //console.log(townHouses);
   if (!townHouses) {
     townHouses = new Array;
   }
