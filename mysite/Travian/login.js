@@ -578,7 +578,11 @@ async function GotoPage(page, pageUrl, timeoutMin = 1, timeoutMax = 5) {
   var waitTime = Common.getRandomMS(timeoutMin, timeoutMax);
   Debug.debugPrint("Goto: " + pageUrl + " with waiting " + waitTime + " milisec.");
   await sleep(waitTime);
-  await page.goto(pageUrl);
+  try {
+    await page.goto(pageUrl);
+  } catch (ex) {
+    page = null;
+  }
   await sleep(300);
 }
 
