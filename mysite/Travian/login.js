@@ -347,7 +347,7 @@ async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
 
   if (rows === 'town') {
     DBCon.insertLogInfo('Travian', "ScrapDorf2Page after click trying button start building");
-    var dorf2PageInfo = await Scraper.ScrapDorf2Page(page, global_UrlDorf1);
+    var dorf2PageInfo = await Scraper.ScrapDorf2Page(page, global_UrlDorf2);
     Saver.SaveDorf2Page(dorf2PageInfo, accountId);
   }
   else {
@@ -578,8 +578,10 @@ async function GotoPage(page, pageUrl, timeoutMin = 1, timeoutMax = 5) {
   var waitTime = Common.getRandomMS(timeoutMin, timeoutMax);
   Debug.debugPrint("Goto: " + pageUrl + " with waiting " + waitTime + " milisec.");
   await sleep(waitTime);
+  await page.screenshot({ path: 'before_goto_url.png' });
   try {
     await page.goto(pageUrl);
+    await page.screenshot({ path: 'after_goto_url.png' });
   } catch (ex) {
     page = null;
   }
