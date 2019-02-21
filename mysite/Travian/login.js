@@ -11,6 +11,7 @@ const Common = require("./CommonFunc.js");
 
 const global_UrlDorf1 = 'https://ts2.travian.ru/dorf1.php';
 const global_UrlDorf2 = 'https://ts2.travian.ru/dorf2.php';
+const global_UrlDorf3 = 'https://ts2.travian.ru/dorf3.php';
 
 var fs = require('fs')
 
@@ -194,6 +195,13 @@ async function start(loginInfo) {
         }
       }
 
+      /** Need to set market order for selling resourses for crop */
+      //Need to scraping https://ts2.travian.ru/dorf3.php?s=2 page
+      CheckFreeTrades(page);
+
+
+
+
       var minSleepTimeInSec = 180;
       var maxSleepTimeInSec = 360;
       var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
@@ -207,13 +215,30 @@ async function start(loginInfo) {
   //await page.screenshot({ path: 'ts2.travian.png' });
 
 
-
   var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
   DBCon.insertLogInfo('Travian', 'Stop, sleep for ' + (sleepTime / 1000) + ' sec');
   if (!login_info.showBrowser) {
     await browser.close();
   }
   await sleep(sleepTime);
+}
+
+async function GetAllVillagesStoreTable(page) {
+  await GotoPage(global_UrlDorf3 + '?s=2');
+  var arrayWithStore = await page.evaluate(() => {
+    const tableSelector = '#ressources';
+    var selection = document.querySelector(tableSelector);
+    if (selection === null) {
+      return 'error #20190219 Can not find element with selector: ' + tableSelector;
+    }
+
+  });
+
+}
+
+async function CheckFreeTrades(page) {
+
+  var villStore = await GetAllVillagesStoreTable(page);
 }
 
 function GetString(strValue) {
@@ -245,26 +270,6 @@ function GetTime(strValue) {
     return strValue[0];
   }
   return '';
-}
-
-function GetFullID(acc, vill, posId) {
-  var id = acc + '#' + vill + '#' + posId;
-  id = id.replace(/[^0-9#]/g, '');
-  return id;
-}
-
-
-function RemoveVillageById(arr, villageId) {
-  Debug.debugPrint("Удаляем деревню: " + villageId);
-  var i = arr.length
-  var newArr = [];
-  for (var i = arr.length - 1; i >= 0; i--) {
-    if (arr[i].VillageId != villageId) {
-      newArr.push(arr[i]);
-    }
-  }
-  Debug.debugPrint(arr);
-  return newArr;
 }
 
 async function GetButtonStartBuildingText(page) {

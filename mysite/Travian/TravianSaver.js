@@ -26,7 +26,7 @@ async function SaveDorf2Page(dorf2PageInfo, accountId, ) {
 
   //SaveVillageStorages(dorf2PageInfo.storageInfo, accountId, dorf2PageInfo.villageId);
 
-  //SaveVillageResourses(dorf2PageInfo.villageFields, accountId, dorf2PageInfo.villageId);
+  SaveVillageResourses(dorf2PageInfo.villageFields, accountId, dorf2PageInfo.villageId);
 
   SaveVillageTownHousesInfo(dorf2PageInfo.villageHouses, accountId, dorf2PageInfo.villageId);
 
