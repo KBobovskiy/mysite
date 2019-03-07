@@ -64,6 +64,12 @@ async function start(loginInfo) {
   //Debug.debugPrint('result=' + result);
   if (!result) { return; }
 
+  /** Need to set market order for selling resourses for crop */
+  //Need to scraping https://ts2.travian.ru/dorf3.php?s=2 page
+  //await CheckFreeTraders(page);
+
+  // return;
+
   //
   //
   //
@@ -195,9 +201,6 @@ async function start(loginInfo) {
         }
       }
 
-      /** Need to set market order for selling resourses for crop */
-      //Need to scraping https://ts2.travian.ru/dorf3.php?s=2 page
-      CheckFreeTrades(page);
 
 
 
@@ -224,21 +227,84 @@ async function start(loginInfo) {
 }
 
 async function GetAllVillagesStoreTable(page) {
-  await GotoPage(global_UrlDorf3 + '?s=2');
+  await GotoPage(page, global_UrlDorf3 + '?s=2');
   var arrayWithStore = await page.evaluate(() => {
-    const tableSelector = '#ressources';
+
+    function GetString(strValue) {
+      //Debug.debuGetStringgPrint(strValue);
+      strValue = strValue.replace(/[^a-zA-Zа-яА-Я,.0-9:-\|\/]/g, ' ');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.replace(/ +/g, '');
+      //Debug.debugPrint(strValue);
+      strValue = strValue.trim();
+      //Debug.debugPrint(strValue);
+      return strValue;
+    }
+
+    const tableSelector = '#ressources > tbody';
     var selection = document.querySelector(tableSelector);
     if (selection === null) {
       return 'error #20190219 Can not find element with selector: ' + tableSelector;
     }
 
-  });
+    var table = [];
 
+    for (var i = 0; i < selection.children.length; i++) {
+      var villRes = {};
+      var tRow = selection.children[i];
+      if (tRow.children[0] && tRow.children[0].children[0]) {
+        var column0 = GetString(tRow.children[0].textContent);
+        var column1 = 'https://ts2.travian.ru' + tRow.children[0].children[0].getAttribute('href');
+        var column2 = GetString(tRow.children[1].textContent);
+        var column3 = GetString(tRow.children[2].textContent);
+        var column4 = GetString(tRow.children[3].textContent);
+        var column5 = GetString(tRow.children[4].textContent);
+        var column6 = GetString(tRow.children[5].textContent);
+        var pos = column6.indexOf('/');
+        if (pos > 0) {
+          column6 = column6.substring(0, pos - 1);
+        }
+        villRes = {
+          name: column0,
+          href: column1,
+          wood: column2,
+          clay: column3,
+          iron: column4,
+          crop: column5,
+          traders: column6
+        };
+        table.push(villRes);
+      }
+    }
+    return table;
+  });
+  return arrayWithStore;
 }
 
-async function CheckFreeTrades(page) {
+async function CheckFreeTraders(page) {
+  const capital = 'B02';
 
   var villStore = await GetAllVillagesStoreTable(page);
+  console.log(JSON.stringify(villStore));
+  if (!villStore) {
+    return;
+  }
+  var borderLine = 12000;
+  for (var i = 0; i < villStore.length; i++) {
+    var vill = villStore[i];
+    if (!vill || vill.name === capital) {
+      continue;
+    }
+    if (+vill.traders > 0) {
+      if (+vill.wood > borderLine
+        || +vill.clay > borderLine
+        || +vill.iron > borderLine
+        || +vill.crop > borderLine) {
+        console.log('Can send trader in village: ' + vill.name);
+      }
+    }
+  }
+
 }
 
 function GetString(strValue) {
