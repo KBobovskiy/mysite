@@ -225,6 +225,22 @@ async function getLastReportsWithoutDetails(accountId) {
   return rows;
 }
 
+async function GetVillagesWithGuildHallsWhereCanStartHoliday(accountId) {
+  var query =
+    "SELECT distinct Guildhalls.AccountId, Guildhalls.VillageId, Guildhalls.Href as HouseHref, Villages.Href as Href, ifnull(GoingHolidays.EndOfHoliday, '2019-01-01 00:00:00') EndOfHoliday\
+      FROM thetale.tr_VillageTownHouse  Guildhalls\
+      left join thetale.tr_Villages Villages\
+        on Guildhalls.AccountId = Villages.AccountId and Guildhalls.VillageId = Villages.id\
+      Left join (select Account_Id,VillageId,max(EndOfHoliday) EndOfHoliday from thetale.tr_HolidayInVillages group by Account_Id,VillageId) GoingHolidays\
+        on GoingHolidays.Account_Id = Guildhalls.AccountId and GoingHolidays.VillageId = Guildhalls.VillageId\
+      where   Guildhalls.AccountId = '"+ accountId + "'\
+      and Guildhalls.Code = 'g24';"
+
+  var rows = await DBCon.selectQuery(query, "Travian");
+  DBCon.insertLogInfo('Travian', "Get all villages with guildhall, count: " + rows.length);
+  return rows;
+}
+
 
 module.exports.GetAllVillagesHref = GetAllVillagesHref;
 module.exports.getWhatWeCanBuildFromDB = getWhatWeCanBuildFromDB;
@@ -234,3 +250,4 @@ module.exports.getLastDeffenseReports = getLastDeffenseReports;
 module.exports.getLastReportsWithoutDetails = getLastReportsWithoutDetails;
 module.exports.GetBuildingQuery = GetBuildingQuery;
 module.exports.GetAllVillagesId = GetAllVillagesId;
+module.exports.GetVillagesWithGuildHallsWhereCanStartHoliday = GetVillagesWithGuildHallsWhereCanStartHoliday;

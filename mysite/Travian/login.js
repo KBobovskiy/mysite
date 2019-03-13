@@ -160,6 +160,11 @@ async function start(loginInfo) {
     Debug.debugPrint("Check villages for building houses, maxLoopIndex = " + maxLoopIndex);
     for (loopIndex = 0; loopIndex < maxLoopIndex; loopIndex++) {
 
+      if (loopIndex % 2 === 0) {
+        /** Check and start holiday in guildhalls */
+        await StartHolidays(page, accountId);
+      }
+
       var villagesId = await Reader.GetAllVillagesId(accountId);
       for (var vIndex = 0; vIndex < villagesId.length; vIndex++) {
         var vill_ID = villagesId[vIndex];
@@ -215,7 +220,6 @@ async function start(loginInfo) {
   }
 
 
-  //await page.screenshot({ path: 'ts2.travian.png' });
 
 
   var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
@@ -224,6 +228,97 @@ async function start(loginInfo) {
     await browser.close();
   }
   await sleep(sleepTime);
+}
+
+/** Starting holiday n villages */
+async function StartHolidays(page, accountId) {
+  var villageWithGuildHalls = await Reader.GetVillagesWithGuildHallsWhereCanStartHoliday(accountId);
+  //console.log(villageWithGuildHalls);
+  if (!villageWithGuildHalls || villageWithGuildHalls.length === 0) {
+    console.log('exit ' + villageWithGuildHalls.length);
+    return;
+  }
+  var now = (new Date()).toJSON().replace('T', ' ');
+  for (var i = 0; i < villageWithGuildHalls.length; i++) {
+    var row = villageWithGuildHalls[i];
+
+    console.log("now = " + now);
+
+    if (row.EndOfHoliday <= now) {
+      console.log('Can start holiday: ' + row.EndOfHoliday + "<=" + now);
+      await GotoPage(page, row.Href, 1, 2);
+      await GotoPage(page, row.HouseHref, 1, 2);
+      var queryTime = await page.evaluate(() => {
+
+        function GetString(strValue) {
+          //Debug.debuGetStringgPrint(strValue);
+          strValue = strValue.replace(/[^a-zA-Zа-яА-Я,.0-9:-\|\/]/g, ' ');
+          //Debug.debugPrint(strValue);
+          strValue = strValue.replace(/ +/g, '');
+          //Debug.debugPrint(strValue);
+          strValue = strValue.trim();
+          //Debug.debugPrint(strValue);
+          return strValue;
+        }
+
+        const tdSelector = '#build > table > tbody > tr > td.dur > span';
+        var selection = document.querySelector(tdSelector);
+        if (selection && selection.textContent) {
+          return GetString(selection.textContent);
+        }
+        return '';
+      });
+      if (queryTime !== '') {
+        var endOfHoliday = new Date();
+        var arr = queryTime.split(':');
+        console.log(endOfHoliday.toJSON());
+        console.log(arr);
+        if (arr[0]) {
+          endOfHoliday = new Date(endOfHoliday.setHours(endOfHoliday.getHours() + 3 + parseInt(arr[0])));
+        }
+        console.log(endOfHoliday.toJSON());
+        if (arr[1]) {
+          endOfHoliday = new Date(endOfHoliday.setMinutes(endOfHoliday.getMinutes() + parseInt(arr[1])));
+        }
+        console.log(endOfHoliday.toJSON());
+        if (arr[2]) {
+          endOfHoliday = new Date(endOfHoliday.setSeconds(endOfHoliday.getSeconds() + parseInt(arr[2])));
+        }
+        console.log(endOfHoliday.toJSON());
+        endOfHoliday = endOfHoliday.toJSON().replace('T', ' ');
+        endOfHoliday = endOfHoliday.replace('Z', '').trim();
+        endOfHoliday = endOfHoliday.substring(0, 19);
+        console.log(row.AccountId);
+        console.log(row.VillageId);
+        console.log(endOfHoliday);
+        Saver.SaveEndOfHoliday(row.AccountId, row.VillageId, endOfHoliday);
+      } else {
+        TryingStartHoliday(page, row.VillageId);
+      }
+    }
+  }
+}
+
+async function GetButtonStartHolidayCoordinate(page) {
+  var coord = await page.evaluate(() => {
+    return $('#build > div.build_details.researches > div > div.information > div.contractLink > button').offset();
+  });
+
+  await sleep(Common.getRandomMS(1.7, 3.5));
+  if (!coord) {
+    coord = { top: 1, left: 1 };
+  }
+  return coord;
+}
+
+/** Start small holiday */
+async function TryingStartHoliday(page, villageId) {
+
+  var buttonCoord = await GetButtonStartHolidayCoordinate(page);
+  if (buttonCoord && buttonCoord.top > 100) {
+    await page.mouse.click(buttonCoord.left + 50, buttonCoord.top + 10);
+    Debug.debugPrint("Starting holiday in village: " + villageId)
+  }
 }
 
 async function GetAllVillagesStoreTable(page) {

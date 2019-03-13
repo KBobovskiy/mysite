@@ -145,6 +145,17 @@ async function SaveReportInfo(reportInfo, accountId) {
 
 }
 
+/** Save reports info */
+async function SaveEndOfHoliday(accountId, villageId, dateTimeString) {
+  if (!dateTimeString) {
+    return;
+  }
+  DBCon.insertQuery(
+    "INSERT INTO `thetale`.`tr_HolidayInVillages` (`Account_Id`, `VillageId`, `EndOfHoliday`)\
+     VALUES('" + accountId + "', '" + villageId + "', '" + dateTimeString + "');");
+}
+
+
 
 module.exports.SaveDorf1Page = SaveDorf1Page;
 module.exports.SaveDorf2Page = SaveDorf2Page;
@@ -155,3 +166,4 @@ module.exports.SaveVillageProdactionInfo = SaveVillageProdactionInfo;
 module.exports.SaveVillageBuildingHouses = SaveVillageBuildingHouses;
 module.exports.SaveDefenseReport = SaveDefenseReport;
 module.exports.SaveReportInfo = SaveReportInfo;
+module.exports.SaveEndOfHoliday = SaveEndOfHoliday;
