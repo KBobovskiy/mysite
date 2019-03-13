@@ -22,7 +22,7 @@ async function SaveDorf1Page(dorf1PageInfo, accountId, ) {
 /** Save all information from Dorf2 page */
 async function SaveDorf2Page(dorf2PageInfo, accountId, ) {
 
-  //SaveVillageList(dorf2PageInfo.villageList, accountId);
+  SaveVillageList(dorf2PageInfo.villageList, accountId);
 
   //SaveVillageStorages(dorf2PageInfo.storageInfo, accountId, dorf2PageInfo.villageId);
 
