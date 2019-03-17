@@ -81,7 +81,6 @@ async function start(loginInfo) {
     Debug.debugPrint("SaveDorf1Page: array length = " + arrayWithDorf1PageInfo.length);
     var Dorf1PageInfo = arrayWithDorf1PageInfo.pop();
     if (!Dorf1PageInfo) {
-      //var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
       Debug.debugPrint("SaveDorf1Page: " + Dorf1PageInfo.villageId);
       await Saver.SaveDorf1Page(Dorf1PageInfo, accountId);
     }

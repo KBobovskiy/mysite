@@ -22,6 +22,10 @@ async function ScrapingAllVillagesDorf1(page, accountId) {
     var dorf1PageInfo = await ScrapDorf1Page(page, villagesHrefs[i]);
     result.push(dorf1PageInfo);
   }
+  if (villagesHrefs.length === 0) {
+    var dorf1PageInfo = await ScrapDorf1Page(page, 'https://ts2.travian.ru/dorf1.php');
+    result.push(dorf1PageInfo);
+  }
   return result;
 }
 

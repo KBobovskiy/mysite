@@ -93,7 +93,7 @@ async function SaveVillageStorages(storageInfo, accountId, villageId) {
 /** Save resourses fields into DB */
 async function SaveVillageResourses(villageFields, accountId, villageId) {
 
-  if (!villageId) {
+  if (!villageId || !villageFields) {
     return;
   }
   for (let i = 0; i < villageFields.length; i++) {
