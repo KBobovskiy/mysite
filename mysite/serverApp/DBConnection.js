@@ -70,9 +70,12 @@ async function selectQuery(queryString, logAction) {
 /** Insert into thetale.logs log info
  * @param {string} logAction 
  * @param {string} logInfo 
+ * @param {string} shortInfo
  */
-function insertLogInfo(logAction, logInfo) {
-    let queryString = "INSERT INTO thetale.logs (`action`, `info`) VALUES ('" + logAction + "','" + logInfo + "')";
+function insertLogInfo(logAction, logInfo = "", shortInfo = "") {
+    logInfo = logInfo.replace(/\'/g, '');
+    shortInfo = shortInfo.replace(/\'/g, '');
+    let queryString = "INSERT INTO thetale.logs (`action`, `info`, `shortInfo`) VALUES ('" + logAction + "','" + logInfo + "','" + shortInfo + "')";
     insertQuery(queryString, 'insertLogInfo()', true);
 }
 

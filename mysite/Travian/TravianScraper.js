@@ -11,9 +11,14 @@ const sleep = require('sleep-promise');
 const TravianDBReader = require("./TravianDBReader.js");
 const Common = require("./CommonFunc.js");
 const Debug = require("../serverApp/debug.js");
+const DBCon = require("../serverApp/DBConnection.js");
 
 /** Scraping all information from Dorf1 for all villages */
 async function ScrapingAllVillagesDorf1(page, accountId) {
+
+  var msg = "Scraping all villages dorf1";
+  DBCon.insertLogInfo('Travian', msg, msg);
+
   var villagesHrefs = await TravianDBReader.GetAllVillagesHref(accountId);
   var result = [];
   for (let i = 0; i < villagesHrefs.length; i++) {
@@ -31,12 +36,20 @@ async function ScrapingAllVillagesDorf1(page, accountId) {
 
 /** Scraping all information from Dorf2 for all villages */
 async function ScrapingAllVillagesDorf2(page, accountId) {
+
+  var msg = "Scraping all villages dorf2";
+  DBCon.insertLogInfo('Travian', msg, msg);
+
   var villagesHrefs = await TravianDBReader.GetAllVillagesHref(accountId);
   var result = [];
   for (let i = 0; i < villagesHrefs.length; i++) {
     Debug.debugPrint('---------------------------');
     Debug.debugPrint('ScrapingAllVillagesDorf2: i=' + i + " villagesHrefs.length=" + villagesHrefs.length);
     Debug.debugPrint('---------------------------');
+
+    var msg = "Scraping village dorf2: " + villagesHrefs[i];
+    DBCon.insertLogInfo('Travian', msg, msg);
+
     await sleep(Common.getRandomMS(4, 8));
     // scraping information from current dorf1 page
     var dorf2PageInfo = await ScrapDorf2Page(page, villagesHrefs[i]);
@@ -243,6 +256,9 @@ async function ScrapingFieldsInfo(page) {
 /**Scraping storage capacity and current resourses in it */
 async function ScrapDorf1Page(page, gotoUrl, withOutGoto) {
 
+  var msg = "Scraping all village: " + gotoUrl;
+  DBCon.insertLogInfo('Travian', msg, msg);
+
   var minSleepTimeInSec = 3;
   var maxSleepTimeInSec = 7;
   await sleep(Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec));
@@ -336,7 +352,10 @@ async function ScrapingBuildingHouses(page) {
   return buildingHouses;
 }
 
-
+/** Scraping town houses info
+ * 
+ * @param {* puppeteer page} page 
+ */
 async function ScrapingTownHousesInfo(page) {
   var townHouses = await page.evaluate(() => {
 

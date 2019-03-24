@@ -21,19 +21,19 @@ async function start(loginInfo) {
 
   if (login_info.showBrowser === undefined) {
     Debug.debugPrint("login_info.showBrowser === undefined");
-    DBCon.insertLogInfo('Travian', 'showBrowser is undefined');
+    DBCon.insertLogInfo('Travian', 'showBrowser is undefined', 'showBrowser is undefined');
     return;
   }
 
   let errMsg = 'Starting';
-  DBCon.insertLogInfo('Travian', errMsg);
+  DBCon.insertLogInfo('Travian', errMsg, errMsg);
   var now = new Date();
   var h = now.getHours();
   Debug.debugPrint('Current hour = ' + h);
   if (h < 6) {
     var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
     let errMsg = 'It is not working time, sleep for ' + (sleepTime / 1000) + ' sec';
-    DBCon.insertLogInfo('Travian', errMsg);
+    DBCon.insertLogInfo('Travian', errMsg, errMsg);
     await sleep(sleepTime);
     return;
   }
@@ -218,11 +218,8 @@ async function start(loginInfo) {
     }
   }
 
-
-
-
   var sleepTime = Math.floor(Common.getRandomMS(957, 3333));
-  DBCon.insertLogInfo('Travian', 'Stop, sleep for ' + (sleepTime / 1000) + ' sec');
+  DBCon.insertLogInfo('Travian', 'Stop, sleep before exit for ' + (sleepTime / 1000) + ' sec', 'Stop, sleep before exit for ' + (sleepTime / 1000) + ' sec');
   if (!login_info.showBrowser) {
     await browser.close();
   }
@@ -232,19 +229,22 @@ async function start(loginInfo) {
 /** Starting holiday n villages */
 async function StartHolidays(page, accountId) {
   var villageWithGuildHalls = await Reader.GetVillagesWithGuildHallsWhereCanStartHoliday(accountId);
-  //console.log(villageWithGuildHalls);
   if (!villageWithGuildHalls || villageWithGuildHalls.length === 0) {
-    console.log('exit ' + villageWithGuildHalls.length);
+    var msg = "There are no villages where can start small holiday";
+    DBCon.insertLogInfo('Travian', msg, msg);
     return;
   }
   var now = (new Date()).toJSON().replace('T', ' ');
   for (var i = 0; i < villageWithGuildHalls.length; i++) {
     var row = villageWithGuildHalls[i];
-
-    console.log("now = " + now);
+    //console.log("now = " + now);
 
     if (row.EndOfHoliday <= now) {
-      console.log('Can start holiday: ' + row.EndOfHoliday + "<=" + now);
+
+      var msg = "Village: " + row.VillageId + " Can start holiday: " + row.EndOfHoliday + " <=" + now;
+      DBCon.insertLogInfo('Travian', msg, msg);
+      //console.log('Can start holiday: ' + row.EndOfHoliday + "<=" + now);
+
       await GotoPage(page, row.Href, 1, 2);
       await GotoPage(page, row.HouseHref, 1, 2);
       var queryTime = await page.evaluate(() => {
@@ -316,7 +316,8 @@ async function TryingStartHoliday(page, villageId) {
   var buttonCoord = await GetButtonStartHolidayCoordinate(page);
   if (buttonCoord && buttonCoord.top > 100) {
     await page.mouse.click(buttonCoord.left + 50, buttonCoord.top + 10);
-    Debug.debugPrint("Starting holiday in village: " + villageId)
+    var msg = "Starting holiday in village (mouse click): " + villageId;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 }
 
@@ -435,8 +436,8 @@ function GetTime(strValue) {
 async function GetButtonStartBuildingText(page) {
 
   var buttonText = await page.evaluate(() => {
-    const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
-    const buttonSelection2 = '#build .upgradeButtonsContainer > div.section1';
+    //const buttonSelection = '#build > div.roundedCornersBox.big > div.upgradeButtonsContainer.section2Enabled > div.section1';
+    //const buttonSelection2 = '#build .upgradeButtonsContainer > div.section1';
 
     const contentContainer = '.build';
     var innerText = "";
@@ -490,14 +491,12 @@ async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
   var buttonReady = await GetButtonStartBuildingText(page);
   var buttonCoord = await GetButtonStartBuildingCoordinate(page);
 
-  Debug.debugPrint("Button start building text = " + buttonReady + " " + JSON.stringify(buttonCoord));
+  var msg = "Button start building text = " + buttonReady + " " + JSON.stringify(buttonCoord);
+  Debug.debugPrint(msg);
+  DBCon.insertLogInfo('Travian', msg, msg);
 
   await page.screenshot({ path: 'ts2.travian.png' });
 
-  var cordY = 575;
-  if (login_info.unix === false) {
-    cordY = 515;
-  }
   var result = false;
   if (buttonReady === "Улучшитьдоуровня1") {
     await page.mouse.click(buttonCoord.left + 50, buttonCoord.top + 10);
@@ -506,17 +505,19 @@ async function TryToStartBuilding(page, gotoBuildingUrl, accountId, rows) {
     await page.mouse.click(buttonCoord.left + 50, buttonCoord.top + 10);
     result = true;
   } else if (buttonReady.indexOf("Построитьсархитектором") >= 0) {
-    Debug.debugPrint("Button for building is not ready or building complite!");
+    Debug.debugPrint("Button for building is not ready or building completed!");
     await GotoPage(page, global_UrlDorf1, 3, 5);
   }
 
   if (rows === 'town') {
-    DBCon.insertLogInfo('Travian', "ScrapDorf2Page after click trying button start building");
+    var msg = "ScrapDorf2Page after click trying button start building";
+    DBCon.insertLogInfo('Travian', msg, msg);
     var dorf2PageInfo = await Scraper.ScrapDorf2Page(page, global_UrlDorf2);
     Saver.SaveDorf2Page(dorf2PageInfo, accountId);
   }
   else {
-    DBCon.insertLogInfo('Travian', "ScrapDorf1Page after click trying button start building");
+    var msg = "ScrapDorf1Page after click trying button start building";
+    DBCon.insertLogInfo('Travian', msg, msg);
     var dorf1PageInfo = await Scraper.ScrapDorf1Page(page, global_UrlDorf1);
     Saver.SaveDorf1Page(dorf1PageInfo, accountId);
   }
@@ -529,7 +530,8 @@ async function RunBulidingInTown(page, rows, accountId, villageId) {
   var result = false;
   if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
-    DBCon.insertLogInfo('Travian', "Деревня " + villageId + ". Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+    var msg = "Village id: " + villageId + ". Random select to build: " + rows[i].Name + " " + rows[i].Level;
+    DBCon.insertLogInfo('Travian', msg, msg);
     var gotoBuildingUrl = rows[i].Href; // Building href
     if (gotoBuildingUrl) {
       await GotoPage(page, global_UrlDorf2 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
@@ -555,6 +557,9 @@ async function BuildingTownHouseWasStarted(page, accountId, villageId, housesIsR
 async function StartBuildInVillage(page, accountId, villageId) {
   Debug.debugPrint("------------------------------------------------------");
   Debug.debugPrint("--  StartBuildInVillage: " + villageId);
+  var msg = "Village id: " + villageId + ". Try to start build in village";
+  DBCon.insertLogInfo('Travian', msg, msg);
+
 
   var housesIsRow = "";
   var housesLevel = "";
@@ -565,6 +570,9 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'5'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   /*------------------------------------------------------------------------------
@@ -575,17 +583,29 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'3'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
-  var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, "'4'");
+  /*------------------------------------------------------------------------------
+  Resources fields
+  */
+  housesIsRow = "Resources fields";
+  housesLevel = "'4'";
+  var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, housesLevel);
   if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
-    DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+    var msg = "Village id: " + villageId + ".   Random select to build: " + rows[i].Name + " " + rows[i].Level;
+    DBCon.insertLogInfo('Travian', msg, msg);
     var gotoBuildingUrl = rows[i].Href; // Building href
     if (gotoBuildingUrl) {
       await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
       await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
     }
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   //------------------------------------------------------------------------------
@@ -594,6 +614,9 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'7'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   /*------------------------------------------------------------------------------
@@ -605,6 +628,9 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'3'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   /*------------------------------------------------------------------------------
@@ -615,8 +641,16 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'7'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
+  /*------------------------------------------------------------------------------
+  Resources fields
+  */
+  housesIsRow = "Resources fields";
+  housesLevel = "'6'";
   var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, "'6'");
   if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
@@ -626,6 +660,9 @@ async function StartBuildInVillage(page, accountId, villageId) {
       await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
       await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
     }
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   //------------------------------------------------------------------------------
@@ -634,6 +671,9 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'15'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   /*------------------------------------------------------------------------------
@@ -642,8 +682,11 @@ async function StartBuildInVillage(page, accountId, villageId) {
   */
   housesIsRow = "'g10','g11'";
   housesLevel = "'12'";
-  if (await (page, accountId, villageId, housesIsRow, housesLevel) === true) {
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
   /*------------------------------------------------------------------------------
@@ -653,9 +696,18 @@ async function StartBuildInVillage(page, accountId, villageId) {
   housesLevel = "'5'";
   if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
     return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
-  var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, "'10'");
+
+  /*------------------------------------------------------------------------------
+  Resources fields
+  */
+  housesIsRow = "Resources fields";
+  housesLevel = "'8'";
+  var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, housesLevel);
   if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
     DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
@@ -664,62 +716,62 @@ async function StartBuildInVillage(page, accountId, villageId) {
       await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
       await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
     }
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
 
-}
+  /*------------------------------------------------------------------------------
+  'g10' - Store
+  'g11' - Barn
+  */
+  housesIsRow = "'g10','g11'";
+  housesLevel = "'16'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
+  }
 
-/** OLD VERSION */
-/*
-async function StartBuilding(page, rows, accountId) {
-  while (rows.length > 0) {
+
+  //------------------------------------------------------------------------------
+  // g15 - Main Building
+  housesIsRow = "'g15'";
+  housesLevel = "'20'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
+  }
+
+  /*------------------------------------------------------------------------------
+  Resources fields
+  */
+  housesIsRow = "Resources fields";
+  housesLevel = "'10'";
+  var rows = await Reader.getResourcesFieldsWhatWeCanBuildInVillageFromDB(accountId, villageId, housesLevel);
+  if (rows.length > 0) {
     var i = Math.round(Math.random() * Math.min(rows.length - 1, 5));
-    DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level + " " + rows[i].VillageId);
-    var gotoUrl = rows[i].VillageHref;
-    var villageId = rows[i].VillageId;
-
-    if (gotoUrl) {
-      await TryToStartBuilding(page, gotoUrl, accountId, rows);
-      var j = rows.length;
-      for (var j = rows.length - 1; j >= 0; j--) {
-        if (rows[j].VillageId == villageId) {
-          //Debug.debugPrint("Delete by index: " + j);
-          rows.splice(j, 1);
-        }
-      }
-      Debug.debugPrint(rows);
+    DBCon.insertLogInfo('Travian', "Случайным способом выбрали строить: " + rows[i].Name + " " + rows[i].Level);
+    var gotoBuildingUrl = rows[i].Href; // Building href
+    if (gotoBuildingUrl) {
+      await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
+      await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
     }
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
   }
-
 }
-*/
-
-/** OLD VERSION */
-/*
-async function StartAllBuildings(page, accountId) {
-  var rows = await Reader.getWhatWeCanBuildFromDB(accountId);
-  Debug.debugPrint("------------------------------------------------------");
-  Debug.debugPrint("--  --  --  --  --  --  --  --  --  --  --  --  --  --");
-  Debug.debugPrint("------------------------------------------------------");
-  Debug.debugPrint("getWhatWeCanBuildFromDB return: " + rows.length + " rows");
-  Debug.debugPrint(rows);
-  //
-  //
-  //
-  //
-  //
-  await StartBuilding(page, rows, accountId);
-  //
-  //
-  //
-  //
-  //
-}
-*/
-
 
 
 /** Loging into the game, return 1 if we in the game */
 async function LoginToTravian(page, loginInfo) {
+
+  var msg = "Try to login into game.";
+  DBCon.insertLogInfo('Travian', msg, msg);
 
   await GotoPage(page, 'https://ts2.travian.ru/', 2.5, 6);
   let login = loginInfo.account.login;
@@ -741,7 +793,9 @@ async function LoginToTravian(page, loginInfo) {
 
 async function GotoPage(page, pageUrl, timeoutMin = 1, timeoutMax = 5) {
   var waitTime = Common.getRandomMS(timeoutMin, timeoutMax);
-  Debug.debugPrint("Goto: " + pageUrl + " with waiting " + waitTime + " milisec.");
+  var msg = "Goto: " + pageUrl + " with waiting " + waitTime + " milisec.";
+  Debug.debugPrint(msg);
+  DBCon.insertLogInfo('Travian', msg, msg);
   await sleep(waitTime);
   await page.screenshot({ path: 'before_goto_url.png' });
   try {
