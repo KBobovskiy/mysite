@@ -32,7 +32,7 @@ router.get('/logs', function (req, res, next) {
   let mysql = require('mysql');
   let login_info = require("../serverApp/login_info");
   let logs = ["can't get logs"];
-  var queryString = "SELECT action, date_time FROM thetale.logs order by id desc LIMIT 100";
+  var queryString = "SELECT action, date, info FROM thetale.logs order by id desc LIMIT 100";
   let con = mysql.createConnection({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
   con.connect(function (err) {
     if (err) { throw err };
@@ -42,7 +42,7 @@ router.get('/logs', function (req, res, next) {
       if (err) throw err;
       let logs = [];
       result.forEach((item, index) => {
-        logs.push('' + item.date_time.toISOString().slice(0, 19) + ': ' + item.action);
+        logs.push('' + item.date.toISOString().slice(0, 19) + ': ' + item.action + ': ' + item.info);
       });
       res.render('logs', { titlen: 'Logs history', logs: logs });
     });

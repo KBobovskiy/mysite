@@ -14,7 +14,7 @@ const requestPromise = Promise.promisifyAll(require('request'));
 /**
 * Load cookie to mySQL db (Sync)
 */
-function loadCookieSync(accountIndex){
+function loadCookieSync(accountIndex) {
     let id = login_info.accounts[accountIndex].id;
     let account_id = login_info.accounts[accountIndex].accountId;
     let result = {};
@@ -25,7 +25,7 @@ function loadCookieSync(accountIndex){
         result.csrftoken = login_info.accounts[accountIndex].csrftoken;
         return result;
     }
-    
+
     let connection = new SyncMySql({ host: login_info.mysql_Host, user: login_info.mysql_User, password: login_info.mysql_Password });
 
     let queryString = "SELECT sessionid, csrftoken FROM thetale.accounts WHERE id=" + id + " and account_id=" + account_id;
@@ -95,32 +95,32 @@ function login(accountIndex) {
         },
         url: loginURL,
         form: { 'email': account_login, 'password': account_password, 'csrfmiddlewaretoken': login_info.csrftoken }
-    },  (err, res) => {
-            if (err) {
-                debug.debugPrint("requestLogin: it did not work: " + err)
-            } else {
-                debug.printRequestStatus(res);
-                debug.debugPrint(res.request.headers);
-                let cookie = res.headers['set-cookie'];
-                if (cookie) {
-                    for (let i = 0; i < cookie.length; i++) {
-                        cook = cookie[i];
-                        cook = cook.split(';');
-                        cook = cook[0].split('=');
-                        if (cook[0] == 'sessionid') {
-                            sessionid = cook[1];
-                        } else if (cook[0] == 'csrftoken') {
-                            csrftoken = cook[1];
-                        }
+    }, (err, res) => {
+        if (err) {
+            debug.debugPrint("requestLogin: it did not work: " + err)
+        } else {
+            debug.printRequestStatus(res);
+            debug.debugPrint(res.request.headers);
+            let cookie = res.headers['set-cookie'];
+            if (cookie) {
+                for (let i = 0; i < cookie.length; i++) {
+                    cook = cookie[i];
+                    cook = cook.split(';');
+                    cook = cook[0].split('=');
+                    if (cook[0] == 'sessionid') {
+                        sessionid = cook[1];
+                    } else if (cook[0] == 'csrftoken') {
+                        csrftoken = cook[1];
                     }
                 }
-                let cookieString = 'sessionid=' + sessionid + '; csrftoken=' + csrftoken;
-                login_info.accounts[accountIndex].sessionid = sessionid;
-                login_info.accounts[accountIndex].csrftoken = csrftoken;
-                debug.debugPrint(cookieString,0);
-                saveCookieSync(accountIndex, cookieString);
             }
+            let cookieString = 'sessionid=' + sessionid + '; csrftoken=' + csrftoken;
+            login_info.accounts[accountIndex].sessionid = sessionid;
+            login_info.accounts[accountIndex].csrftoken = csrftoken;
+            debug.debugPrint(cookieString, 0);
+            saveCookieSync(accountIndex, cookieString);
         }
+    }
     );
 }
 

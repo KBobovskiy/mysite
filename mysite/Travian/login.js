@@ -159,10 +159,10 @@ async function start(loginInfo) {
     Debug.debugPrint("Check villages for building houses, maxLoopIndex = " + maxLoopIndex);
     for (loopIndex = 0; loopIndex < maxLoopIndex; loopIndex++) {
 
-      if (loopIndex % 2 === 0) {
-        /** Check and start holiday in guildhalls */
-        await StartHolidays(page, accountId);
-      }
+      // if (loopIndex % 2 === 0) {
+      //   /** Check and start holiday in guildhalls */
+      //   await StartHolidays(page, accountId);
+      // }
 
       var villagesId = await Reader.GetAllVillagesId(accountId);
       for (var vIndex = 0; vIndex < villagesId.length; vIndex++) {

@@ -75,6 +75,8 @@ async function selectQuery(queryString, logAction) {
 function insertLogInfo(logAction, logInfo = "", shortInfo = "") {
     logInfo = logInfo.replace(/\'/g, '');
     shortInfo = shortInfo.replace(/\'/g, '');
+    logInfo = logInfo.replace(/'\'/g, '');
+    shortInfo = shortInfo.replace(/'\'/g, '');
     let queryString = "INSERT INTO thetale.logs (`action`, `info`, `shortInfo`) VALUES ('" + logAction + "','" + logInfo + "','" + shortInfo + "')";
     insertQuery(queryString, 'insertLogInfo()', true);
 }
