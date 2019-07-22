@@ -380,6 +380,7 @@ async function ScrapingTownHousesInfo(page) {
         nameText = nameText.replace('buildingSlot', '');
         nameText = nameText.replace('a' + i, '');
         nameText = nameText.replace('aid' + i, '');
+        nameText = nameText.replace('gaul', '');
         nameText = GetString(nameText).trim();
         var href = 'https://ts2.travian.ru/build.php?id=' + i;
         levelText = GetString(name[0].innerText);

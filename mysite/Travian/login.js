@@ -155,7 +155,7 @@ async function start(loginInfo) {
 
   if (login_info.runBuilding === true) {
     var loopIndex = 0;
-    var maxLoopIndex = 20 + Math.floor(Math.random() * 20);
+    var maxLoopIndex = 50 + Math.floor(Math.random() * 20);
     Debug.debugPrint("Check villages for building houses, maxLoopIndex = " + maxLoopIndex);
     for (loopIndex = 0; loopIndex < maxLoopIndex; loopIndex++) {
 
@@ -205,15 +205,11 @@ async function start(loginInfo) {
         }
       }
 
-
-
-
-
       var minSleepTimeInSec = 180;
       var maxSleepTimeInSec = 360;
       var waitTime = Common.getRandomMS(minSleepTimeInSec, maxSleepTimeInSec) / 1000;
       var dt = new Date();
-      Debug.debugPrint("Now:" + dt + ", sleep for " + waitTime + " sec, till: " + new Date(dt.setSeconds(dt.getSeconds() + waitTime)));
+      Debug.debugPrint("Now:" + dt + ", sleep for " + waitTime + " sec, (" + loopIndex + " < " + maxLoopIndex + ") till: " + new Date(dt.setSeconds(dt.getSeconds() + waitTime)));
       await sleep(waitTime * 1000);
     }
   }
@@ -760,6 +756,17 @@ async function StartBuildInVillage(page, accountId, villageId) {
       await GotoPage(page, global_UrlDorf1 + '?newdid=' + villageId + '&', 0.5, 1); // Goto village page
       await TryToStartBuilding(page, gotoBuildingUrl, accountId, rows); // Goto building page
     }
+  } else {
+    var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
+    DBCon.insertLogInfo('Travian', msg, msg);
+  }
+
+  //------------------------------------------------------------------------------
+  // g36 - Kapkan
+  housesIsRow = "'g36'";
+  housesLevel = "'20'";
+  if (await BuildingTownHouseWasStarted(page, accountId, villageId, housesIsRow, housesLevel) === true) {
+    return;
   } else {
     var msg = "Village id: " + villageId + ". Do not need to build " + housesIsRow + " lvl < " + housesLevel;
     DBCon.insertLogInfo('Travian', msg, msg);
